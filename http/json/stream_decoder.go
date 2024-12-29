@@ -3,13 +3,12 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	"io"
 	"net/http"
 )
 
 type (
-	// Decoder interface
-	Decoder interface {
+	// StreamDecoder is the JSON decoder interface
+	StreamDecoder interface {
 		Decode(
 			w http.ResponseWriter,
 			r *http.Request,
@@ -17,21 +16,21 @@ type (
 		) (err error)
 	}
 
-	// DefaultDecoder struct
-	DefaultDecoder struct {
+	// DefaultStreamDecoder is the JSON decoder struct
+	DefaultStreamDecoder struct {
 		mode *goflagsmode.Flag
 	}
 )
 
-// NewDefaultDecoder creates a new JSON decoder
-func NewDefaultDecoder(mode *goflagsmode.Flag) *DefaultDecoder {
-	return &DefaultDecoder{
+// NewDefaultStreamDecoder creates a new JSON decoder
+func NewDefaultStreamDecoder(mode *goflagsmode.Flag) *DefaultStreamDecoder {
+	return &DefaultStreamDecoder{
 		mode: mode,
 	}
 }
 
-// Decode decodes the JSON data from the request
-func (d *DefaultDecoder) Decode(
+// Decode decodes the JSON data
+func (d *DefaultStreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	data interface{},
@@ -41,19 +40,8 @@ func (d *DefaultDecoder) Decode(
 		return err
 	}
 
-	// Get the body of the request
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(
-			w,
-			err.Error(),
-			http.StatusBadRequest,
-		)
-		return err
-	}
-
 	// Decode JSON data
-	if err = json.Unmarshal(body, data); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(data); err != nil {
 		http.Error(
 			w,
 			err.Error(),

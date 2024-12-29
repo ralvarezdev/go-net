@@ -2,43 +2,54 @@ package json
 
 import (
 	"encoding/json"
-	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	"github.com/ralvarezdev/go-flags/mode"
 	"net/http"
 )
 
 type (
-	// Encoder is an interface for encoding JSON data
+	// Encoder interface
 	Encoder interface {
-		Encode(w http.ResponseWriter, data interface{}) (err error)
+		Encode(
+			w http.ResponseWriter,
+			data interface{},
+			code int,
+		) error
 	}
 
-	// DefaultEncoder is the JSON encoder struct
+	// DefaultEncoder struct
 	DefaultEncoder struct {
-		mode *goflagsmode.Flag
+		mode *mode.Flag
 	}
 )
 
-// NewDefaultEncoder creates a new JSON encoder
-func NewDefaultEncoder(mode *goflagsmode.Flag) *DefaultEncoder {
-	return &DefaultEncoder{
-		mode: mode,
-	}
+// NewDefaultEncoder creates a new default JSON encoder
+func NewDefaultEncoder(mode *mode.Flag) (*DefaultEncoder, error) {
+	return &DefaultEncoder{mode: mode}, nil
 }
 
-// Encode encodes the data into JSON
+// Encode encodes the given data to JSON
 func (d *DefaultEncoder) Encode(
 	w http.ResponseWriter,
 	data interface{},
+	code int,
 ) (err error) {
 	// Check the data type
 	if err = checkJSONData(w, data, d.mode); err != nil {
 		return err
 	}
 
-	// Encode JSON data
-	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(data); err != nil {
+	// Encode the data
+	jsonData, err := json.Marshal(data)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	// Write the JSON data
+	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(jsonData)
+	if err != nil {
 		return err
 	}
 	return nil
