@@ -4,18 +4,27 @@ import (
 	"net/http"
 )
 
-// Group is the route group struct
-type Group struct {
-	mux *http.ServeMux
-}
+type (
+	// GroupWrapper is the interface for the route group
+	GroupWrapper interface {
+		Group() *http.ServeMux
+		HandleFunc(string, http.HandlerFunc)
+		RegisterGroup(string, http.Handler)
+	}
 
-// NewGroup creates a new group
+	// Group is the route group struct
+	Group struct {
+		mux *http.ServeMux
+	}
+)
+
+// NewGroup creates a new route group
 func NewGroup(mux *http.ServeMux) *Group {
 	return &Group{mux: mux}
 }
 
-// Mux returns the ServeMux
-func (g *Group) Mux() *http.ServeMux {
+// Group returns the ServeMux
+func (g *Group) Group() *http.ServeMux {
 	return g.mux
 }
 
