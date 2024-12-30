@@ -7,7 +7,7 @@ import (
 type (
 	// RouterWrapper is the interface for the routes
 	RouterWrapper interface {
-		Router() *http.ServeMux
+		Handler() *http.ServeMux
 		HandleFunc(string, http.HandlerFunc)
 		RegisterRoute(string, http.HandlerFunc)
 		RegisterHandler(string, http.Handler)
@@ -41,8 +41,8 @@ func NewRouterGroup(baseRoute *Router, path string) (*Router, error) {
 	return instance, nil
 }
 
-// Router returns the ServeMux
-func (r *Router) Router() *http.ServeMux {
+// Handler returns the ServeMux
+func (r *Router) Handler() *http.ServeMux {
 	return r.mux
 }
 
