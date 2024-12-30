@@ -1,9 +1,15 @@
 package route
 
 type (
-	// Controller is the struct for the controller
+	// ControllerWrapper is the interface for the route controller
+	ControllerWrapper interface {
+		RegisterRoutes()
+		RegisterRouteGroups()
+	}
+
+	// Controller is the struct for the route controller
 	Controller struct {
 		service Service
-		GroupWrapper
+		RouterWrapper
 	}
 )
