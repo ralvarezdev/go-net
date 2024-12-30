@@ -23,8 +23,8 @@ type (
 )
 
 // NewDefaultEncoder creates a new default JSON encoder
-func NewDefaultEncoder(mode *mode.Flag) (*DefaultEncoder, error) {
-	return &DefaultEncoder{mode: mode}, nil
+func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
+	return &DefaultEncoder{mode: mode}
 }
 
 // Encode encodes the given data to JSON
