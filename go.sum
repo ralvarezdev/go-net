@@ -4,6 +4,7 @@ github.com/ralvarezdev/go-flags v0.2.3 h1:mFcSEVGAT6Q/yH61UJxp+uG6acopFW7Bl/rsak
 github.com/ralvarezdev/go-flags v0.2.3/go.mod h1:xc0ii1VySdiV/s17KRo1GJ6bLxy5eOv93Oaz/mSlxtw=
 github.com/ralvarezdev/go-jwt v0.3.1 h1:TXRjjAsIV5dLkoT5ujQsqD30hXRzTkwD08wnCbhrA1w=
 github.com/ralvarezdev/go-jwt v0.3.1/go.mod h1:Yo+HExsp8k7Fd/WDn4SOF3lnLzBnfR6SqdHjcR09+D4=
+github.com/ralvarezdev/go-jwt v0.3.3/go.mod h1:Yo+HExsp8k7Fd/WDn4SOF3lnLzBnfR6SqdHjcR09+D4=
 github.com/ralvarezdev/go-logger v0.2.2 h1:j58spza2L6s+vAibifHSuUPrXm0+6nWZWR3SOg8ihBk=
 github.com/ralvarezdev/go-logger v0.2.2/go.mod h1:v5OvFrkS+wsYNTCVegXWiRhBtcYrQJr4LDMDntvpAos=
 golang.org/x/crypto v0.31.0 h1:ihbySMvVjLAeSH1IbfcRTkD/iNscyz8rGzjF/E5hV6U=

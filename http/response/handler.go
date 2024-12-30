@@ -9,15 +9,13 @@ import (
 type (
 	// Handler interface for handling the responses
 	Handler interface {
-		HandleResponse(w http.ResponseWriter, response interface{}, code int)
-		HandleErrorProneResponse(
+		HandleSuccess(w http.ResponseWriter, response *Response)
+		HandleErrorProne(
 			w http.ResponseWriter,
-			response interface{},
-			successCode int,
-			err error,
-			errorCode int,
+			successResponse *Response,
+			errorResponse *Response,
 		)
-		HandleErrorResponse(w http.ResponseWriter, err error, errorCode int)
+		HandleError(w http.ResponseWriter, response *Response)
 	}
 
 	// DefaultHandler struct
@@ -42,42 +40,38 @@ func NewDefaultHandler(
 	return &DefaultHandler{mode: mode, jsonEncoder: jsonEncoder}, nil
 }
 
-// HandleResponse handles the response
-func (d *DefaultHandler) HandleResponse(
+// HandleSuccess handles the response
+func (d *DefaultHandler) HandleSuccess(
 	w http.ResponseWriter,
-	response interface{},
-	code int,
+	response *Response,
 ) {
-	_ = d.jsonEncoder.Encode(w, response, code)
+	if response != nil && response.Code != nil {
+		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
+	}
 }
 
-// HandleErrorProneResponse handles the response that may contain an error
-func (d *DefaultHandler) HandleErrorProneResponse(
+// HandleErrorProne handles the response that may contain an error
+func (d *DefaultHandler) HandleErrorProne(
 	w http.ResponseWriter,
-	response interface{},
-	successCode int,
-	err error,
-	errorCode int,
+	successResponse *Response,
+	errorResponse *Response,
 ) {
-	// Check if the error is nil
-	if err == nil {
-		d.HandleResponse(w, response, successCode)
+	// Check if the error response is nil
+	if errorResponse == nil {
+		d.HandleError(w, errorResponse)
 		return
 	}
 
-	// Handle the error response
-	d.HandleErrorResponse(w, err, errorCode)
+	// Handle the success response
+	d.HandleSuccess(w, successResponse)
 }
 
-// HandleErrorResponse handles the error response
-func (d *DefaultHandler) HandleErrorResponse(
+// HandleError handles the error response
+func (d *DefaultHandler) HandleError(
 	w http.ResponseWriter,
-	err error,
-	errorCode int,
+	response *Response,
 ) {
-	_ = d.jsonEncoder.Encode(
-		w,
-		NewErrorResponse(err),
-		errorCode,
-	)
+	if response != nil && response.Code != nil {
+		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
+	}
 }
