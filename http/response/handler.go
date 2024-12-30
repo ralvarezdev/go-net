@@ -9,7 +9,8 @@ import (
 type (
 	// Handler interface for handling the responses
 	Handler interface {
-		HandleResponse(
+		HandleResponse(w http.ResponseWriter, response interface{}, code int)
+		HandleErrorProneResponse(
 			w http.ResponseWriter,
 			response interface{},
 			successCode int,
@@ -45,13 +46,22 @@ func NewDefaultHandler(
 func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
 	response interface{},
+	code int,
+) {
+	_ = d.jsonEncoder.Encode(w, response, code)
+}
+
+// HandleErrorProneResponse handles the response that may contain an error
+func (d *DefaultHandler) HandleErrorProneResponse(
+	w http.ResponseWriter,
+	response interface{},
 	successCode int,
 	err error,
 	errorCode int,
 ) {
 	// Check if the error is nil
 	if err == nil {
-		_ = d.jsonEncoder.Encode(w, response, successCode)
+		d.HandleResponse(w, response, successCode)
 		return
 	}
 
