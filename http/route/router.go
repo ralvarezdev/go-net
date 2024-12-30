@@ -8,10 +8,10 @@ type (
 	// RouterWrapper is the interface for the routes
 	RouterWrapper interface {
 		Handler() *http.ServeMux
-		HandleFunc(string, http.HandlerFunc)
-		RegisterRoute(string, http.HandlerFunc)
-		RegisterHandler(string, http.Handler)
-		RegisterRouteGroup(string, http.Handler)
+		HandleFunc(path string, handler http.HandlerFunc)
+		RegisterRoute(path string, handler http.HandlerFunc)
+		RegisterHandler(path string, handler http.Handler)
+		RegisterRouteGroup(path string, router *Router)
 	}
 
 	// Router is the route group struct
