@@ -9,7 +9,7 @@ type (
 
 	// Controller is the struct for the route controller
 	Controller struct {
-		service Service
+		Service Service
 		RouterWrapper
 	}
 )
