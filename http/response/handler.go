@@ -2,7 +2,6 @@ package response
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	"net/http"
 )
@@ -49,11 +48,7 @@ func (d *DefaultHandler) HandleSuccess(
 	if response != nil && response.Code != nil {
 		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
 	} else {
-		http.Error(
-			w,
-			gonethttp.InternalServerError,
-			http.StatusInternalServerError,
-		)
+		SendInternalServerError(w)
 	}
 }
 
@@ -81,10 +76,6 @@ func (d *DefaultHandler) HandleError(
 	if response != nil && response.Code != nil {
 		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
 	} else {
-		http.Error(
-			w,
-			gonethttp.InternalServerError,
-			http.StatusInternalServerError,
-		)
+		SendInternalServerError(w)
 	}
 }
