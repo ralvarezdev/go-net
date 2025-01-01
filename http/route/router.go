@@ -58,7 +58,7 @@ func (r *Router) RegisterRoute(path string, handler http.HandlerFunc) {
 
 // RegisterHandler registers a new route group with a path and a handler function
 func (r *Router) RegisterHandler(path string, handler http.Handler) {
-	r.mux.Handle(path, http.StripPrefix(path, http.StripPrefix(path, handler)))
+	r.mux.Handle(path, http.StripPrefix(path, handler))
 }
 
 // RegisterRouteGroup registers a new route group with a path and a router
