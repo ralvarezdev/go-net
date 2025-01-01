@@ -58,7 +58,12 @@ func (r *Router) RegisterRoute(path string, handler http.HandlerFunc) {
 
 // RegisterHandler registers a new route group with a path and a handler function
 func (r *Router) RegisterHandler(path string, handler http.Handler) {
-	r.mux.Handle(path, http.StripPrefix(path, handler))
+	// Check if the path contains a trailing slash and remove it
+	if len(path) > 1 && path[len(path)-1] == '/' {
+		path = path[:len(path)-1]
+	}
+
+	r.mux.Handle(path+"/", http.StripPrefix(path, handler))
 }
 
 // RegisterRouteGroup registers a new route group with a path and a router
