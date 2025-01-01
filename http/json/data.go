@@ -4,10 +4,9 @@ import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	"net/http"
-	"reflect"
 )
 
-// checkJSONData checks if the given JSON data is nil or if the reflected data is not a pointer
+// checkJSONData checks if the given JSON data is nil
 func checkJSONData(
 	w http.ResponseWriter,
 	data interface{},
@@ -16,11 +15,6 @@ func checkJSONData(
 	// Check if data is nil
 	if data == nil {
 		return handleDataTypeError(w, ErrNilJSONData, mode)
-	}
-
-	// Check if the reflected data is a pointer
-	if reflect.ValueOf(data).Kind() != reflect.Ptr {
-		return handleDataTypeError(w, ErrJSONDataMustBeAPointer, mode)
 	}
 	return nil
 }
