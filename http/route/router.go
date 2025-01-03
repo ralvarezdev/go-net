@@ -12,7 +12,7 @@ type (
 		HandleFunc(path string, handler http.HandlerFunc)
 		RegisterRoute(path string, handler http.HandlerFunc)
 		RegisterHandler(path string, handler http.Handler)
-		NewGroup(path string) (*Router, error)
+		NewGroup(path string) *Router
 		RegisterGroup(path string, router *Router)
 	}
 
@@ -113,6 +113,7 @@ func (r *Router) RegisterGroup(path string, router *Router) {
 }
 
 // NewGroup creates a new router group with a path
-func (r *Router) NewGroup(path string) (*Router, error) {
-	return NewGroup(r, path)
+func (r *Router) NewGroup(path string) *Router {
+	newGroup, _ := NewGroup(r, path)
+	return newGroup
 }

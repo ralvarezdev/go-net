@@ -4,7 +4,7 @@ type (
 	// ControllerWrapper is the interface for the route controller
 	ControllerWrapper interface {
 		RegisterRoutes()
-		RegisterRouteGroups()
+		RegisterGroups()
 	}
 
 	// Controller is the struct for the route controller
