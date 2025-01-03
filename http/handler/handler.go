@@ -14,13 +14,12 @@ type (
 			r *http.Request,
 			data interface{},
 		) (err error)
-		HandleSuccessResponse(w http.ResponseWriter, response *Response)
+		HandleResponse(w http.ResponseWriter, response *Response)
 		HandleErrorProneResponse(
 			w http.ResponseWriter,
 			successResponse *Response,
 			errorResponse *Response,
 		)
-		HandleErrorResponse(w http.ResponseWriter, response *Response)
 	}
 
 	// DefaultHandler struct
@@ -64,14 +63,27 @@ func (d *DefaultHandler) HandleRequest(
 	return d.jsonDecoder.Decode(w, r, data)
 }
 
-// HandleSuccessResponse handles the response
-func (d *DefaultHandler) HandleSuccessResponse(
+// HandleResponse handles the response
+func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
 	response *Response,
 ) {
-	if response != nil && response.Code != nil {
+	if response == nil {
+		SendInternalServerError(w)
+		return
+	}
+
+	if response.Code != nil {
+		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+			_ = d.jsonEncoder.Encode(w, response.DebugData, *response.Code)
+			return
+		}
 		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
 	} else {
+		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+			_ = d.jsonEncoder.Encode(w, response.DebugData, *response.Code)
+			return
+		}
 		SendInternalServerError(w)
 	}
 }
@@ -84,22 +96,10 @@ func (d *DefaultHandler) HandleErrorProneResponse(
 ) {
 	// Check if the error response is nil
 	if errorResponse != nil {
-		d.HandleErrorResponse(w, errorResponse)
+		d.HandleResponse(w, errorResponse)
 		return
 	}
 
 	// Handle the success response
-	d.HandleSuccessResponse(w, successResponse)
-}
-
-// HandleErrorResponse handles the error response
-func (d *DefaultHandler) HandleErrorResponse(
-	w http.ResponseWriter,
-	response *Response,
-) {
-	if response != nil && response.Code != nil {
-		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
-	} else {
-		SendInternalServerError(w)
-	}
+	d.HandleResponse(w, successResponse)
 }
