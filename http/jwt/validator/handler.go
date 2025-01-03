@@ -1,8 +1,8 @@
 package validator
 
 import (
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
 

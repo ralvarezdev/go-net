@@ -7,8 +7,8 @@ import (
 	gojwtinterception "github.com/ralvarezdev/go-jwt/token/interception"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 	"strings"
 )
@@ -16,21 +16,21 @@ import (
 // Middleware struct
 type Middleware struct {
 	validator                gojwtvalidator.Validator
-	responseHandler          gonethttpresponse.Handler
+	handler                  gonethttpresponse.Handler
 	jwtValidatorErrorHandler gonethttpjwtvalidator.ErrorHandler
 }
 
 // NewMiddleware creates a new authentication middleware
 func NewMiddleware(
 	validator gojwtvalidator.Validator,
-	responseHandler gonethttpresponse.Handler,
+	handler gonethttpresponse.Handler,
 	jwtValidatorErrorHandler gonethttpjwtvalidator.ErrorHandler,
 ) (*Middleware, error) {
 	// Check if either the validator, response handler or validator handler is nil
 	if validator == nil {
 		return nil, gojwtvalidator.ErrNilValidator
 	}
-	if responseHandler == nil {
+	if handler == nil {
 		return nil, gonethttpresponse.ErrNilHandler
 	}
 	if jwtValidatorErrorHandler == nil {
@@ -39,7 +39,7 @@ func NewMiddleware(
 
 	return &Middleware{
 		validator:                validator,
-		responseHandler:          responseHandler,
+		handler:                  handler,
 		jwtValidatorErrorHandler: jwtValidatorErrorHandler,
 	}, nil
 }
@@ -60,7 +60,7 @@ func (m *Middleware) Authenticate(
 			// Parse the authorization to a string
 			authorizationStr, ok := authorization.(string)
 			if !ok {
-				m.responseHandler.HandleError(
+				m.handler.HandleErrorResponse(
 					w,
 					gonethttpresponse.NewErrorResponseWithCode(
 						gonethttp.ErrInvalidAuthorizationHeader,
@@ -75,7 +75,7 @@ func (m *Middleware) Authenticate(
 
 			// Return an error if the authorization is missing or invalid
 			if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-				m.responseHandler.HandleError(
+				m.handler.HandleErrorResponse(
 					w,
 					gonethttpresponse.NewErrorResponseWithCode(
 						gonethttp.ErrInvalidAuthorizationHeader,

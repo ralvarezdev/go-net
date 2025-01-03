@@ -1,4 +1,4 @@
-package response
+package handler
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
@@ -9,19 +9,25 @@ import (
 type (
 	// Handler interface for handling the responses
 	Handler interface {
-		HandleSuccess(w http.ResponseWriter, response *Response)
-		HandleErrorProne(
+		HandleRequest(
+			w http.ResponseWriter,
+			r *http.Request,
+			data interface{},
+		) (err error)
+		HandleSuccessResponse(w http.ResponseWriter, response *Response)
+		HandleErrorProneResponse(
 			w http.ResponseWriter,
 			successResponse *Response,
 			errorResponse *Response,
 		)
-		HandleError(w http.ResponseWriter, response *Response)
+		HandleErrorResponse(w http.ResponseWriter, response *Response)
 	}
 
 	// DefaultHandler struct
 	DefaultHandler struct {
 		mode        *goflagsmode.Flag
 		jsonEncoder gonethttpjson.Encoder
+		jsonDecoder gonethttpjson.Decoder
 	}
 )
 
@@ -29,19 +35,37 @@ type (
 func NewDefaultHandler(
 	mode *goflagsmode.Flag,
 	jsonEncoder gonethttpjson.Encoder,
+	jsonDecoder gonethttpjson.Decoder,
 ) (*DefaultHandler, error) {
-	// Check if the flag mode or the JSON encoder is nil
+	// Check if the flag mode, the JSON encoder or the JSON decoder is nil
 	if mode == nil {
 		return nil, goflagsmode.ErrNilModeFlag
 	}
 	if jsonEncoder == nil {
 		return nil, gonethttpjson.ErrNilJSONEncoder
 	}
-	return &DefaultHandler{mode: mode, jsonEncoder: jsonEncoder}, nil
+	if jsonDecoder == nil {
+		return nil, gonethttpjson.ErrNilJSONDecoder
+	}
+
+	return &DefaultHandler{
+		mode:        mode,
+		jsonEncoder: jsonEncoder,
+		jsonDecoder: jsonDecoder,
+	}, nil
 }
 
-// HandleSuccess handles the response
-func (d *DefaultHandler) HandleSuccess(
+// HandleRequest handles the request
+func (d *DefaultHandler) HandleRequest(
+	w http.ResponseWriter,
+	r *http.Request,
+	data interface{},
+) (err error) {
+	return d.jsonDecoder.Decode(w, r, data)
+}
+
+// HandleSuccessResponse handles the response
+func (d *DefaultHandler) HandleSuccessResponse(
 	w http.ResponseWriter,
 	response *Response,
 ) {
@@ -52,24 +76,24 @@ func (d *DefaultHandler) HandleSuccess(
 	}
 }
 
-// HandleErrorProne handles the response that may contain an error
-func (d *DefaultHandler) HandleErrorProne(
+// HandleErrorProneResponse handles the response that may contain an error
+func (d *DefaultHandler) HandleErrorProneResponse(
 	w http.ResponseWriter,
 	successResponse *Response,
 	errorResponse *Response,
 ) {
 	// Check if the error response is nil
 	if errorResponse != nil {
-		d.HandleError(w, errorResponse)
+		d.HandleErrorResponse(w, errorResponse)
 		return
 	}
 
 	// Handle the success response
-	d.HandleSuccess(w, successResponse)
+	d.HandleSuccessResponse(w, successResponse)
 }
 
-// HandleError handles the error response
-func (d *DefaultHandler) HandleError(
+// HandleErrorResponse handles the error response
+func (d *DefaultHandler) HandleErrorResponse(
 	w http.ResponseWriter,
 	response *Response,
 ) {
