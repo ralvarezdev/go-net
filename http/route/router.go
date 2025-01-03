@@ -12,7 +12,8 @@ type (
 		HandleFunc(path string, handler http.HandlerFunc)
 		RegisterRoute(path string, handler http.HandlerFunc)
 		RegisterHandler(path string, handler http.Handler)
-		RegisterRouteGroup(path string, router *Router)
+		NewGroup(path string) (*Router, error)
+		RegisterGroup(path string, router *Router)
 	}
 
 	// Router is the route group struct
@@ -39,29 +40,34 @@ func NewRouter(path string, mode *goflagsmode.Flag, logger *Logger) *Router {
 	}
 }
 
-// NewRouterGroup creates a new route group
-func NewRouterGroup(baseRoute *Router, path string) (*Router, error) {
-	// Check if the base route is nil
-	if baseRoute == nil {
+// NewBaseRouter creates a new base router
+func NewBaseRouter(mode *goflagsmode.Flag, logger *Logger) *Router {
+	return NewRouter("", mode, logger)
+}
+
+// NewGroup creates a new router group
+func NewGroup(baseRouter *Router, path string) (*Router, error) {
+	// Check if the base router is nil
+	if baseRouter == nil {
 		return nil, ErrNilRouter
 	}
 
-	// Check the base route path
+	// Check the base router path
 	routerPath := path
-	if baseRoute.path != "/" {
-		routerPath = baseRoute.path + path
+	if baseRouter.path != "/" {
+		routerPath = baseRouter.path + path
 	}
 
 	// Create a new router
 	instance := &Router{
 		mux:    http.NewServeMux(),
-		logger: baseRoute.logger,
+		logger: baseRouter.logger,
 		path:   routerPath,
-		mode:   baseRoute.mode,
+		mode:   baseRouter.mode,
 	}
 
-	// Register the route group
-	baseRoute.RegisterRouteGroup(path, instance)
+	// Register the group
+	baseRouter.RegisterGroup(path, instance)
 
 	return instance, nil
 }
@@ -101,7 +107,12 @@ func (r *Router) RegisterHandler(path string, handler http.Handler) {
 	}
 }
 
-// RegisterRouteGroup registers a new route group with a path and a router
-func (r *Router) RegisterRouteGroup(path string, router *Router) {
+// RegisterGroup registers a new router group with a path and a router
+func (r *Router) RegisterGroup(path string, router *Router) {
 	r.RegisterHandler(path, router.mux)
+}
+
+// NewGroup creates a new router group with a path
+func (r *Router) NewGroup(path string) (*Router, error) {
+	return NewGroup(r, path)
 }
