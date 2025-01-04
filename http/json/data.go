@@ -3,7 +3,6 @@ package json
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
