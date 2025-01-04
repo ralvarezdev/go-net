@@ -15,7 +15,7 @@ func NewDefaultErrorHandler(
 ) (ErrorHandler, error) {
 	// Check if the JSON encoder is nil
 	if jsonEncoder == nil {
-		return nil, gonethttpjson.ErrNilJSONEncoder
+		return nil, gonethttpjson.ErrNilEncoder
 	}
 
 	return func(w http.ResponseWriter, err error) {

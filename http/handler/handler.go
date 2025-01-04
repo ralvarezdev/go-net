@@ -2,6 +2,7 @@ package handler
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
@@ -14,7 +15,19 @@ type (
 			w http.ResponseWriter,
 			r *http.Request,
 			data interface{},
-		) (err error)
+		) error
+		HandleValidations(
+			w http.ResponseWriter,
+			r *http.Request,
+			data interface{},
+			validatorFn func(data interface{}) (interface{}, error),
+		) bool
+		HandleRequestAndValidations(
+			w http.ResponseWriter,
+			r *http.Request,
+			data interface{},
+			validatorFn func(data interface{}) (interface{}, error),
+		) bool
 		HandleResponse(
 			w http.ResponseWriter,
 			response *gonethttpresponse.Response,
@@ -45,10 +58,10 @@ func NewDefaultHandler(
 		return nil, goflagsmode.ErrNilModeFlag
 	}
 	if jsonEncoder == nil {
-		return nil, gonethttpjson.ErrNilJSONEncoder
+		return nil, gonethttpjson.ErrNilEncoder
 	}
 	if jsonDecoder == nil {
-		return nil, gonethttpjson.ErrNilJSONDecoder
+		return nil, gonethttpjson.ErrNilDecoder
 	}
 
 	return &DefaultHandler{
@@ -67,41 +80,101 @@ func (d *DefaultHandler) HandleRequest(
 	return d.jsonDecoder.Decode(w, r, data)
 }
 
+// HandleValidations handles the validations
+func (d *DefaultHandler) HandleValidations(
+	w http.ResponseWriter,
+	r *http.Request,
+	data interface{},
+	validatorFn func(data interface{}) (interface{}, error),
+) bool {
+	// Validate the request body
+	validations, err := validatorFn(data)
+
+	// Check if the error is nil are there no validations
+	if err == nil && validations == nil {
+		return true
+	}
+
+	// Check if the error is not nil
+	if err != nil {
+		d.HandleResponse(
+			w,
+			gonethttpresponse.NewDebugErrorResponseWithCode(
+				gonethttperrors.InternalServerError,
+				err,
+				http.StatusInternalServerError,
+			),
+		)
+	} else {
+		d.HandleResponse(
+			w,
+			gonethttpresponse.NewResponseWithCode(
+				validations,
+				http.StatusBadRequest,
+			),
+		)
+	}
+	return false
+}
+
+// HandleRequestAndValidations handles the request and the validations
+func (d *DefaultHandler) HandleRequestAndValidations(
+	w http.ResponseWriter,
+	r *http.Request,
+	data interface{},
+	validatorFn func(data interface{}) (interface{}, error),
+) bool {
+	// Handle the request
+	if err := d.HandleRequest(w, r, data); err != nil {
+		return false
+	}
+
+	// Handle the validations
+	return d.HandleValidations(w, r, data, validatorFn)
+}
+
 // HandleResponse handles the response
 func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
 	response *gonethttpresponse.Response,
 ) {
+	// Check if the response or response code is nil
 	if response == nil {
-		SendInternalServerError(w, d.jsonEncoder)
+		d.HandleResponse(
+			w,
+			gonethttpresponse.NewDebugErrorResponseWithCode(
+				gonethttperrors.InternalServerError,
+				gonethttpresponse.ErrNilResponse,
+				http.StatusInternalServerError,
+			),
+		)
 		return
 	}
+	if response.Code == nil {
+		d.HandleResponse(
+			w,
+			gonethttpresponse.NewDebugErrorResponseWithCode(
+				gonethttperrors.InternalServerError,
+				gonethttpresponse.ErrNilResponseCode,
+				http.StatusInternalServerError,
+			),
+		)
+	}
 
-	if response.Code != nil {
-		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
-			_ = d.jsonEncoder.Encode(
-				w,
-				response.DebugData,
-				*response.Code,
-			)
-			return
-		}
+	// Check if the response contains debug data
+	if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
 		_ = d.jsonEncoder.Encode(
 			w,
-			response.Data,
+			response.DebugData,
 			*response.Code,
 		)
-	} else {
-		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
-			_ = d.jsonEncoder.Encode(
-				w,
-				response.DebugData,
-				*response.Code,
-			)
-			return
-		}
-		SendInternalServerError(w, d.jsonEncoder)
+		return
 	}
+	_ = d.jsonEncoder.Encode(
+		w,
+		response.Data,
+		*response.Code,
+	)
 }
 
 // HandleErrorProneResponse handles the response that may contain an error

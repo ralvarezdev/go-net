@@ -29,11 +29,16 @@ type (
 func NewDefaultDecoder(
 	mode *goflagsmode.Flag,
 	encoder Encoder,
-) *DefaultDecoder {
+) (*DefaultDecoder, error) {
+	// Check if the encoder is nil
+	if encoder == nil {
+		return nil, ErrNilEncoder
+	}
+
 	return &DefaultDecoder{
 		mode:    mode,
 		encoder: encoder,
-	}
+	}, nil
 }
 
 // Decode decodes the JSON data from the request
@@ -43,44 +48,28 @@ func (d *DefaultDecoder) Decode(
 	data interface{},
 ) (err error) {
 	// Check the data type
-	if err = checkJSONData(w, data, d.mode); err != nil {
+	if err = checkJSONData(w, data, d.mode, d.encoder); err != nil {
 		return err
 	}
 
 	// Get the body of the request
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		if d.encoder != nil {
-			_ = d.encoder.Encode(
-				w,
-				gonethttpresponse.NewJSONErrorResponse(err),
-				http.StatusInternalServerError,
-			)
-		} else {
-			http.Error(
-				w,
-				err.Error(),
-				http.StatusBadRequest,
-			)
-		}
+		_ = d.encoder.Encode(
+			w,
+			gonethttpresponse.NewJSONErrorResponse(err),
+			http.StatusBadRequest,
+		)
 		return err
 	}
 
 	// Decode JSON data
 	if err = json.Unmarshal(body, data); err != nil {
-		if d.encoder != nil {
-			_ = d.encoder.Encode(
-				w,
-				gonethttpresponse.NewJSONErrorResponse(err),
-				http.StatusInternalServerError,
-			)
-		} else {
-			http.Error(
-				w,
-				err.Error(),
-				http.StatusBadRequest,
-			)
-		}
+		_ = d.encoder.Encode(
+			w,
+			gonethttpresponse.NewJSONErrorResponse(err),
+			http.StatusBadRequest,
+		)
 	}
 	return err
 }

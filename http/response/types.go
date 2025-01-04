@@ -15,8 +15,13 @@ type (
 )
 
 // NewJSONErrorResponse creates a new error response
-func NewJSONErrorResponse(err error) JSONErrorResponse {
-	return JSONErrorResponse{Error: err.Error()}
+func NewJSONErrorResponse(err error) *JSONErrorResponse {
+	return &JSONErrorResponse{Error: err.Error()}
+}
+
+// NewJSONErrorResponseFromString creates a new error response from a string
+func NewJSONErrorResponseFromString(err string) *JSONErrorResponse {
+	return &JSONErrorResponse{Error: err}
 }
 
 // newResponse creates a new response

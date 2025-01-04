@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	"github.com/ralvarezdev/go-flags/mode"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
@@ -35,18 +36,26 @@ func (d *DefaultEncoder) Encode(
 	code int,
 ) (err error) {
 	// Check the data type
-	if err = checkJSONData(w, data, d.mode); err != nil {
+	if err = checkJSONData(w, data, d.mode, d); err != nil {
 		return err
 	}
 
 	// Encode the data
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		_ = d.Encode(
-			w,
-			gonethttpresponse.NewJSONErrorResponse(err),
-			http.StatusInternalServerError,
-		)
+		if d.mode != nil && d.mode.IsDebug() {
+			_ = d.Encode(
+				w,
+				gonethttpresponse.NewJSONErrorResponse(err),
+				http.StatusInternalServerError,
+			)
+		} else {
+			_ = d.Encode(
+				w,
+				gonethttperrors.InternalServerError,
+				http.StatusInternalServerError,
+			)
+		}
 		return err
 	}
 
