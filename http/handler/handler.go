@@ -73,34 +73,34 @@ func (d *DefaultHandler) HandleResponse(
 	response *gonethttpresponse.Response,
 ) {
 	if response == nil {
-		SendInternalServerError(w)
+		SendInternalServerError(w, d.jsonEncoder)
 		return
 	}
 
-	if gonethttpresponse.Code != nil {
-		if gonethttpresponse.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+	if response.Code != nil {
+		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
 			_ = d.jsonEncoder.Encode(
 				w,
-				gonethttpresponse.DebugData,
-				*gonethttpresponse.Code,
+				response.DebugData,
+				*response.Code,
 			)
 			return
 		}
 		_ = d.jsonEncoder.Encode(
 			w,
-			gonethttpresponse.Data,
-			*gonethttpresponse.Code,
+			response.Data,
+			*response.Code,
 		)
 	} else {
-		if gonethttpresponse.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
 			_ = d.jsonEncoder.Encode(
 				w,
-				gonethttpresponse.DebugData,
-				*gonethttpresponse.Code,
+				response.DebugData,
+				*response.Code,
 			)
 			return
 		}
-		SendInternalServerError(w)
+		SendInternalServerError(w, d.jsonEncoder)
 	}
 }
 
