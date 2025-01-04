@@ -12,6 +12,12 @@ type (
 	JSONErrorResponse struct {
 		Error string `json:"error"`
 	}
+
+	// JSONValidationErrorResponse struct
+	JSONValidationErrorResponse struct {
+		Message string      `json:"message"`
+		Error   interface{} `json:"error"`
+	}
 )
 
 // NewJSONErrorResponse creates a new error response
@@ -22,6 +28,14 @@ func NewJSONErrorResponse(err error) *JSONErrorResponse {
 // NewJSONErrorResponseFromString creates a new error response from a string
 func NewJSONErrorResponseFromString(err string) *JSONErrorResponse {
 	return &JSONErrorResponse{Error: err}
+}
+
+// NewJSONValidationErrorResponse creates a new validation error response
+func NewJSONValidationErrorResponse(
+	err interface{},
+	message string,
+) *JSONValidationErrorResponse {
+	return &JSONValidationErrorResponse{Error: err, Message: message}
 }
 
 // newResponse creates a new response

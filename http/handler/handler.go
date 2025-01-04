@@ -107,7 +107,10 @@ func (d *DefaultHandler) HandleValidations(
 		d.HandleResponse(
 			w,
 			gonethttpresponse.NewResponseWithCode(
-				validations,
+				gonethttpresponse.NewJSONValidationErrorResponse(
+					validations,
+					FailedValidations,
+				),
 				http.StatusBadRequest,
 			),
 		)
