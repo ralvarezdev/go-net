@@ -25,9 +25,13 @@ type (
 )
 
 // NewDefaultStreamDecoder creates a new JSON decoder
-func NewDefaultStreamDecoder(mode *goflagsmode.Flag) *DefaultStreamDecoder {
+func NewDefaultStreamDecoder(
+	mode *goflagsmode.Flag,
+	streamEncoder StreamEncoder,
+) *DefaultStreamDecoder {
 	return &DefaultStreamDecoder{
-		mode: mode,
+		mode:          mode,
+		streamEncoder: streamEncoder,
 	}
 }
 
