@@ -7,7 +7,7 @@ import (
 	gojwtinterception "github.com/ralvarezdev/go-jwt/token/interception"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/handler"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
 	"net/http"
 	"strings"
@@ -16,14 +16,14 @@ import (
 // Middleware struct
 type Middleware struct {
 	validator                gojwtvalidator.Validator
-	handler                  gonethttpresponse.Handler
+	handler                  gonethttphandler.Handler
 	jwtValidatorErrorHandler gonethttpjwtvalidator.ErrorHandler
 }
 
 // NewMiddleware creates a new authentication middleware
 func NewMiddleware(
 	validator gojwtvalidator.Validator,
-	handler gonethttpresponse.Handler,
+	handler gonethttphandler.Handler,
 	jwtValidatorErrorHandler gonethttpjwtvalidator.ErrorHandler,
 ) (*Middleware, error) {
 	// Check if either the validator, response handler or validator handler is nil
@@ -31,7 +31,7 @@ func NewMiddleware(
 		return nil, gojwtvalidator.ErrNilValidator
 	}
 	if handler == nil {
-		return nil, gonethttpresponse.ErrNilHandler
+		return nil, gonethttphandler.ErrNilHandler
 	}
 	if jwtValidatorErrorHandler == nil {
 		return nil, gonethttpjwtvalidator.ErrNilErrorHandler
@@ -60,9 +60,9 @@ func (m *Middleware) Authenticate(
 			// Parse the authorization to a string
 			authorizationStr, ok := authorization.(string)
 			if !ok {
-				m.handler.HandleErrorResponse(
+				m.handler.HandleResponse(
 					w,
-					gonethttpresponse.NewErrorResponseWithCode(
+					gonethttphandler.NewErrorResponseWithCode(
 						gonethttp.ErrInvalidAuthorizationHeader,
 						http.StatusUnauthorized,
 					),
@@ -75,9 +75,9 @@ func (m *Middleware) Authenticate(
 
 			// Return an error if the authorization is missing or invalid
 			if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-				m.handler.HandleErrorResponse(
+				m.handler.HandleResponse(
 					w,
-					gonethttpresponse.NewErrorResponseWithCode(
+					gonethttphandler.NewErrorResponseWithCode(
 						gonethttp.ErrInvalidAuthorizationHeader,
 						http.StatusUnauthorized,
 					),
