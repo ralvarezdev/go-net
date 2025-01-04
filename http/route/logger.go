@@ -25,8 +25,7 @@ func (l *Logger) RegisterRouteGroup(routerPath string, routerGroupPath string) {
 	l.logger.LogMessage(
 		gologger.NewLogMessage(
 			"Registering route group",
-			gologgerstatus.StatusDebug,
-			nil,
+			gologgerstatus.Debug,
 			"router path: "+routerPath,
 			"router group path: "+routerGroupPath,
 		),
@@ -38,8 +37,7 @@ func (l *Logger) RegisterRoute(routerPath string, routePath string) {
 	l.logger.LogMessage(
 		gologger.NewLogMessage(
 			"Registering route",
-			gologgerstatus.StatusDebug,
-			nil,
+			gologgerstatus.Debug,
 			"router path: "+routerPath,
 			"route path: "+routePath,
 		),
