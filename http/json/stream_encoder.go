@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
 
@@ -40,7 +41,11 @@ func (d *DefaultStreamEncoder) Encode(
 	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = d.Encode(
+			w,
+			gonethttpresponse.NewJSONErrorResponse(err),
+			http.StatusInternalServerError,
+		)
 		return err
 	}
 	return nil

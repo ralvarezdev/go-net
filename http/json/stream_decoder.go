@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
 
@@ -18,7 +19,8 @@ type (
 
 	// DefaultStreamDecoder is the JSON decoder struct
 	DefaultStreamDecoder struct {
-		mode *goflagsmode.Flag
+		mode          *goflagsmode.Flag
+		streamEncoder StreamEncoder
 	}
 )
 
@@ -42,11 +44,19 @@ func (d *DefaultStreamDecoder) Decode(
 
 	// Decode JSON data
 	if err = json.NewDecoder(r.Body).Decode(data); err != nil {
-		http.Error(
-			w,
-			err.Error(),
-			http.StatusBadRequest,
-		)
+		if d.streamEncoder != nil {
+			_ = d.streamEncoder.Encode(
+				w,
+				gonethttpresponse.NewJSONErrorResponse(err),
+				http.StatusInternalServerError,
+			)
+		} else {
+			http.Error(
+				w,
+				err.Error(),
+				http.StatusBadRequest,
+			)
+		}
 	}
 	return err
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
 
@@ -14,11 +15,14 @@ type (
 			r *http.Request,
 			data interface{},
 		) (err error)
-		HandleResponse(w http.ResponseWriter, response *Response)
+		HandleResponse(
+			w http.ResponseWriter,
+			response *gonethttpresponse.Response,
+		)
 		HandleErrorProneResponse(
 			w http.ResponseWriter,
-			successResponse *Response,
-			errorResponse *Response,
+			successResponse *gonethttpresponse.Response,
+			errorResponse *gonethttpresponse.Response,
 		)
 	}
 
@@ -66,22 +70,34 @@ func (d *DefaultHandler) HandleRequest(
 // HandleResponse handles the response
 func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
-	response *Response,
+	response *gonethttpresponse.Response,
 ) {
 	if response == nil {
 		SendInternalServerError(w)
 		return
 	}
 
-	if response.Code != nil {
-		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
-			_ = d.jsonEncoder.Encode(w, response.DebugData, *response.Code)
+	if gonethttpresponse.Code != nil {
+		if gonethttpresponse.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+			_ = d.jsonEncoder.Encode(
+				w,
+				gonethttpresponse.DebugData,
+				*gonethttpresponse.Code,
+			)
 			return
 		}
-		_ = d.jsonEncoder.Encode(w, response.Data, *response.Code)
+		_ = d.jsonEncoder.Encode(
+			w,
+			gonethttpresponse.Data,
+			*gonethttpresponse.Code,
+		)
 	} else {
-		if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
-			_ = d.jsonEncoder.Encode(w, response.DebugData, *response.Code)
+		if gonethttpresponse.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+			_ = d.jsonEncoder.Encode(
+				w,
+				gonethttpresponse.DebugData,
+				*gonethttpresponse.Code,
+			)
 			return
 		}
 		SendInternalServerError(w)
@@ -91,8 +107,8 @@ func (d *DefaultHandler) HandleResponse(
 // HandleErrorProneResponse handles the response that may contain an error
 func (d *DefaultHandler) HandleErrorProneResponse(
 	w http.ResponseWriter,
-	successResponse *Response,
-	errorResponse *Response,
+	successResponse *gonethttpresponse.Response,
+	errorResponse *gonethttpresponse.Response,
 ) {
 	// Check if the error response is nil
 	if errorResponse != nil {

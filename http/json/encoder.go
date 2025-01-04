@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	"github.com/ralvarezdev/go-flags/mode"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
 
@@ -41,7 +42,11 @@ func (d *DefaultEncoder) Encode(
 	// Encode the data
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = d.Encode(
+			w,
+			gonethttpresponse.NewJSONErrorResponse(err),
+			http.StatusInternalServerError,
+		)
 		return err
 	}
 

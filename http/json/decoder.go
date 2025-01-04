@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"io"
 	"net/http"
 )
@@ -19,12 +20,16 @@ type (
 
 	// DefaultDecoder struct
 	DefaultDecoder struct {
-		mode *goflagsmode.Flag
+		mode    *goflagsmode.Flag
+		encoder Encoder
 	}
 )
 
 // NewDefaultDecoder creates a new JSON decoder
-func NewDefaultDecoder(mode *goflagsmode.Flag) *DefaultDecoder {
+func NewDefaultDecoder(
+	mode *goflagsmode.Flag,
+	encoder Encoder,
+) *DefaultDecoder {
 	return &DefaultDecoder{
 		mode: mode,
 	}
@@ -44,21 +49,37 @@ func (d *DefaultDecoder) Decode(
 	// Get the body of the request
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(
-			w,
-			err.Error(),
-			http.StatusBadRequest,
-		)
+		if d.encoder != nil {
+			_ = d.encoder.Encode(
+				w,
+				gonethttpresponse.NewJSONErrorResponse(err),
+				http.StatusInternalServerError,
+			)
+		} else {
+			http.Error(
+				w,
+				err.Error(),
+				http.StatusBadRequest,
+			)
+		}
 		return err
 	}
 
 	// Decode JSON data
 	if err = json.Unmarshal(body, data); err != nil {
-		http.Error(
-			w,
-			err.Error(),
-			http.StatusBadRequest,
-		)
+		if d.encoder != nil {
+			_ = d.encoder.Encode(
+				w,
+				gonethttpresponse.NewJSONErrorResponse(err),
+				http.StatusInternalServerError,
+			)
+		} else {
+			http.Error(
+				w,
+				err.Error(),
+				http.StatusBadRequest,
+			)
+		}
 	}
 	return err
 }
