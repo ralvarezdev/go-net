@@ -3,9 +3,9 @@ module github.com/ralvarezdev/go-net
 go 1.23.4
 
 require (
-	github.com/ralvarezdev/go-flags v0.3.0
-	github.com/ralvarezdev/go-jwt v0.3.9
-	github.com/ralvarezdev/go-logger v0.4.3
+	github.com/ralvarezdev/go-flags v0.3.1
+	github.com/ralvarezdev/go-jwt v0.3.10
+	github.com/ralvarezdev/go-logger v0.4.4
 )
 
 require (
