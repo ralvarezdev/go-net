@@ -1,13 +1,13 @@
 package response
 
 import (
-	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	"net/http"
 )
 
 var (
 	InternalServerError = NewErrorResponse(
-		gonethttp.InternalServerError,
+		gonethttperrors.InternalServerError,
 		nil,
 		nil,
 		http.StatusInternalServerError,
