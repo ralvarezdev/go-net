@@ -9,7 +9,7 @@ import (
 	gonethttp "github.com/ralvarezdev/go-net/http/errors"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
-	"github.com/ralvarezdev/go-net/http/response"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 	"strings"
 )
@@ -63,8 +63,9 @@ func (m *Middleware) Authenticate(
 			if !ok {
 				m.handler.HandleResponse(
 					w,
-					response.NewErrorResponseWithCode(
+					gonethttpresponse.NewErrorResponse(
 						gonethttp.ErrInvalidAuthorizationHeader,
+						nil, nil,
 						http.StatusUnauthorized,
 					),
 				)
@@ -78,8 +79,9 @@ func (m *Middleware) Authenticate(
 			if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 				m.handler.HandleResponse(
 					w,
-					response.NewErrorResponseWithCode(
+					gonethttpresponse.NewErrorResponse(
 						gonethttp.ErrInvalidAuthorizationHeader,
+						nil, nil,
 						http.StatusUnauthorized,
 					),
 				)

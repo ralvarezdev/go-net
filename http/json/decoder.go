@@ -57,7 +57,12 @@ func (d *DefaultDecoder) Decode(
 	if err != nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewJSONErrorResponse(err),
+			gonethttpresponse.NewErrorResponse(
+				err,
+				nil,
+				nil,
+				http.StatusBadRequest,
+			),
 			http.StatusBadRequest,
 		)
 		return err
@@ -67,7 +72,12 @@ func (d *DefaultDecoder) Decode(
 	if err = json.Unmarshal(body, data); err != nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewJSONErrorResponse(err),
+			gonethttpresponse.NewErrorResponse(
+				err,
+				nil,
+				nil,
+				http.StatusBadRequest,
+			),
 			http.StatusBadRequest,
 		)
 	}

@@ -46,7 +46,12 @@ func (d *DefaultStreamDecoder) Decode(
 	if err = json.NewDecoder(r.Body).Decode(data); err != nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewJSONErrorResponse(err),
+			gonethttpresponse.NewErrorResponse(
+				err,
+				nil,
+				nil,
+				http.StatusInternalServerError,
+			),
 			http.StatusInternalServerError,
 		)
 	}

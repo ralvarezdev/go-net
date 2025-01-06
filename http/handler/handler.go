@@ -97,20 +97,18 @@ func (d *DefaultHandler) HandleValidations(
 	if err != nil {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewDebugErrorResponseWithCode(
+			gonethttpresponse.NewDebugErrorResponse(
 				gonethttperrors.InternalServerError,
 				err,
+				nil, nil,
 				http.StatusInternalServerError,
 			),
 		)
 	} else {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewResponseWithCode(
-				gonethttpresponse.NewJSONValidationErrorResponse(
-					validations,
-					FailedValidations,
-				),
+			gonethttpresponse.NewFailResponse(
+				validations,
 				http.StatusBadRequest,
 			),
 		)
@@ -139,42 +137,33 @@ func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
 	response *gonethttpresponse.Response,
 ) {
-	// Check if the response or response code is nil
+	// Check if the response is nil
 	if response == nil {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewDebugErrorResponseWithCode(
+			gonethttpresponse.NewDebugErrorResponse(
 				gonethttperrors.InternalServerError,
 				gonethttpresponse.ErrNilResponse,
+				nil, nil,
 				http.StatusInternalServerError,
 			),
 		)
 		return
 	}
-	if response.Code == nil {
-		d.HandleResponse(
-			w,
-			gonethttpresponse.NewDebugErrorResponseWithCode(
-				gonethttperrors.InternalServerError,
-				gonethttpresponse.ErrNilResponseCode,
-				http.StatusInternalServerError,
-			),
-		)
-	}
 
-	// Check if the response contains debug data
-	if response.DebugData != nil && d.mode != nil && d.mode.IsDebug() {
+	// Check if the response contains the debug response
+	if response.DebugResponse != nil && d.mode != nil && d.mode.IsDebug() {
 		_ = d.jsonEncoder.Encode(
 			w,
-			response.DebugData,
-			*response.Code,
+			response.DebugResponse,
+			response.HTTPStatus,
 		)
 		return
 	}
 	_ = d.jsonEncoder.Encode(
 		w,
-		response.Data,
-		*response.Code,
+		response.Response,
+		response.HTTPStatus,
 	)
 }
 

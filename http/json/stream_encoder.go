@@ -35,19 +35,17 @@ func (d *DefaultStreamEncoder) Encode(
 
 	// Encode JSON data and write it to the response
 	if err = json.NewEncoder(w).Encode(data); err != nil {
-		if d.mode != nil && d.mode.IsDebug() {
-			_ = d.Encode(
-				w,
-				gonethttpresponse.NewJSONErrorResponse(err),
-				http.StatusInternalServerError,
-			)
-		} else {
-			_ = d.Encode(
-				w,
+		_ = d.Encode(
+			w,
+			gonethttpresponse.NewDebugErrorResponse(
 				gonethttperrors.InternalServerError,
+				err,
+				nil,
+				nil,
 				http.StatusInternalServerError,
-			)
-		}
+			),
+			http.StatusInternalServerError,
+		)
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")

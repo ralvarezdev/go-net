@@ -2,7 +2,7 @@ package json
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttp "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
@@ -17,7 +17,14 @@ func checkJSONData(
 	// Check if data is nil
 	if data == nil {
 		err = ErrNilJSONData
-		encodeError(w, err, http.StatusInternalServerError, mode, encoder)
+		encodeError(
+			w,
+			gonethttp.InternalServerError,
+			err,
+			http.StatusInternalServerError,
+			mode,
+			encoder,
+		)
 	}
 	return err
 }
@@ -26,7 +33,8 @@ func checkJSONData(
 func encodeError(
 	w http.ResponseWriter,
 	err error,
-	code int,
+	debugErr error,
+	httpStatus int,
 	mode *goflagsmode.Flag,
 	encoder Encoder,
 ) {
@@ -34,16 +42,18 @@ func encodeError(
 	var dataStr string
 
 	// Check if the mode is debug and the encoder is nil
-	if mode != nil && mode.IsDebug() {
-		if encoder != nil {
-			data = gonethttpresponse.NewJSONErrorResponse(err)
-		} else {
-			dataStr = err.Error()
-		}
-	} else if encoder != nil {
-		data = gonethttpresponse.InternalServerError
+	if encoder != nil {
+		data = gonethttpresponse.NewDebugErrorResponse(
+			err,
+			debugErr,
+			nil,
+			nil,
+			httpStatus,
+		)
+	} else if mode != nil && mode.IsDebug() {
+		dataStr = debugErr.Error()
 	} else {
-		dataStr = gonethttp.InternalServerError
+		dataStr = err.Error()
 	}
 
 	// Encode the data
@@ -51,13 +61,13 @@ func encodeError(
 		_ = encoder.Encode(
 			w,
 			data,
-			code,
+			httpStatus,
 		)
 	} else {
 		http.Error(
 			w,
 			dataStr,
-			code,
+			httpStatus,
 		)
 	}
 }

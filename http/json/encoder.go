@@ -43,19 +43,17 @@ func (d *DefaultEncoder) Encode(
 	// Encode the data
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		if d.mode != nil && d.mode.IsDebug() {
-			_ = d.Encode(
-				w,
-				gonethttpresponse.NewJSONErrorResponse(err),
-				http.StatusInternalServerError,
-			)
-		} else {
-			_ = d.Encode(
-				w,
+		_ = d.Encode(
+			w,
+			gonethttpresponse.NewDebugErrorResponse(
 				gonethttperrors.InternalServerError,
-				http.StatusInternalServerError,
-			)
-		}
+				err,
+				nil,
+				nil,
+				http.StatusBadRequest,
+			),
+			http.StatusInternalServerError,
+		)
 		return err
 	}
 

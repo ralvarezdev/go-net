@@ -3,102 +3,130 @@ package response
 type (
 	// Response struct
 	Response struct {
-		Data      interface{}
-		DebugData interface{}
-		Code      *int
+		Response      interface{}
+		DebugResponse interface{}
+		HTTPStatus    int
 	}
 
-	// JSONErrorResponse struct
-	JSONErrorResponse struct {
-		Error string `json:"error"`
-	}
-
-	// JSONValidationErrorResponse struct
-	JSONValidationErrorResponse struct {
-		Message string      `json:"message"`
-		Error   interface{} `json:"error"`
+	// JSendResponse struct
+	JSendResponse struct {
+		Status  string      `json:"status"`
+		Data    interface{} `json:"data"`
+		Message *string     `json:"message,omitempty"`
+		Code    *int        `json:"code,omitempty"`
 	}
 )
 
-// NewJSONErrorResponse creates a new error response
-func NewJSONErrorResponse(err error) *JSONErrorResponse {
-	return &JSONErrorResponse{Error: err.Error()}
+// NewJSendSuccessResponse creates a new success response
+func NewJSendSuccessResponse(
+	data interface{},
+) *JSendResponse {
+	return &JSendResponse{
+		Status: "success",
+		Data:   data,
+	}
 }
 
-// NewJSONErrorResponseFromString creates a new error response from a string
-func NewJSONErrorResponseFromString(err string) *JSONErrorResponse {
-	return &JSONErrorResponse{Error: err}
+// NewJSendFailResponse creates a new fail response
+func NewJSendFailResponse(
+	data interface{},
+) *JSendResponse {
+	return &JSendResponse{
+		Status: "fail",
+		Data:   data,
+	}
 }
 
-// NewJSONValidationErrorResponse creates a new validation error response
-func NewJSONValidationErrorResponse(
-	err interface{},
+// NewJSendErrorResponse creates a new error response
+func NewJSendErrorResponse(
 	message string,
-) *JSONValidationErrorResponse {
-	return &JSONValidationErrorResponse{Error: err, Message: message}
+	data interface{},
+	code *int,
+) *JSendResponse {
+	return &JSendResponse{
+		Status:  "error",
+		Data:    data,
+		Message: &message,
+		Code:    code,
+	}
 }
 
 // newResponse creates a new response
 func newResponse(
-	data interface{},
-	debugData interface{},
-	code *int,
+	response interface{},
+	debugResponse interface{},
+	httpStatus int,
 ) *Response {
-	return &Response{Data: data, DebugData: debugData, Code: code}
+	return &Response{
+		Response:      response,
+		DebugResponse: debugResponse,
+		HTTPStatus:    httpStatus,
+	}
 }
 
-// NewDebugResponseWithCode creates a new response with a code
-func NewDebugResponseWithCode(
+// NewDebugSuccessResponse creates a new success response
+func NewDebugSuccessResponse(
 	data interface{},
 	debugData interface{},
-	code int,
-) *Response {
-	return newResponse(data, debugData, &code)
-}
-
-// NewDebugErrorResponseWithCode creates a new error response with a code
-func NewDebugErrorResponseWithCode(
-	err error,
-	debugErr error,
-	code int,
+	httpStatus int,
 ) *Response {
 	return newResponse(
-		NewJSONErrorResponse(err),
-		NewJSONErrorResponse(debugErr),
-		&code,
+		NewJSendSuccessResponse(data),
+		NewJSendSuccessResponse(debugData),
+		httpStatus,
 	)
 }
 
-// NewResponseWithCode creates a new response with a code
-func NewResponseWithCode(data interface{}, code int) *Response {
-	return newResponse(data, nil, &code)
+// NewSuccessResponse creates a new success response
+func NewSuccessResponse(
+	data interface{},
+	httpStatus int,
+) *Response {
+	return NewDebugSuccessResponse(data, data, httpStatus)
 }
 
-// NewErrorResponseWithCode creates a new error response with a code
-func NewErrorResponseWithCode(err error, code int) *Response {
-	return newResponse(NewJSONErrorResponse(err), nil, &code)
+// NewDebugFailResponse creates a new fail response
+func NewDebugFailResponse(
+	data interface{},
+	debugData interface{},
+	httpStatus int,
+) *Response {
+	return newResponse(
+		NewJSendFailResponse(data),
+		NewJSendFailResponse(debugData),
+		httpStatus,
+	)
 }
 
-// NewDebugResponse creates a new response
-func NewDebugResponse(data interface{}, debugData interface{}) *Response {
-	return newResponse(data, debugData, nil)
+// NewFailResponse creates a new fail response
+func NewFailResponse(
+	data interface{},
+	httpStatus int,
+) *Response {
+	return NewDebugFailResponse(data, data, httpStatus)
 }
 
 // NewDebugErrorResponse creates a new error response
-func NewDebugErrorResponse(err error, debugErr error) *Response {
+func NewDebugErrorResponse(
+	err error,
+	debugErr error,
+	data interface{},
+	errorCode *int,
+	httpStatus int,
+) *Response {
 	return newResponse(
-		NewJSONErrorResponse(err),
-		NewJSONErrorResponse(debugErr),
-		nil,
+		NewJSendErrorResponse(err.Error(), data, errorCode),
+		NewJSendErrorResponse(debugErr.Error(), data, errorCode),
+		httpStatus,
 	)
 }
 
-// NewResponse creates a new response
-func NewResponse(data interface{}) *Response {
-	return newResponse(data, nil, nil)
-}
-
 // NewErrorResponse creates a new error response
-func NewErrorResponse(err error) *Response {
-	return newResponse(NewJSONErrorResponse(err), nil, nil)
+func NewErrorResponse(
+	err error,
+	data interface{},
+	errorCode *int,
+	httpStatus int,
+) *Response {
+	return NewDebugErrorResponse(err, err, data, errorCode, httpStatus)
 }
