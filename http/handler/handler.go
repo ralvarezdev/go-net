@@ -9,11 +9,8 @@ import (
 )
 
 type (
-	// ValidatorFn is a function that validates the data
-	ValidatorFn func(data any) (interface{}, error)
-
 	// Handler interface for handling the responses
-	Handler interface {
+	Handler[T interface{}] interface {
 		HandleRequest(
 			w http.ResponseWriter,
 			r *http.Request,
@@ -21,15 +18,14 @@ type (
 		) error
 		HandleValidations(
 			w http.ResponseWriter,
-			r *http.Request,
-			fn ValidatorFn,
-			data interface{},
+			body interface{},
+			validatorFn func(body interface{}) (interface{}, error),
 		) bool
 		HandleRequestAndValidations(
 			w http.ResponseWriter,
 			r *http.Request,
-			fn ValidatorFn,
-			data interface{},
+			body interface{},
+			validatorFn func(body interface{}) (interface{}, error),
 		) bool
 		HandleResponse(
 			w http.ResponseWriter,
@@ -86,13 +82,13 @@ func (d *DefaultHandler) HandleRequest(
 // HandleValidations handles the validations
 func (d *DefaultHandler) HandleValidations(
 	w http.ResponseWriter,
-	fn ValidatorFn,
-	data interface{},
+	body interface{},
+	validatorFn func(body interface{}) (interface{}, error),
 ) bool {
 	// Validate the request body
-	validations, err := fn(data)
+	validations, err := validatorFn(body)
 
-	// Check if the error is nil are there no validations
+	// Check if the error is nil and there are no validations
 	if err == nil && validations == nil {
 		return true
 	}
@@ -124,16 +120,16 @@ func (d *DefaultHandler) HandleValidations(
 func (d *DefaultHandler) HandleRequestAndValidations(
 	w http.ResponseWriter,
 	r *http.Request,
-	fn ValidatorFn,
-	data interface{},
+	body interface{},
+	validatorFn func(body interface{}) (interface{}, error),
 ) bool {
 	// Handle the request
-	if err := d.HandleRequest(w, r, data); err != nil {
+	if err := d.HandleRequest(w, r, body); err != nil {
 		return false
 	}
 
 	// Handle the validations
-	return d.HandleValidations(w, fn, data)
+	return d.HandleValidations(w, body, validatorFn)
 }
 
 // HandleResponse handles the response
