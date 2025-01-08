@@ -10,7 +10,7 @@ import (
 
 type (
 	// Handler interface for handling the responses
-	Handler[T interface{}] interface {
+	Handler interface {
 		HandleRequest(
 			w http.ResponseWriter,
 			r *http.Request,
