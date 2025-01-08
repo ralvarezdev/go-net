@@ -48,7 +48,6 @@ func NewMiddleware(
 // Authenticate return the middleware function that authenticates the request
 func (m *Middleware) Authenticate(
 	interception gojwtinterception.Interception,
-	next http.Handler,
 ) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
@@ -104,9 +103,6 @@ func (m *Middleware) Authenticate(
 			// Set the raw token and token claims to the context
 			gojwtnethttpctx.SetCtxRawToken(r, &rawToken)
 			gojwtnethttpctx.SetCtxTokenClaims(r, claims)
-
-			// Continue
-			next.ServeHTTP(w, r)
 		},
 	)
 }

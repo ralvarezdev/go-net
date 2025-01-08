@@ -9,8 +9,9 @@ type (
 	// RouterWrapper is the interface for the routes
 	RouterWrapper interface {
 		Handler() *http.ServeMux
-		HandleFunc(path string, handler http.HandlerFunc)
-		RegisterRoute(path string, handler http.HandlerFunc)
+		ChainHandlers(handlers ...http.HandlerFunc) http.HandlerFunc
+		HandleFunc(path string, handlers ...http.HandlerFunc)
+		RegisterRoute(path string, handlers ...http.HandlerFunc)
 		RegisterHandler(path string, handler http.Handler)
 		NewGroup(path string) *Router
 		RegisterGroup(path string, router *Router)
@@ -77,19 +78,63 @@ func (r *Router) Handler() *http.ServeMux {
 	return r.mux
 }
 
-// HandleFunc registers a new route with a path and a handler function
-func (r *Router) HandleFunc(path string, handler http.HandlerFunc) {
+// ChainHandlers chains the handlers functions
+func (r *Router) ChainHandlers(handlers ...http.HandlerFunc) http.HandlerFunc {
+	// Check if the handlers are empty
+	if len(handlers) == 0 {
+		return nil
+	}
+
+	// Set the handlers
+	var firstHandler, modifiedHandler, nextHandler http.HandlerFunc
+	for i, h := range handlers {
+		// Check if it is not the last handler
+		if i < len(handlers)-1 {
+			nextHandler = handlers[i+1]
+		} else {
+			nextHandler = nil
+		}
+
+		// Set the handler
+		modifiedHandler = func(
+			writer http.ResponseWriter,
+			request *http.Request,
+		) {
+			// Call the handler
+			h(writer, request)
+
+			// Check if there is a next handler
+			if nextHandler != nil {
+				nextHandler(writer, request)
+			}
+		}
+
+		// Check if it is the first handler
+		if i == 0 {
+			firstHandler = modifiedHandler
+		}
+	}
+	return firstHandler
+}
+
+// HandleFunc registers a new route with a path and the handlers functions
+// It's not needed to call the next handler function in each handler
+func (r *Router) HandleFunc(path string, handlers ...http.HandlerFunc) {
+	// Chain the handlers
+	firstHandler := r.ChainHandlers(handlers...)
+
 	// Register the route
-	r.mux.HandleFunc(path, handler)
+	r.mux.HandleFunc(path, firstHandler)
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
 		r.logger.RegisterRoute(r.path, path)
 	}
 }
 
-// RegisterRoute registers a new route with a path and a handler function
-func (r *Router) RegisterRoute(path string, handler http.HandlerFunc) {
-	r.HandleFunc(path, handler)
+// RegisterRoute registers a new route with a path and the handlers functions
+// It's not needed to call the next handler function in each handler
+func (r *Router) RegisterRoute(path string, handlers ...http.HandlerFunc) {
+	r.HandleFunc(path, handlers...)
 }
 
 // RegisterHandler registers a new route group with a path and a handler function
