@@ -9,6 +9,9 @@ import (
 )
 
 type (
+	// ValidatorFn is a function that validates the data
+	ValidatorFn func(data any) (interface{}, error)
+
 	// Handler interface for handling the responses
 	Handler interface {
 		HandleRequest(
@@ -19,13 +22,14 @@ type (
 		HandleValidations(
 			w http.ResponseWriter,
 			r *http.Request,
-			validatorFn func() (interface{}, error),
+			fn ValidatorFn,
+			data interface{},
 		) bool
 		HandleRequestAndValidations(
 			w http.ResponseWriter,
 			r *http.Request,
+			fn ValidatorFn,
 			data interface{},
-			validatorFn func() (interface{}, error),
 		) bool
 		HandleResponse(
 			w http.ResponseWriter,
@@ -82,11 +86,11 @@ func (d *DefaultHandler) HandleRequest(
 // HandleValidations handles the validations
 func (d *DefaultHandler) HandleValidations(
 	w http.ResponseWriter,
-	r *http.Request,
-	validatorFn func() (interface{}, error),
+	fn ValidatorFn,
+	data interface{},
 ) bool {
 	// Validate the request body
-	validations, err := validatorFn()
+	validations, err := fn(data)
 
 	// Check if the error is nil are there no validations
 	if err == nil && validations == nil {
@@ -120,8 +124,8 @@ func (d *DefaultHandler) HandleValidations(
 func (d *DefaultHandler) HandleRequestAndValidations(
 	w http.ResponseWriter,
 	r *http.Request,
+	fn ValidatorFn,
 	data interface{},
-	validatorFn func() (interface{}, error),
 ) bool {
 	// Handle the request
 	if err := d.HandleRequest(w, r, data); err != nil {
@@ -129,7 +133,7 @@ func (d *DefaultHandler) HandleRequestAndValidations(
 	}
 
 	// Handle the validations
-	return d.HandleValidations(w, r, validatorFn)
+	return d.HandleValidations(w, fn, data)
 }
 
 // HandleResponse handles the response
