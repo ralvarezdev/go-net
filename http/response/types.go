@@ -30,10 +30,12 @@ func NewJSendSuccessResponse(
 // NewJSendFailResponse creates a new fail response
 func NewJSendFailResponse(
 	data interface{},
+	code *int,
 ) *JSendResponse {
 	return &JSendResponse{
 		Status: "fail",
 		Data:   data,
+		Code:   code,
 	}
 }
 
@@ -89,11 +91,12 @@ func NewSuccessResponse(
 func NewDebugFailResponse(
 	data interface{},
 	debugData interface{},
+	errorCode *int,
 	httpStatus int,
 ) *Response {
 	return newResponse(
-		NewJSendFailResponse(data),
-		NewJSendFailResponse(debugData),
+		NewJSendFailResponse(data, errorCode),
+		NewJSendFailResponse(debugData, errorCode),
 		httpStatus,
 	)
 }
@@ -102,8 +105,9 @@ func NewDebugFailResponse(
 func NewFailResponse(
 	data interface{},
 	httpStatus int,
+	errorCode *int,
 ) *Response {
-	return NewDebugFailResponse(data, data, httpStatus)
+	return NewDebugFailResponse(data, data, errorCode, httpStatus)
 }
 
 // NewDebugErrorResponse creates a new error response

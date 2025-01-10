@@ -14,7 +14,7 @@ type (
 		HandleRequest(
 			w http.ResponseWriter,
 			r *http.Request,
-			data interface{},
+			body interface{},
 		) error
 		HandleValidations(
 			w http.ResponseWriter,
@@ -74,9 +74,9 @@ func NewDefaultHandler(
 func (d *DefaultHandler) HandleRequest(
 	w http.ResponseWriter,
 	r *http.Request,
-	data interface{},
+	body interface{},
 ) (err error) {
-	return d.jsonDecoder.Decode(w, r, data)
+	return d.jsonDecoder.Decode(w, r, body)
 }
 
 // HandleValidations handles the validations
@@ -110,6 +110,7 @@ func (d *DefaultHandler) HandleValidations(
 			gonethttpresponse.NewFailResponse(
 				validations,
 				http.StatusBadRequest,
+				nil,
 			),
 		)
 	}
