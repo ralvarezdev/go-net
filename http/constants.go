@@ -10,3 +10,8 @@ var (
 	ServiceUnavailable  = http.StatusText(http.StatusServiceUnavailable)
 	Unauthorized        = http.StatusText(http.StatusUnauthorized)
 )
+
+const (
+	// XForwardedFor is the header key for the X-Forwarded-For header
+	XForwardedFor = "X-Forwarded-For"
+)
