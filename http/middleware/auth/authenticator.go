@@ -9,5 +9,5 @@ import (
 type Authenticator interface {
 	Authenticate(
 		interception gojwtinterception.Interception,
-	) http.Handler
+	) func(next http.Handler) http.Handler
 }

@@ -48,61 +48,66 @@ func NewMiddleware(
 // Authenticate return the middleware function that authenticates the request
 func (m *Middleware) Authenticate(
 	interception gojwtinterception.Interception,
-) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			// Get the context
-			ctx := r.Context()
+) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				// Get the context
+				ctx := r.Context()
 
-			// Get the authorization from the header
-			authorization := ctx.Value(gojwtnethttp.AuthorizationHeaderKey)
+				// Get the authorization from the header
+				authorization := ctx.Value(gojwtnethttp.AuthorizationHeaderKey)
 
-			// Parse the authorization to a string
-			authorizationStr, ok := authorization.(string)
-			if !ok {
-				m.handler.HandleResponse(
-					w,
-					gonethttpresponse.NewErrorResponse(
-						gonethttp.ErrInvalidAuthorizationHeader,
-						nil, nil,
-						http.StatusUnauthorized,
-					),
+				// Parse the authorization to a string
+				authorizationStr, ok := authorization.(string)
+				if !ok {
+					m.handler.HandleResponse(
+						w,
+						gonethttpresponse.NewErrorResponse(
+							gonethttp.ErrInvalidAuthorizationHeader,
+							nil, nil,
+							http.StatusUnauthorized,
+						),
+					)
+					return
+				}
+
+				// Check if the authorization is a bearer token
+				parts := strings.Split(authorizationStr, " ")
+
+				// Return an error if the authorization is missing or invalid
+				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
+					m.handler.HandleResponse(
+						w,
+						gonethttpresponse.NewErrorResponse(
+							gonethttp.ErrInvalidAuthorizationHeader,
+							nil, nil,
+							http.StatusUnauthorized,
+						),
+					)
+					return
+				}
+
+				// Get the raw token from the header
+				rawToken := parts[1]
+
+				// Validate the token and get the validated claims
+				claims, err := m.validator.GetValidatedClaims(
+					rawToken,
+					interception,
 				)
-				return
-			}
+				if err != nil {
+					m.jwtValidatorErrorHandler(w, err)
+					return
+				}
 
-			// Check if the authorization is a bearer token
-			parts := strings.Split(authorizationStr, " ")
+				// Set the raw token and token claims to the context
+				gojwtnethttpctx.SetCtxRawToken(r, &rawToken)
+				gojwtnethttpctx.SetCtxTokenClaims(r, claims)
 
-			// Return an error if the authorization is missing or invalid
-			if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-				m.handler.HandleResponse(
-					w,
-					gonethttpresponse.NewErrorResponse(
-						gonethttp.ErrInvalidAuthorizationHeader,
-						nil, nil,
-						http.StatusUnauthorized,
-					),
-				)
-				return
-			}
-
-			// Get the raw token from the header
-			rawToken := parts[1]
-
-			// Validate the token and get the validated claims
-			claims, err := m.validator.GetValidatedClaims(
-				rawToken,
-				interception,
-			)
-			if err != nil {
-				m.jwtValidatorErrorHandler(w, err)
-				return
-			}
-
-			// Set the raw token and token claims to the context
-			gojwtnethttpctx.SetCtxRawToken(r, &rawToken)
-			gojwtnethttpctx.SetCtxTokenClaims(r, claims)
-		},
-	)
+				// Call the next handler
+				next.ServeHTTP(w, r)
+			},
+		)
+	}
 }
