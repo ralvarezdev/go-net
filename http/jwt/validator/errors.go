@@ -5,5 +5,5 @@ import (
 )
 
 var (
-	ErrNilErrorHandler = errors.New("error handler cannot be nil")
+	ErrNilFailHandler = errors.New("fail handler cannot be nil")
 )

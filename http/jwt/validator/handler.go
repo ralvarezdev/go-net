@@ -3,28 +3,33 @@ package validator
 import (
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gostringsconvert "github.com/ralvarezdev/go-strings/convert"
 	"net/http"
 )
 
-// ErrorHandler handles the possible JWT validation error
-type ErrorHandler func(w http.ResponseWriter, err error)
+// FailHandler handles the possible JWT validation errors
+type FailHandler func(w http.ResponseWriter, err ...error)
 
-// NewDefaultErrorHandler function
-func NewDefaultErrorHandler(
+// NewDefaultFailHandler function
+func NewDefaultFailHandler(
 	jsonEncoder gonethttpjson.Encoder,
-) (ErrorHandler, error) {
+) (FailHandler, error) {
 	// Check if the JSON encoder is nil
 	if jsonEncoder == nil {
 		return nil, gonethttpjson.ErrNilEncoder
 	}
 
-	return func(w http.ResponseWriter, err error) {
+	return func(w http.ResponseWriter, err ...error) {
+		// Create the body map
+		var body = make(map[string]*[]string)
+		body["authorization"] = gostringsconvert.ErrorArrayToStringArray(&err)
+
+		// Encode the response
 		_ = jsonEncoder.Encode(
-			w, gonethttpresponse.NewErrorResponse(
-				err,
+			w, gonethttpresponse.NewFailResponse(
+				&body,
 				nil,
-				nil,
-				http.StatusInternalServerError,
+				http.StatusUnauthorized,
 			),
 		)
 	}, nil

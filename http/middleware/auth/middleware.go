@@ -9,23 +9,22 @@ import (
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 	"strings"
 )
 
 // Middleware struct
 type Middleware struct {
-	validator                gojwtvalidator.Validator
-	handler                  gonethttphandler.Handler
-	jwtValidatorErrorHandler gonethttpjwtvalidator.ErrorHandler
+	validator               gojwtvalidator.Validator
+	handler                 gonethttphandler.Handler
+	jwtValidatorFailHandler gonethttpjwtvalidator.FailHandler
 }
 
 // NewMiddleware creates a new authentication middleware
 func NewMiddleware(
 	validator gojwtvalidator.Validator,
 	handler gonethttphandler.Handler,
-	jwtValidatorErrorHandler gonethttpjwtvalidator.ErrorHandler,
+	jwtValidatorFailHandler gonethttpjwtvalidator.FailHandler,
 ) (*Middleware, error) {
 	// Check if either the validator, response handler or validator handler is nil
 	if validator == nil {
@@ -34,14 +33,14 @@ func NewMiddleware(
 	if handler == nil {
 		return nil, gonethttphandler.ErrNilHandler
 	}
-	if jwtValidatorErrorHandler == nil {
-		return nil, gonethttpjwtvalidator.ErrNilErrorHandler
+	if jwtValidatorFailHandler == nil {
+		return nil, gonethttpjwtvalidator.ErrNilFailHandler
 	}
 
 	return &Middleware{
-		validator:                validator,
-		handler:                  handler,
-		jwtValidatorErrorHandler: jwtValidatorErrorHandler,
+		validator:               validator,
+		handler:                 handler,
+		jwtValidatorFailHandler: jwtValidatorFailHandler,
 	}, nil
 }
 
@@ -60,13 +59,9 @@ func (m *Middleware) Authenticate(
 
 				// Return an error if the authorization is missing or invalid
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-					m.handler.HandleResponse(
+					m.jwtValidatorFailHandler(
 						w,
-						gonethttpresponse.NewFailResponse(
-							gonethttp.ErrInvalidAuthorizationHeader,
-							nil,
-							http.StatusUnauthorized,
-						),
+						gonethttp.ErrInvalidAuthorizationHeader,
 					)
 					return
 				}
@@ -80,7 +75,7 @@ func (m *Middleware) Authenticate(
 					interception,
 				)
 				if err != nil {
-					m.jwtValidatorErrorHandler(w, err)
+					m.jwtValidatorFailHandler(w, err)
 					return
 				}
 
