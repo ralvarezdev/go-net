@@ -109,8 +109,8 @@ func (d *DefaultHandler) HandleValidations(
 			w,
 			gonethttpresponse.NewFailResponse(
 				validations,
-				http.StatusBadRequest,
 				nil,
+				http.StatusBadRequest,
 			),
 		)
 	}

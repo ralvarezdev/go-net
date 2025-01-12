@@ -104,8 +104,8 @@ func NewDebugFailResponse(
 // NewFailResponse creates a new fail response
 func NewFailResponse(
 	data interface{},
-	httpStatus int,
 	errorCode *int,
+	httpStatus int,
 ) *Response {
 	return NewDebugFailResponse(data, data, errorCode, httpStatus)
 }

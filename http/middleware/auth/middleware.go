@@ -52,36 +52,19 @@ func (m *Middleware) Authenticate(
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				// Get the context
-				ctx := r.Context()
-
 				// Get the authorization from the header
-				authorization := ctx.Value(gojwtnethttp.AuthorizationHeaderKey)
-
-				// Parse the authorization to a string
-				authorizationStr, ok := authorization.(string)
-				if !ok {
-					m.handler.HandleResponse(
-						w,
-						gonethttpresponse.NewErrorResponse(
-							gonethttp.ErrInvalidAuthorizationHeader,
-							nil, nil,
-							http.StatusUnauthorized,
-						),
-					)
-					return
-				}
+				authorization := r.Header.Get(gojwtnethttp.AuthorizationHeaderKey)
 
 				// Check if the authorization is a bearer token
-				parts := strings.Split(authorizationStr, " ")
+				parts := strings.Split(authorization, " ")
 
 				// Return an error if the authorization is missing or invalid
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 					m.handler.HandleResponse(
 						w,
-						gonethttpresponse.NewErrorResponse(
+						gonethttpresponse.NewFailResponse(
 							gonethttp.ErrInvalidAuthorizationHeader,
-							nil, nil,
+							nil,
 							http.StatusUnauthorized,
 						),
 					)
