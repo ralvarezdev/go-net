@@ -52,7 +52,6 @@ func (d *DefaultStreamDecoder) Decode(
 				nil,
 				http.StatusInternalServerError,
 			),
-			http.StatusInternalServerError,
 		)
 	}
 	return err

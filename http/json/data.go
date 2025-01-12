@@ -38,12 +38,11 @@ func encodeError(
 	mode *goflagsmode.Flag,
 	encoder Encoder,
 ) {
-	var data interface{}
-	var dataStr string
-
 	// Check if the mode is debug and the encoder is nil
+	var response *gonethttpresponse.Response
+	var dataStr string
 	if encoder != nil {
-		data = gonethttpresponse.NewDebugErrorResponse(
+		response = gonethttpresponse.NewDebugErrorResponse(
 			err,
 			debugErr,
 			nil,
@@ -60,8 +59,7 @@ func encodeError(
 	if encoder != nil {
 		_ = encoder.Encode(
 			w,
-			data,
-			httpStatus,
+			response,
 		)
 	} else {
 		http.Error(

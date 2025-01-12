@@ -13,8 +13,7 @@ type (
 	Encoder interface {
 		Encode(
 			w http.ResponseWriter,
-			data interface{},
-			code int,
+			response *gonethttpresponse.Response,
 		) error
 	}
 
@@ -32,18 +31,21 @@ func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
 // Encode encodes the given data to JSON
 func (d *DefaultEncoder) Encode(
 	w http.ResponseWriter,
-	data interface{},
-	code int,
+	response *gonethttpresponse.Response,
 ) (err error) {
+	// Get the response body and HTTP status
+	body := response.GetBody(d.mode)
+	httpStatus := response.GetHTTPStatus()
+
 	// Check the data type
-	if err = checkJSONData(w, data, d.mode, d); err != nil {
+	if err = checkJSONData(w, body, d.mode, d); err != nil {
 		return err
 	}
 
 	// Encode the data
-	jsonData, err := json.Marshal(data)
+	jsonBody, err := json.Marshal(body)
 	if err != nil {
-		_ = d.Encode(
+		return d.Encode(
 			w,
 			gonethttpresponse.NewDebugErrorResponse(
 				gonethttperrors.InternalServerError,
@@ -52,15 +54,13 @@ func (d *DefaultEncoder) Encode(
 				nil,
 				http.StatusBadRequest,
 			),
-			http.StatusInternalServerError,
 		)
-		return err
 	}
 
-	// Write the JSON data
-	w.WriteHeader(code)
+	// Write the JSON body to the response
+	w.WriteHeader(httpStatus)
 	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(jsonData)
+	_, err = w.Write(jsonBody)
 	if err != nil {
 		return err
 	}

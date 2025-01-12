@@ -152,20 +152,8 @@ func (d *DefaultHandler) HandleResponse(
 		return
 	}
 
-	// Check if the response contains the debug response
-	if response.DebugResponse != nil && d.mode != nil && d.mode.IsDebug() {
-		_ = d.jsonEncoder.Encode(
-			w,
-			response.DebugResponse,
-			response.HTTPStatus,
-		)
-		return
-	}
-	_ = d.jsonEncoder.Encode(
-		w,
-		response.Response,
-		response.HTTPStatus,
-	)
+	// Call the JSON encoder
+	_ = d.jsonEncoder.Encode(w, response)
 }
 
 // HandleErrorProneResponse handles the response that may contain an error

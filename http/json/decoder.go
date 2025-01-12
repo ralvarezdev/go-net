@@ -63,7 +63,6 @@ func (d *DefaultDecoder) Decode(
 				nil,
 				http.StatusBadRequest,
 			),
-			http.StatusBadRequest,
 		)
 		return err
 	}
@@ -78,7 +77,6 @@ func (d *DefaultDecoder) Decode(
 				nil,
 				http.StatusBadRequest,
 			),
-			http.StatusBadRequest,
 		)
 	}
 	return err

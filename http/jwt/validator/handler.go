@@ -19,14 +19,13 @@ func NewDefaultErrorHandler(
 	}
 
 	return func(w http.ResponseWriter, err error) {
-		response := gonethttpresponse.NewErrorResponse(
-			err,
-			nil,
-			nil,
-			http.StatusInternalServerError,
+		_ = jsonEncoder.Encode(
+			w, gonethttpresponse.NewErrorResponse(
+				err,
+				nil,
+				nil,
+				http.StatusInternalServerError,
+			),
 		)
-
-		// Encode the response
-		_ = jsonEncoder.Encode(w, &response, http.StatusInternalServerError)
 	}, nil
 }

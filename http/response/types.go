@@ -1,15 +1,19 @@
 package response
 
+import (
+	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+)
+
 type (
 	// Response struct
 	Response struct {
-		Response      interface{}
-		DebugResponse interface{}
-		HTTPStatus    int
+		body       interface{}
+		debugBody  interface{}
+		httpStatus int
 	}
 
-	// JSendResponse struct
-	JSendResponse struct {
+	// JSendBody struct
+	JSendBody struct {
 		Status  string      `json:"status"`
 		Data    interface{} `json:"data"`
 		Message *string     `json:"message,omitempty"`
@@ -17,35 +21,35 @@ type (
 	}
 )
 
-// NewJSendSuccessResponse creates a new success response
-func NewJSendSuccessResponse(
+// NewJSendSuccessBody creates a new success response body
+func NewJSendSuccessBody(
 	data interface{},
-) *JSendResponse {
-	return &JSendResponse{
+) *JSendBody {
+	return &JSendBody{
 		Status: "success",
 		Data:   data,
 	}
 }
 
-// NewJSendFailResponse creates a new fail response
-func NewJSendFailResponse(
+// NewJSendFailBody creates a new fail response body
+func NewJSendFailBody(
 	data interface{},
 	code *int,
-) *JSendResponse {
-	return &JSendResponse{
+) *JSendBody {
+	return &JSendBody{
 		Status: "fail",
 		Data:   data,
 		Code:   code,
 	}
 }
 
-// NewJSendErrorResponse creates a new error response
-func NewJSendErrorResponse(
+// NewJSendErrorBody creates a new error response body
+func NewJSendErrorBody(
 	message string,
 	data interface{},
 	code *int,
-) *JSendResponse {
-	return &JSendResponse{
+) *JSendBody {
+	return &JSendBody{
 		Status:  "error",
 		Data:    data,
 		Message: &message,
@@ -55,15 +59,29 @@ func NewJSendErrorResponse(
 
 // newResponse creates a new response
 func newResponse(
-	response interface{},
-	debugResponse interface{},
+	body interface{},
+	debugBody interface{},
 	httpStatus int,
 ) *Response {
 	return &Response{
-		Response:      response,
-		DebugResponse: debugResponse,
-		HTTPStatus:    httpStatus,
+		body:       body,
+		debugBody:  debugBody,
+		httpStatus: httpStatus,
 	}
+}
+
+// GetBody returns the response body
+func (r *Response) GetBody(mode *goflagsmode.Flag) interface{} {
+	// Check if the response contains the debug response body
+	if r.debugBody != nil && mode != nil && mode.IsDebug() {
+		return r.debugBody
+	}
+	return r.body
+}
+
+// GetHTTPStatus returns the HTTP status
+func (r *Response) GetHTTPStatus() int {
+	return r.httpStatus
 }
 
 // NewDebugSuccessResponse creates a new success response
@@ -73,8 +91,8 @@ func NewDebugSuccessResponse(
 	httpStatus int,
 ) *Response {
 	return newResponse(
-		NewJSendSuccessResponse(data),
-		NewJSendSuccessResponse(debugData),
+		NewJSendSuccessBody(data),
+		NewJSendSuccessBody(debugData),
 		httpStatus,
 	)
 }
@@ -95,8 +113,8 @@ func NewDebugFailResponse(
 	httpStatus int,
 ) *Response {
 	return newResponse(
-		NewJSendFailResponse(data, errorCode),
-		NewJSendFailResponse(debugData, errorCode),
+		NewJSendFailBody(data, errorCode),
+		NewJSendFailBody(debugData, errorCode),
 		httpStatus,
 	)
 }
@@ -119,8 +137,8 @@ func NewDebugErrorResponse(
 	httpStatus int,
 ) *Response {
 	return newResponse(
-		NewJSendErrorResponse(err.Error(), data, errorCode),
-		NewJSendErrorResponse(debugErr.Error(), data, errorCode),
+		NewJSendErrorBody(err.Error(), data, errorCode),
+		NewJSendErrorBody(debugErr.Error(), data, errorCode),
 		httpStatus,
 	)
 }
