@@ -84,8 +84,7 @@ func (m *Middleware) Authenticate(
 					return
 				}
 
-				// Set the raw token and token claims to the context
-				gojwtnethttpctx.SetCtxRawToken(r, &rawToken)
+				// Set the token claims to the context
 				gojwtnethttpctx.SetCtxTokenClaims(r, claims)
 
 				// Call the next handler
