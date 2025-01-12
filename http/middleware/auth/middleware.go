@@ -85,7 +85,7 @@ func (m *Middleware) Authenticate(
 				}
 
 				// Set the token claims to the context
-				gojwtnethttpctx.SetCtxTokenClaims(r, claims)
+				r = gojwtnethttpctx.SetCtxTokenClaims(r, claims)
 
 				// Call the next handler
 				next.ServeHTTP(w, r)
