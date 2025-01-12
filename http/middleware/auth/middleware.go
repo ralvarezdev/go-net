@@ -6,7 +6,7 @@ import (
 	gojwtnethttpctx "github.com/ralvarezdev/go-jwt/net/http/context"
 	gojwtinterception "github.com/ralvarezdev/go-jwt/token/interception"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
-	gonethttp "github.com/ralvarezdev/go-net/http/errors"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
