@@ -2,6 +2,7 @@ package response
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gostringsconvert "github.com/ralvarezdev/go-strings/convert"
 )
 
 type (
@@ -151,4 +152,24 @@ func NewErrorResponse(
 	httpStatus int,
 ) *Response {
 	return NewDebugErrorResponse(err, err, data, errorCode, httpStatus)
+}
+
+// NewSingleFieldBodyData creates a new single field body data
+func NewSingleFieldBodyData(
+	fieldName string,
+	fieldValue ...interface{},
+) *map[string]interface{} {
+	return &map[string]interface{}{
+		fieldName: &[]interface{}{fieldValue},
+	}
+}
+
+// NewSingleFieldErrorsBodyData creates a new single field errors body data
+func NewSingleFieldErrorsBodyData(
+	fieldName string,
+	fieldValue ...error,
+) *map[string]*[]string {
+	return &map[string]*[]string{
+		fieldName: gostringsconvert.ErrorArrayToStringArray(&fieldValue),
+	}
 }
