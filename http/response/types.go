@@ -23,7 +23,7 @@ type (
 	// FieldError struct
 	FieldError struct {
 		Field string
-		Err   error
+		Err   string
 	}
 )
 
@@ -161,8 +161,7 @@ func NewErrorResponse(
 
 // NewFieldError creates a new field error
 func NewFieldError(
-	field string,
-	err error,
+	field, err string,
 ) *FieldError {
 	return &FieldError{
 		Field: field,
@@ -170,9 +169,9 @@ func NewFieldError(
 	}
 }
 
-// String returns the field error as a string
-func (f *FieldError) String() string {
-	return f.Err.Error()
+// Error returns the field error as a string
+func (f *FieldError) Error() string {
+	return f.Err
 }
 
 // NewFieldErrorsBodyData creates a new field errors body data
@@ -192,12 +191,12 @@ func NewFieldErrorsBodyData(
 		// Check if the field name exists in the map
 		if _, ok := fieldErrorsMap[fieldError.Field]; !ok {
 			// Initialize the field errors slice
-			fieldErrorsMap[fieldError.Field] = &[]string{fieldError.Err.Error()}
+			fieldErrorsMap[fieldError.Field] = &[]string{fieldError.Err}
 		} else {
 			// Append the error to the field errors slice
 			*fieldErrorsMap[fieldError.Field] = append(
 				*fieldErrorsMap[fieldError.Field],
-				fieldError.Err.Error(),
+				fieldError.Err,
 			)
 		}
 	}
