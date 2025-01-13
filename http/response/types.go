@@ -2,7 +2,6 @@ package response
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gostringsconvert "github.com/ralvarezdev/go-strings/convert"
 )
 
 type (
@@ -19,6 +18,12 @@ type (
 		Data    interface{} `json:"data"`
 		Message *string     `json:"message,omitempty"`
 		Code    *int        `json:"code,omitempty"`
+	}
+
+	// FieldError struct
+	FieldError struct {
+		Field string
+		Err   error
 	}
 )
 
@@ -154,22 +159,43 @@ func NewErrorResponse(
 	return NewDebugErrorResponse(err, err, data, errorCode, httpStatus)
 }
 
-// NewFieldBodyData creates a new field body data
-func NewFieldBodyData(
-	fieldName string,
-	fieldValue ...interface{},
-) *map[string]interface{} {
-	return &map[string]interface{}{
-		fieldName: &[]interface{}{fieldValue},
+// NewFieldError creates a new field error
+func NewFieldError(
+	field string,
+	err error,
+) *FieldError {
+	return &FieldError{
+		Field: field,
+		Err:   err,
 	}
 }
 
-// NewFieldErrorsBodyData creates a new single field errors body data
+// NewFieldErrorsBodyData creates a new field errors body data
 func NewFieldErrorsBodyData(
-	fieldName string,
-	fieldValue ...error,
+	fieldErrors ...FieldError,
 ) *map[string]*[]string {
-	return &map[string]*[]string{
-		fieldName: gostringsconvert.ErrorArrayToStringArray(&fieldValue),
+	// Check if there are field errors
+	if len(fieldErrors) == 0 {
+		return nil
 	}
+
+	// Initialize the field errors map
+	fieldErrorsMap := make(map[string]*[]string)
+
+	// Iterate over the field errors
+	for _, fieldError := range fieldErrors {
+		// Check if the field name exists in the map
+		if _, ok := fieldErrorsMap[fieldError.Field]; !ok {
+			// Initialize the field errors slice
+			fieldErrorsMap[fieldError.Field] = &[]string{fieldError.Err.Error()}
+		} else {
+			// Append the error to the field errors slice
+			*fieldErrorsMap[fieldError.Field] = append(
+				*fieldErrorsMap[fieldError.Field],
+				fieldError.Err.Error(),
+			)
+		}
+	}
+
+	return &fieldErrorsMap
 }
