@@ -3,8 +3,8 @@ package json
 import (
 	"encoding/json"
 	"github.com/ralvarezdev/go-flags/mode"
-	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
 	"net/http"
 )
 
@@ -43,7 +43,7 @@ func (d *DefaultEncoder) Encode(
 		return d.Encode(
 			w,
 			gonethttpresponse.NewDebugErrorResponse(
-				gonethttperrors.InternalServerError,
+				gonethttpstatuserrors.InternalServerError,
 				err,
 				nil,
 				nil,

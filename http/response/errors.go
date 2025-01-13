@@ -5,6 +5,5 @@ import (
 )
 
 var (
-	ErrNilResponse           = errors.New("response cannot be nil")
-	ErrNilResponseHTTPStatus = errors.New("response http status cannot be nil")
+	ErrNilResponse = errors.New("response cannot be nil")
 )

@@ -20,10 +20,28 @@ type (
 		Code    *int        `json:"code,omitempty"`
 	}
 
+	// RequestError struct
+	RequestError interface {
+		Key() string
+		Error() string
+	}
+
 	// FieldError struct
 	FieldError struct {
 		Field string
 		Err   string
+	}
+
+	// HeaderError struct
+	HeaderError struct {
+		Header string
+		Err    string
+	}
+
+	// ParameterError struct
+	ParameterError struct {
+		Parameter string
+		Err       string
 	}
 )
 
@@ -169,37 +187,85 @@ func NewFieldError(
 	}
 }
 
+// Key returns the field name
+func (f *FieldError) Key() string {
+	return f.Field
+}
+
 // Error returns the field error as a string
 func (f *FieldError) Error() string {
 	return f.Err
 }
 
-// NewFieldErrorsBodyData creates a new field errors body data
-func NewFieldErrorsBodyData(
-	fieldErrors ...FieldError,
+// NewHeaderError creates a new header error
+func NewHeaderError(
+	header, err string,
+) *HeaderError {
+	return &HeaderError{
+		Header: header,
+		Err:    err,
+	}
+}
+
+// Key returns the header name
+func (h *HeaderError) Key() string {
+	return h.Header
+}
+
+// Error returns the header error as a string
+func (h *HeaderError) Error() string {
+	return h.Err
+}
+
+// NewParameterError creates a new parameter error
+func NewParameterError(
+	parameter, err string,
+) *ParameterError {
+	return &ParameterError{
+		Parameter: parameter,
+		Err:       err,
+	}
+}
+
+// Key returns the parameter name
+func (p *ParameterError) Key() string {
+	return p.Parameter
+}
+
+// Error returns the parameter error as a string
+func (p *ParameterError) Error() string {
+	return p.Err
+
+}
+
+// NewRequestErrorsBodyData creates a new request errors body data
+func NewRequestErrorsBodyData(
+	requestErrors ...RequestError,
 ) *map[string]*[]string {
-	// Check if there are field errors
-	if len(fieldErrors) == 0 {
+	// Check if there are request errors
+	if len(requestErrors) == 0 {
 		return nil
 	}
 
-	// Initialize the field errors map
-	fieldErrorsMap := make(map[string]*[]string)
+	// Initialize the request errors map
+	requestErrorsMap := make(map[string]*[]string)
 
-	// Iterate over the field errors
-	for _, fieldError := range fieldErrors {
-		// Check if the field name exists in the map
-		if _, ok := fieldErrorsMap[fieldError.Field]; !ok {
-			// Initialize the field errors slice
-			fieldErrorsMap[fieldError.Field] = &[]string{fieldError.Err}
+	// Iterate over the request errors
+	for _, requestError := range requestErrors {
+		// Check if the request name exists in the map
+		requestKeyErrors, ok := requestErrorsMap[requestError.Key()]
+
+		if !ok {
+			// Initialize the request errors slice
+			requestErrorsMap[requestError.Key()] = &[]string{requestError.Error()}
 		} else {
-			// Append the error to the field errors slice
-			*fieldErrorsMap[fieldError.Field] = append(
-				*fieldErrorsMap[fieldError.Field],
-				fieldError.Err,
+			// Append the error to the request errors slice
+			*requestKeyErrors = append(
+				*requestKeyErrors,
+				requestError.Key(),
 			)
 		}
 	}
 
-	return &fieldErrorsMap
+	return &requestErrorsMap
 }

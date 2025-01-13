@@ -1,13 +1,17 @@
 package validator
 
 import (
+	gojwtnethttp "github.com/ralvarezdev/go-jwt/net/http"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
 
 // FailHandler handles the possible JWT validation errors
-type FailHandler func(w http.ResponseWriter, err ...error)
+type FailHandler func(
+	w http.ResponseWriter,
+	error error,
+)
 
 // NewDefaultFailHandler function
 func NewDefaultFailHandler(
@@ -18,13 +22,18 @@ func NewDefaultFailHandler(
 		return nil, gonethttpjson.ErrNilEncoder
 	}
 
-	return func(w http.ResponseWriter, err ...error) {
+	return func(
+		w http.ResponseWriter,
+		error error,
+	) {
 		// Encode the response
 		_ = jsonEncoder.Encode(
 			w, gonethttpresponse.NewFailResponse(
-				gonethttpresponse.NewFieldErrorsBodyData(
-					"authorization",
-					err...,
+				gonethttpresponse.NewRequestErrorsBodyData(
+					gonethttpresponse.NewHeaderError(
+						gojwtnethttp.AuthorizationHeaderKey,
+						error.Error(),
+					),
 				),
 				nil,
 				http.StatusUnauthorized,

@@ -2,9 +2,9 @@ package handler
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/status/errors"
 	"net/http"
 )
 

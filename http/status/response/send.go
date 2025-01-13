@@ -1,10 +1,10 @@
-package handler
+package response
 
 import (
-	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttp "github.com/ralvarezdev/go-net/http/status"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/status/errors"
 	"net/http"
 )
 

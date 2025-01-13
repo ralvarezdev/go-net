@@ -1,8 +1,8 @@
-package http
+package errors
 
 import (
 	"errors"
-	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttp "github.com/ralvarezdev/go-net/http/status"
 )
 
 var (
