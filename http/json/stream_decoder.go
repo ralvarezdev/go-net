@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 )
@@ -31,28 +32,28 @@ func NewDefaultStreamDecoder(
 	}, nil
 }
 
-// Decode decodes the JSON data
+// Decode decodes the JSON request body and stores it in the destination
 func (d *DefaultStreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
-	data interface{},
+	dest interface{},
 ) (err error) {
-	// Check the data type
-	if err = checkJSONData(w, data, d.mode, d.encoder); err != nil {
-		return err
-	}
-
-	// Decode JSON data
-	if err = json.NewDecoder(r.Body).Decode(data); err != nil {
+	// Check the decoder destination
+	if dest == nil {
 		_ = d.encoder.Encode(
-			w,
-			gonethttpresponse.NewErrorResponse(
+			w, gonethttpresponse.NewDebugErrorResponse(
+				gonethttperrors.InternalServerError,
 				err,
 				nil,
 				nil,
 				http.StatusInternalServerError,
 			),
 		)
+	}
+
+	// Decode JSON body into destination
+	if err = json.NewDecoder(r.Body).Decode(dest); err != nil {
+		_ = bodyDecodeErrorHandler(w, err, d.encoder)
 	}
 	return err
 }

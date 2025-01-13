@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttperrors "github.com/ralvarezdev/go-net/http/errors"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"io"
 	"net/http"
@@ -14,7 +15,7 @@ type (
 		Decode(
 			w http.ResponseWriter,
 			r *http.Request,
-			data interface{},
+			dest interface{},
 		) (err error)
 	}
 
@@ -41,15 +42,23 @@ func NewDefaultDecoder(
 	}, nil
 }
 
-// Decode decodes the JSON data from the request
+// Decode decodes the JSON request body and stores it in the destination
 func (d *DefaultDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
-	data interface{},
+	dest interface{},
 ) (err error) {
-	// Check the data type
-	if err = checkJSONData(w, data, d.mode, d.encoder); err != nil {
-		return err
+	// Check the decoder destination
+	if dest == nil {
+		_ = d.encoder.Encode(
+			w, gonethttpresponse.NewDebugErrorResponse(
+				gonethttperrors.InternalServerError,
+				err,
+				nil,
+				nil,
+				http.StatusInternalServerError,
+			),
+		)
 	}
 
 	// Get the body of the request
@@ -67,17 +76,9 @@ func (d *DefaultDecoder) Decode(
 		return err
 	}
 
-	// Decode JSON data
-	if err = json.Unmarshal(body, data); err != nil {
-		_ = d.encoder.Encode(
-			w,
-			gonethttpresponse.NewErrorResponse(
-				err,
-				nil,
-				nil,
-				http.StatusBadRequest,
-			),
-		)
+	// Decode JSON body into destination
+	if err = json.Unmarshal(body, dest); err != nil {
+		_ = bodyDecodeErrorHandler(w, err, d.encoder)
 	}
 	return err
 }

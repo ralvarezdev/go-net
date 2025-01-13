@@ -28,7 +28,7 @@ func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
 	return &DefaultEncoder{mode: mode}
 }
 
-// Encode encodes the given data to JSON
+// Encode encodes the body into JSON and writes it to the response
 func (d *DefaultEncoder) Encode(
 	w http.ResponseWriter,
 	response *gonethttpresponse.Response,
@@ -37,12 +37,7 @@ func (d *DefaultEncoder) Encode(
 	body := response.GetBody(d.mode)
 	httpStatus := response.GetHTTPStatus()
 
-	// Check the data type
-	if err = checkJSONData(w, body, d.mode, d); err != nil {
-		return err
-	}
-
-	// Encode the data
+	// Encode the JSON body
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return d.Encode(
@@ -52,7 +47,7 @@ func (d *DefaultEncoder) Encode(
 				err,
 				nil,
 				nil,
-				http.StatusBadRequest,
+				http.StatusInternalServerError,
 			),
 		)
 	}

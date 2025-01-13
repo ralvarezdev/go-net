@@ -22,21 +22,16 @@ func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
 	}
 }
 
-// Encode encodes the data into JSON
+// Encode encodes the body into JSON and writes it to the response
 func (d *DefaultStreamEncoder) Encode(
 	w http.ResponseWriter,
 	response *gonethttpresponse.Response,
 ) (err error) {
-	// Get the data from the response
+	// Get the body and HTTP status from the response
 	body := response.GetBody(d.mode)
 	httpStatus := response.GetHTTPStatus()
 
-	// Check the data type
-	if err = checkJSONData(w, body, d.mode, d); err != nil {
-		return err
-	}
-
-	// Encode JSON data and write it to the response
+	// Encode the JSON body
 	if err = json.NewEncoder(w).Encode(body); err != nil {
 		_ = d.Encode(
 			w,
