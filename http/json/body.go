@@ -32,7 +32,7 @@ func bodyDecodeErrorHandler(
 			return encoder.Encode(
 				w,
 				gonethttpresponse.NewDebugFailResponse(
-					gonethttpresponse.NewSingleFieldErrorsBodyData(
+					gonethttpresponse.NewFieldErrorsBodyData(
 						fieldName,
 						fmt.Errorf(
 							ErrFieldInvalidValue,

@@ -154,8 +154,8 @@ func NewErrorResponse(
 	return NewDebugErrorResponse(err, err, data, errorCode, httpStatus)
 }
 
-// NewSingleFieldBodyData creates a new single field body data
-func NewSingleFieldBodyData(
+// NewFieldBodyData creates a new field body data
+func NewFieldBodyData(
 	fieldName string,
 	fieldValue ...interface{},
 ) *map[string]interface{} {
@@ -164,8 +164,8 @@ func NewSingleFieldBodyData(
 	}
 }
 
-// NewSingleFieldErrorsBodyData creates a new single field errors body data
-func NewSingleFieldErrorsBodyData(
+// NewFieldErrorsBodyData creates a new single field errors body data
+func NewFieldErrorsBodyData(
 	fieldName string,
 	fieldValue ...error,
 ) *map[string]*[]string {
