@@ -170,6 +170,11 @@ func NewFieldError(
 	}
 }
 
+// String returns the field error as a string
+func (f *FieldError) String() string {
+	return f.Err.Error()
+}
+
 // NewFieldErrorsBodyData creates a new field errors body data
 func NewFieldErrorsBodyData(
 	fieldErrors ...FieldError,
