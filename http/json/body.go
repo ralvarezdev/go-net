@@ -31,20 +31,16 @@ func bodyDecodeErrorHandler(
 		if fieldName != "" {
 			return encoder.Encode(
 				w,
-				gonethttpresponse.NewDebugFailResponse(
-					gonethttpresponse.NewRequestErrorsBodyData(
-						gonethttpresponse.NewFieldError(
-							fieldName,
-							fmt.Sprintf(
-								ErrFieldInvalidValue,
-								fieldTypeName,
-								fieldValue,
-							),
+				gonethttpresponse.NewFailResponseFromRequestError(
+					gonethttpresponse.NewFieldError(
+						fieldName,
+						fmt.Sprintf(
+							ErrFieldInvalidValue,
+							fieldTypeName,
+							fieldValue,
 						),
+						http.StatusBadRequest,
 					),
-					err,
-					nil,
-					http.StatusBadRequest,
 				),
 			)
 		}

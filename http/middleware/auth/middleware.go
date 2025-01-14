@@ -6,7 +6,6 @@ import (
 	gojwtnethttpctx "github.com/ralvarezdev/go-jwt/net/http/context"
 	gojwtinterception "github.com/ralvarezdev/go-jwt/token/interception"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
-	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
 	"net/http"
@@ -61,7 +60,7 @@ func (m *Middleware) Authenticate(
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 					m.jwtValidatorFailHandler(
 						w,
-						gonethttp.ErrInvalidAuthorizationHeader,
+						ErrInvalidAuthorizationHeader,
 					)
 					return
 				}
