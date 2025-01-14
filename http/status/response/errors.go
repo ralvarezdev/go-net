@@ -10,8 +10,8 @@ import (
 func NewDebugInternalServerError(
 	debugErr error,
 	errorCode *string,
-) *gonethttpresponse.Response {
-	return gonethttpresponse.NewDebugErrorResponse(
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewJSendErrorResponse(
 		gonethttpstatuserrors.InternalServerError,
 		debugErr,
 		nil,
@@ -23,9 +23,10 @@ func NewDebugInternalServerError(
 // NewInternalServerError creates a new internal server error response
 func NewInternalServerError(
 	errorCode *string,
-) *gonethttpresponse.Response {
-	return gonethttpresponse.NewErrorResponse(
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewJSendErrorResponse(
 		gonethttpstatuserrors.InternalServerError,
+		nil,
 		nil,
 		errorCode,
 		http.StatusInternalServerError,

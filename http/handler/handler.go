@@ -36,7 +36,7 @@ type (
 		) bool
 		HandleResponse(
 			w http.ResponseWriter,
-			response *gonethttpresponse.Response,
+			response gonethttpresponse.Response,
 		)
 		HandleError(
 			w http.ResponseWriter,
@@ -111,7 +111,7 @@ func (d *DefaultHandler) Validate(
 	} else {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewFailResponse(
+			gonethttpresponse.NewJSendFailResponse(
 				validations,
 				ErrCodeValidationFailed,
 				http.StatusBadRequest,
@@ -140,7 +140,7 @@ func (d *DefaultHandler) DecodeAndValidate(
 // HandleResponse handles the response
 func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
-	response *gonethttpresponse.Response,
+	response gonethttpresponse.Response,
 ) {
 	// Check if the response is nil
 	if response == nil {
@@ -167,7 +167,7 @@ func (d *DefaultHandler) HandleError(
 	var e gonethttpresponse.RequestError
 	if errors.As(err, &e) {
 		d.HandleResponse(
-			w, gonethttpresponse.NewFailResponseFromRequestError(e),
+			w, gonethttpresponse.NewResponseFromRequestError(e),
 		)
 		return
 	}

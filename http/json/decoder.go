@@ -66,8 +66,9 @@ func (d *DefaultDecoder) Decode(
 	if err != nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewErrorResponse(
+			gonethttpresponse.NewJSendErrorResponse(
 				err,
+				nil,
 				nil,
 				ErrCodeReadBodyFailed,
 				http.StatusBadRequest,

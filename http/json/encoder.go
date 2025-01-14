@@ -17,7 +17,7 @@ type (
 	Encoder interface {
 		Encode(
 			w http.ResponseWriter,
-			response *gonethttpresponse.Response,
+			response gonethttpresponse.Response,
 		) error
 	}
 
@@ -35,11 +35,11 @@ func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
 // Encode encodes the body into JSON and writes it to the response
 func (d *DefaultEncoder) Encode(
 	w http.ResponseWriter,
-	response *gonethttpresponse.Response,
+	response gonethttpresponse.Response,
 ) (err error) {
 	// Get the response body and HTTP status
-	body := response.GetBody(d.mode)
-	httpStatus := response.GetHTTPStatus()
+	body := response.Body(d.mode)
+	httpStatus := response.HTTPStatus()
 
 	// Encode the JSON body
 	jsonBody, err := json.Marshal(body)

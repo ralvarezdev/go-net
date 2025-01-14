@@ -10,7 +10,7 @@ import (
 // FailHandler handles the possible JWT validation errors
 type FailHandler func(
 	w http.ResponseWriter,
-	error error,
+	err error,
 )
 
 var (
@@ -28,14 +28,14 @@ func NewDefaultFailHandler(
 
 	return func(
 		w http.ResponseWriter,
-		error error,
+		err error,
 	) {
 		// Encode the response
 		_ = jsonEncoder.Encode(
-			w, gonethttpresponse.NewFailResponseFromRequestError(
+			w, gonethttpresponse.NewResponseFromRequestError(
 				gonethttpresponse.NewHeaderError(
 					gojwtnethttp.AuthorizationHeaderKey,
-					error.Error(),
+					err.Error(),
 					http.StatusUnauthorized,
 					ErrCodeInvalidToken,
 				),
