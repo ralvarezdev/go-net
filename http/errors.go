@@ -5,6 +5,7 @@ import (
 )
 
 var (
-	ErrNilRequestBody = errors.New("request body cannot be nil")
-	ErrInDevelopment  = errors.New("in development")
+	ErrNilRequestBody     = errors.New("request body cannot be nil")
+	ErrInvalidRequestBody = "invalid request body type, expected: %v"
+	ErrInDevelopment      = errors.New("in development")
 )
