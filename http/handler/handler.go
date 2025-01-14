@@ -2,7 +2,7 @@ package handler
 
 import (
 	"errors"
-	"fmt"
+
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -11,11 +11,10 @@ import (
 )
 
 var (
-	ErrCodeParameterNotFound      *string
-	ErrCodeParameterParsingFailed *string
-	ErrCodeValidationFailed       *string
-	ErrCodeNilResponse            *string
-	ErrCodeRequestFatalError      *string
+	ErrCodeValidationFailed      *string
+	ErrCodeWildcardParsingFailed *string
+	ErrCodeNilResponse           *string
+	ErrCodeRequestFatalError     *string
 )
 
 type (
@@ -38,15 +37,15 @@ type (
 			validatorFn func(body interface{}) (interface{}, error),
 		) bool
 		GetParameters(
-			w http.ResponseWriter,
 			r *http.Request,
 			keys ...string,
-		) (*map[string]string, bool)
-		ParseParameter(
+		) *map[string]string
+		ParseWildcard(
 			w http.ResponseWriter,
-			parameter string,
+			r *http.Request,
+			wildcardKey string,
 			dest interface{},
-			toTypeFn func(parameter string, dest interface{}) error,
+			toTypeFn func(wildcard string, dest interface{}) error,
 		) bool
 		HandleResponse(
 			w http.ResponseWriter,
@@ -153,13 +152,12 @@ func (d *DefaultHandler) DecodeAndValidate(
 
 // GetParameters gets the parameters from the request
 func (d *DefaultHandler) GetParameters(
-	w http.ResponseWriter,
 	r *http.Request,
 	keys ...string,
-) (*map[string]string, bool) {
+) *map[string]string {
 	// Check if the request is nil
 	if r == nil {
-		return nil, false
+		return nil
 	}
 
 	// Initialize the parameters map
@@ -175,38 +173,34 @@ func (d *DefaultHandler) GetParameters(
 
 		// Check if the value was not found
 		if value == "" {
-			// Handle the error
-			d.HandleResponse(
-				w,
-				gonethttpstatusresponse.NewJSendDebugInternalServerError(
-					fmt.Errorf(ErrParameterNotFound, key),
-					ErrCodeParameterNotFound,
-				),
-			)
-			return nil, false
+			continue
 		}
 
 		// Add the parameter to the map
 		parameters[key] = value
 	}
-	return &parameters, true
+	return &parameters
 }
 
-// ParseParameter parses the parameter
-func (d *DefaultHandler) ParseParameter(
+// ParseWildcard parses the wildcard from the request and stores it in the destination
+func (d *DefaultHandler) ParseWildcard(
 	w http.ResponseWriter,
-	parameter string,
+	r *http.Request,
+	wildcardKey string,
 	dest interface{},
-	toTypeFn func(parameter string, dest interface{}) error,
+	toTypeFn func(wildcard string, dest interface{}) error,
 ) bool {
-	// Parse the parameter
-	if err := toTypeFn(parameter, dest); err != nil {
+	// Get the wildcard from the request
+	wildcardValue := r.PathValue(wildcardKey)
+
+	// Parse the wildcard value
+	if err := toTypeFn(wildcardValue, dest); err != nil {
 		// Handle the error
 		d.HandleResponse(
 			w,
 			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				err,
-				ErrCodeParameterParsingFailed,
+				ErrCodeWildcardParsingFailed,
 			),
 		)
 		return false

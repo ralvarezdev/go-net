@@ -24,14 +24,6 @@ type (
 		httpStatus int
 		errorCode  *string
 	}
-
-	// ParameterError struct
-	ParameterError struct {
-		parameter  string
-		err        string
-		httpStatus int
-		errorCode  *string
-	}
 )
 
 // NewFieldError creates a new field error
@@ -96,38 +88,6 @@ func (h *HeaderError) HTTPStatus() int {
 // ErrorCode returns the error code
 func (h *HeaderError) ErrorCode() *string {
 	return h.errorCode
-}
-
-// NewParameterError creates a new parameter error
-func NewParameterError(
-	parameter, err string, httpStatus int, errorCode *string,
-) *ParameterError {
-	return &ParameterError{
-		parameter:  parameter,
-		err:        err,
-		httpStatus: httpStatus,
-		errorCode:  errorCode,
-	}
-}
-
-// Key returns the parameter name
-func (p *ParameterError) Key() string {
-	return p.parameter
-}
-
-// Error returns the parameter error as a string
-func (p *ParameterError) Error() string {
-	return p.err
-}
-
-// HTTPStatus returns the HTTP status
-func (p *ParameterError) HTTPStatus() int {
-	return p.httpStatus
-}
-
-// ErrorCode returns the error code
-func (p *ParameterError) ErrorCode() *string {
-	return p.errorCode
 }
 
 // NewRequestErrorBodyData creates a new request errors body data
