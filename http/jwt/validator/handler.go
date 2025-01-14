@@ -28,15 +28,12 @@ func NewDefaultFailHandler(
 	) {
 		// Encode the response
 		_ = jsonEncoder.Encode(
-			w, gonethttpresponse.NewFailResponse(
-				gonethttpresponse.NewRequestErrorsBodyData(
-					gonethttpresponse.NewHeaderError(
-						gojwtnethttp.AuthorizationHeaderKey,
-						error.Error(),
-					),
+			w, gonethttpresponse.NewFailResponseFromRequestError(
+				gonethttpresponse.NewHeaderError(
+					gojwtnethttp.AuthorizationHeaderKey,
+					error.Error(),
+					http.StatusUnauthorized,
 				),
-				nil,
-				http.StatusUnauthorized,
 			),
 		)
 	}, nil

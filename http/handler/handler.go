@@ -28,19 +28,14 @@ type (
 			dest interface{},
 			validatorFn func(body interface{}) (interface{}, error),
 		) bool
-		HandleError(
-			w http.ResponseWriter,
-			err error,
-			httpStatus int,
-		)
 		HandleResponse(
 			w http.ResponseWriter,
 			response *gonethttpresponse.Response,
 		)
-		HandleErrorProneResponse(
+		HandleError(
 			w http.ResponseWriter,
-			successResponse *gonethttpresponse.Response,
-			errorResponse *gonethttpresponse.Response,
+			err error,
+			httpStatus int,
 		)
 	}
 
@@ -139,34 +134,6 @@ func (d *DefaultHandler) DecodeAndValidate(
 	return d.Validate(w, body, validatorFn)
 }
 
-// HandleError handles the error response
-func (d *DefaultHandler) HandleError(
-	w http.ResponseWriter,
-	err error,
-	httpStatus int,
-) {
-	// Check if the errors is a request error
-	var e gonethttpresponse.RequestError
-	if errors.As(err, &e) {
-		d.HandleResponse(
-			w, gonethttpresponse.NewFailResponse(
-				gonethttpresponse.NewRequestErrorsBodyData(e),
-				nil,
-				httpStatus,
-			),
-		)
-		return
-	}
-
-	d.HandleResponse(
-		w, gonethttpresponse.NewDebugErrorResponse(
-			gonethttpstatuserrors.InternalServerError,
-			err,
-			nil, nil, http.StatusInternalServerError,
-		),
-	)
-}
-
 // HandleResponse handles the response
 func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
@@ -190,18 +157,25 @@ func (d *DefaultHandler) HandleResponse(
 	_ = d.jsonEncoder.Encode(w, response)
 }
 
-// HandleErrorProneResponse handles the response that may contain an error
-func (d *DefaultHandler) HandleErrorProneResponse(
+// HandleError handles the error response
+func (d *DefaultHandler) HandleError(
 	w http.ResponseWriter,
-	successResponse *gonethttpresponse.Response,
-	errorResponse *gonethttpresponse.Response,
+	err error,
 ) {
-	// Check if the error response is nil
-	if errorResponse != nil {
-		d.HandleResponse(w, errorResponse)
+	// Check if the errors is a request error
+	var e gonethttpresponse.RequestError
+	if errors.As(err, &e) {
+		d.HandleResponse(
+			w, gonethttpresponse.NewFailResponseFromRequestError(e),
+		)
 		return
 	}
 
-	// Handle the success response
-	d.HandleResponse(w, successResponse)
+	d.HandleResponse(
+		w, gonethttpresponse.NewDebugErrorResponse(
+			gonethttpstatuserrors.InternalServerError,
+			err,
+			nil, nil, http.StatusInternalServerError,
+		),
+	)
 }
