@@ -46,7 +46,7 @@ func (d *DefaultEncoder) Encode(
 	if err != nil {
 		return d.Encode(
 			w,
-			gonethttpstatusresponse.NewDebugInternalServerError(
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				err,
 				ErrCodeMarshalResponseBodyFailed,
 			),

@@ -5,5 +5,6 @@ import (
 )
 
 var (
-	ErrNilResponse = errors.New("response cannot be nil")
+	ErrNilResponse           = errors.New("response cannot be nil")
+	ErrInvalidFieldValueType = "invalid field value type, expected: '%s'"
 )

@@ -41,7 +41,7 @@ func (d *DefaultStreamDecoder) Decode(
 	if dest == nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpstatusresponse.NewDebugInternalServerError(
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				err,
 				ErrCodeNilDestination,
 			),

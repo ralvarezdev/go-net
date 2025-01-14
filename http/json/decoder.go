@@ -57,7 +57,7 @@ func (d *DefaultDecoder) Decode(
 	if dest == nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpstatusresponse.NewInternalServerError(ErrCodeNilDestination),
+			gonethttpstatusresponse.NewJSendInternalServerError(ErrCodeNilDestination),
 		)
 	}
 

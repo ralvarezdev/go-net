@@ -35,7 +35,7 @@ func (d *DefaultStreamEncoder) Encode(
 	if err = json.NewEncoder(w).Encode(body); err != nil {
 		_ = d.Encode(
 			w,
-			gonethttpstatusresponse.NewDebugInternalServerError(
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				err,
 				ErrCodeMarshalResponseBodyFailed,
 			),

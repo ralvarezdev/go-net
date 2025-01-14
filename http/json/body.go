@@ -39,7 +39,7 @@ func bodyDecodeErrorHandler(
 					gonethttpresponse.NewFieldError(
 						fieldName,
 						fmt.Sprintf(
-							ErrInvalidFieldValueType,
+							gonethttpresponse.ErrInvalidFieldValueType,
 							fieldTypeName,
 						),
 						http.StatusBadRequest,

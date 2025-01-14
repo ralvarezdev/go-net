@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-// NewDebugInternalServerError creates a new internal server error debug response
-func NewDebugInternalServerError(
+// NewJSendDebugInternalServerError creates a new internal server error JSend response with debug information
+func NewJSendDebugInternalServerError(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
@@ -20,8 +20,8 @@ func NewDebugInternalServerError(
 	)
 }
 
-// NewInternalServerError creates a new internal server error response
-func NewInternalServerError(
+// NewJSendInternalServerError creates a new internal server error JSend response
+func NewJSendInternalServerError(
 	errorCode *string,
 ) gonethttpresponse.Response {
 	return gonethttpresponse.NewJSendErrorResponse(

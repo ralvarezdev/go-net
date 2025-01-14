@@ -5,5 +5,7 @@ import (
 )
 
 var (
-	ErrNilHandler = errors.New("handler cannot be nil")
+	ErrNilHandler        = errors.New("handler cannot be nil")
+	ErrNilRequest        = errors.New("request cannot be nil")
+	ErrParameterNotFound = "parameter not found: '%s'"
 )

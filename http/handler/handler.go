@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -10,13 +11,15 @@ import (
 )
 
 var (
-	ErrCodeValidationFailed  *string
-	ErrCodeNilResponse       *string
-	ErrCodeRequestFatalError *string
+	ErrCodeParameterNotFound      *string
+	ErrCodeParameterParsingFailed *string
+	ErrCodeValidationFailed       *string
+	ErrCodeNilResponse            *string
+	ErrCodeRequestFatalError      *string
 )
 
 type (
-	// Handler interface for handling the responses
+	// Handler interface for handling the requests
 	Handler interface {
 		Decode(
 			w http.ResponseWriter,
@@ -33,6 +36,17 @@ type (
 			r *http.Request,
 			dest interface{},
 			validatorFn func(body interface{}) (interface{}, error),
+		) bool
+		GetParameters(
+			w http.ResponseWriter,
+			r *http.Request,
+			keys ...string,
+		) (*map[string]string, bool)
+		ParseParameter(
+			w http.ResponseWriter,
+			parameter string,
+			dest interface{},
+			toTypeFn func(parameter string, dest interface{}) error,
 		) bool
 		HandleResponse(
 			w http.ResponseWriter,
@@ -103,7 +117,7 @@ func (d *DefaultHandler) Validate(
 	if err != nil {
 		d.HandleResponse(
 			w,
-			gonethttpstatusresponse.NewDebugInternalServerError(
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				err,
 				ErrCodeValidationFailed,
 			),
@@ -137,6 +151,69 @@ func (d *DefaultHandler) DecodeAndValidate(
 	return d.Validate(w, body, validatorFn)
 }
 
+// GetParameters gets the parameters from the request
+func (d *DefaultHandler) GetParameters(
+	w http.ResponseWriter,
+	r *http.Request,
+	keys ...string,
+) (*map[string]string, bool) {
+	// Check if the request is nil
+	if r == nil {
+		return nil, false
+	}
+
+	// Initialize the parameters map
+	parameters := make(map[string]string)
+
+	// Get the URL query
+	query := r.URL.Query()
+
+	// Iterate over the keys
+	for _, key := range keys {
+		// Get the parameter value
+		value := query.Get(key)
+
+		// Check if the value was not found
+		if value == "" {
+			// Handle the error
+			d.HandleResponse(
+				w,
+				gonethttpstatusresponse.NewJSendDebugInternalServerError(
+					fmt.Errorf(ErrParameterNotFound, key),
+					ErrCodeParameterNotFound,
+				),
+			)
+			return nil, false
+		}
+
+		// Add the parameter to the map
+		parameters[key] = value
+	}
+	return &parameters, true
+}
+
+// ParseParameter parses the parameter
+func (d *DefaultHandler) ParseParameter(
+	w http.ResponseWriter,
+	parameter string,
+	dest interface{},
+	toTypeFn func(parameter string, dest interface{}) error,
+) bool {
+	// Parse the parameter
+	if err := toTypeFn(parameter, dest); err != nil {
+		// Handle the error
+		d.HandleResponse(
+			w,
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
+				err,
+				ErrCodeParameterParsingFailed,
+			),
+		)
+		return false
+	}
+	return true
+}
+
 // HandleResponse handles the response
 func (d *DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
@@ -146,7 +223,7 @@ func (d *DefaultHandler) HandleResponse(
 	if response == nil {
 		d.HandleResponse(
 			w,
-			gonethttpstatusresponse.NewDebugInternalServerError(
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				gonethttpresponse.ErrNilResponse,
 				ErrCodeNilResponse,
 			),
@@ -174,7 +251,7 @@ func (d *DefaultHandler) HandleError(
 
 	d.HandleResponse(
 		w,
-		gonethttpstatusresponse.NewDebugInternalServerError(
+		gonethttpstatusresponse.NewJSendDebugInternalServerError(
 			err,
 			ErrCodeRequestFatalError,
 		),
