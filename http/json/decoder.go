@@ -4,9 +4,14 @@ import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"io"
 	"net/http"
+)
+
+var (
+	ErrCodeReadBodyFailed *string
+	ErrCodeNilDestination *string
 )
 
 type (
@@ -51,13 +56,8 @@ func (d *DefaultDecoder) Decode(
 	// Check the decoder destination
 	if dest == nil {
 		_ = d.encoder.Encode(
-			w, gonethttpresponse.NewDebugErrorResponse(
-				gonethttpstatuserrors.InternalServerError,
-				err,
-				nil,
-				nil,
-				http.StatusInternalServerError,
-			),
+			w,
+			gonethttpstatusresponse.NewInternalServerError(ErrCodeNilDestination),
 		)
 	}
 
@@ -69,7 +69,7 @@ func (d *DefaultDecoder) Decode(
 			gonethttpresponse.NewErrorResponse(
 				err,
 				nil,
-				nil,
+				ErrCodeReadBodyFailed,
 				http.StatusBadRequest,
 			),
 		)

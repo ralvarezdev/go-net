@@ -5,8 +5,14 @@ import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"net/http"
+)
+
+var (
+	ErrCodeValidationFailed  *string
+	ErrCodeNilResponse       *string
+	ErrCodeRequestFatalError *string
 )
 
 type (
@@ -97,11 +103,9 @@ func (d *DefaultHandler) Validate(
 	if err != nil {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewDebugErrorResponse(
-				gonethttpstatuserrors.InternalServerError,
+			gonethttpstatusresponse.NewDebugInternalServerError(
 				err,
-				nil, nil,
-				http.StatusInternalServerError,
+				ErrCodeValidationFailed,
 			),
 		)
 	} else {
@@ -109,7 +113,7 @@ func (d *DefaultHandler) Validate(
 			w,
 			gonethttpresponse.NewFailResponse(
 				validations,
-				nil,
+				ErrCodeValidationFailed,
 				http.StatusBadRequest,
 			),
 		)
@@ -142,11 +146,9 @@ func (d *DefaultHandler) HandleResponse(
 	if response == nil {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewDebugErrorResponse(
-				gonethttpstatuserrors.InternalServerError,
+			gonethttpstatusresponse.NewDebugInternalServerError(
 				gonethttpresponse.ErrNilResponse,
-				nil, nil,
-				http.StatusInternalServerError,
+				ErrCodeNilResponse,
 			),
 		)
 		return
@@ -171,10 +173,10 @@ func (d *DefaultHandler) HandleError(
 	}
 
 	d.HandleResponse(
-		w, gonethttpresponse.NewDebugErrorResponse(
-			gonethttpstatuserrors.InternalServerError,
+		w,
+		gonethttpstatusresponse.NewDebugInternalServerError(
 			err,
-			nil, nil, http.StatusInternalServerError,
+			ErrCodeRequestFatalError,
 		),
 	)
 }

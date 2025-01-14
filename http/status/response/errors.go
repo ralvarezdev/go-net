@@ -1,16 +1,33 @@
 package response
 
 import (
-	"github.com/ralvarezdev/go-net/http/response"
-	gonethttperrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
 	"net/http"
 )
 
-var (
-	InternalServerError = response.NewErrorResponse(
-		gonethttperrors.InternalServerError,
+// NewDebugInternalServerError creates a new internal server error debug response
+func NewDebugInternalServerError(
+	debugErr error,
+	errorCode *string,
+) *gonethttpresponse.Response {
+	return gonethttpresponse.NewDebugErrorResponse(
+		gonethttpstatuserrors.InternalServerError,
+		debugErr,
 		nil,
-		nil,
+		errorCode,
 		http.StatusInternalServerError,
 	)
-)
+}
+
+// NewInternalServerError creates a new internal server error response
+func NewInternalServerError(
+	errorCode *string,
+) *gonethttpresponse.Response {
+	return gonethttpresponse.NewErrorResponse(
+		gonethttpstatuserrors.InternalServerError,
+		nil,
+		errorCode,
+		http.StatusInternalServerError,
+	)
+}

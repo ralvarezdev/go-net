@@ -187,22 +187,13 @@ func NewErrorResponse(
 
 // NewFieldError creates a new field error
 func NewFieldError(
-	field, err string, httpStatus int, errorCode ...string,
+	field, err string, httpStatus int, errorCode *string,
 ) *FieldError {
-	// Check if the error code is provided
-	if len(errorCode) > 0 {
-		return &FieldError{
-			field:      field,
-			err:        err,
-			httpStatus: httpStatus,
-			errorCode:  &errorCode[0],
-		}
-	}
-
 	return &FieldError{
 		field:      field,
 		err:        err,
 		httpStatus: httpStatus,
+		errorCode:  errorCode,
 	}
 }
 
@@ -228,22 +219,13 @@ func (f *FieldError) ErrorCode() *string {
 
 // NewHeaderError creates a new header error
 func NewHeaderError(
-	header, err string, httpStatus int, errorCode ...string,
+	header, err string, httpStatus int, errorCode *string,
 ) *HeaderError {
-	// Check if the error code is provided
-	if len(errorCode) > 0 {
-		return &HeaderError{
-			header:     header,
-			err:        err,
-			httpStatus: httpStatus,
-			errorCode:  &errorCode[0],
-		}
-	}
-
 	return &HeaderError{
 		header:     header,
 		err:        err,
 		httpStatus: httpStatus,
+		errorCode:  errorCode,
 	}
 }
 
@@ -269,22 +251,13 @@ func (h *HeaderError) ErrorCode() *string {
 
 // NewParameterError creates a new parameter error
 func NewParameterError(
-	parameter, err string, httpStatus int, errorCode ...string,
+	parameter, err string, httpStatus int, errorCode *string,
 ) *ParameterError {
-	// Check if the error code is provided
-	if len(errorCode) > 0 {
-		return &ParameterError{
-			parameter:  parameter,
-			err:        err,
-			httpStatus: httpStatus,
-			errorCode:  &errorCode[0],
-		}
-	}
-
 	return &ParameterError{
 		parameter:  parameter,
 		err:        err,
 		httpStatus: httpStatus,
+		errorCode:  errorCode,
 	}
 }
 

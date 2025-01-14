@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"net/http"
 )
 
@@ -35,12 +35,9 @@ func (d *DefaultStreamEncoder) Encode(
 	if err = json.NewEncoder(w).Encode(body); err != nil {
 		_ = d.Encode(
 			w,
-			gonethttpresponse.NewDebugErrorResponse(
-				gonethttpstatuserrors.InternalServerError,
+			gonethttpstatusresponse.NewDebugInternalServerError(
 				err,
-				nil,
-				nil,
-				http.StatusInternalServerError,
+				ErrCodeMarshalResponseBodyFailed,
 			),
 		)
 		return err

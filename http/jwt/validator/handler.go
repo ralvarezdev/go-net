@@ -13,6 +13,10 @@ type FailHandler func(
 	error error,
 )
 
+var (
+	ErrCodeInvalidToken *string
+)
+
 // NewDefaultFailHandler function
 func NewDefaultFailHandler(
 	jsonEncoder gonethttpjson.Encoder,
@@ -33,6 +37,7 @@ func NewDefaultFailHandler(
 					gojwtnethttp.AuthorizationHeaderKey,
 					error.Error(),
 					http.StatusUnauthorized,
+					ErrCodeInvalidToken,
 				),
 			),
 		)

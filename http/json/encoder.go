@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"github.com/ralvarezdev/go-flags/mode"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"net/http"
+)
+
+var (
+	ErrCodeMarshalResponseBodyFailed *string
 )
 
 type (
@@ -42,12 +46,9 @@ func (d *DefaultEncoder) Encode(
 	if err != nil {
 		return d.Encode(
 			w,
-			gonethttpresponse.NewDebugErrorResponse(
-				gonethttpstatuserrors.InternalServerError,
+			gonethttpstatusresponse.NewDebugInternalServerError(
 				err,
-				nil,
-				nil,
-				http.StatusInternalServerError,
+				ErrCodeMarshalResponseBodyFailed,
 			),
 		)
 	}

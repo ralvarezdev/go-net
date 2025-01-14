@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+var (
+	ErrCodeUnmarshalRequestBodyFailed *string
+	ErrCodeRequestBodyFieldError      *string
+)
+
 // bodyDecodeErrorHandler handles the error on JSON body decoding
 func bodyDecodeErrorHandler(
 	w http.ResponseWriter,
@@ -38,6 +43,7 @@ func bodyDecodeErrorHandler(
 							fieldTypeName,
 						),
 						http.StatusBadRequest,
+						ErrCodeRequestBodyFieldError,
 					),
 				),
 			)
@@ -46,10 +52,11 @@ func bodyDecodeErrorHandler(
 
 	return encoder.Encode(
 		w,
-		gonethttpresponse.NewDebugFailResponse(
-			ErrUnmarshalBodyDataFailed,
+		gonethttpresponse.NewDebugErrorResponse(
+			ErrUnmarshalBodyFailed,
 			err,
 			nil,
+			ErrCodeUnmarshalRequestBodyFailed,
 			http.StatusBadRequest,
 		),
 	)
