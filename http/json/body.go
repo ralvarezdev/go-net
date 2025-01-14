@@ -25,7 +25,6 @@ func bodyDecodeErrorHandler(
 		// Check which field failed
 		fieldName := unmarshalTypeError.Field
 		fieldTypeName := unmarshalTypeError.Type.Name()
-		fieldValue := unmarshalTypeError.Value
 
 		// Check if the field name is empty
 		if fieldName != "" {
@@ -35,9 +34,8 @@ func bodyDecodeErrorHandler(
 					gonethttpresponse.NewFieldError(
 						fieldName,
 						fmt.Sprintf(
-							ErrFieldInvalidValue,
+							ErrInvalidFieldValueType,
 							fieldTypeName,
-							fieldValue,
 						),
 						http.StatusBadRequest,
 					),
