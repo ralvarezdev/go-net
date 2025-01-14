@@ -35,7 +35,6 @@ type (
 		HandleError(
 			w http.ResponseWriter,
 			err error,
-			httpStatus int,
 		)
 	}
 
