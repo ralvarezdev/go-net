@@ -1,32 +1,38 @@
 package handler
 
 import (
+	"errors"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttperrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
 	"net/http"
 )
 
 type (
 	// Handler interface for handling the responses
 	Handler interface {
-		HandleRequest(
+		Decode(
 			w http.ResponseWriter,
 			r *http.Request,
-			body interface{},
+			dest interface{},
 		) error
-		HandleValidations(
+		Validate(
 			w http.ResponseWriter,
 			body interface{},
 			validatorFn func(body interface{}) (interface{}, error),
 		) bool
-		HandleRequestAndValidations(
+		DecodeAndValidate(
 			w http.ResponseWriter,
 			r *http.Request,
-			body interface{},
+			dest interface{},
 			validatorFn func(body interface{}) (interface{}, error),
 		) bool
+		HandleError(
+			w http.ResponseWriter,
+			err error,
+			httpStatus int,
+		)
 		HandleResponse(
 			w http.ResponseWriter,
 			response *gonethttpresponse.Response,
@@ -70,17 +76,17 @@ func NewDefaultHandler(
 	}, nil
 }
 
-// HandleRequest handles the request
-func (d *DefaultHandler) HandleRequest(
+// Decode decodes the request body into the destination
+func (d *DefaultHandler) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
-	body interface{},
+	dest interface{},
 ) (err error) {
-	return d.jsonDecoder.Decode(w, r, body)
+	return d.jsonDecoder.Decode(w, r, dest)
 }
 
-// HandleValidations handles the validations
-func (d *DefaultHandler) HandleValidations(
+// Validate validates the request body
+func (d *DefaultHandler) Validate(
 	w http.ResponseWriter,
 	body interface{},
 	validatorFn func(body interface{}) (interface{}, error),
@@ -98,7 +104,7 @@ func (d *DefaultHandler) HandleValidations(
 		d.HandleResponse(
 			w,
 			gonethttpresponse.NewDebugErrorResponse(
-				gonethttperrors.InternalServerError,
+				gonethttpstatuserrors.InternalServerError,
 				err,
 				nil, nil,
 				http.StatusInternalServerError,
@@ -117,20 +123,48 @@ func (d *DefaultHandler) HandleValidations(
 	return false
 }
 
-// HandleRequestAndValidations handles the request and the validations
-func (d *DefaultHandler) HandleRequestAndValidations(
+// DecodeAndValidate decodes and validates the request body
+func (d *DefaultHandler) DecodeAndValidate(
 	w http.ResponseWriter,
 	r *http.Request,
 	body interface{},
 	validatorFn func(body interface{}) (interface{}, error),
 ) bool {
-	// Handle the request
-	if err := d.HandleRequest(w, r, body); err != nil {
+	// Decode the request body
+	if err := d.Decode(w, r, body); err != nil {
 		return false
 	}
 
-	// Handle the validations
-	return d.HandleValidations(w, body, validatorFn)
+	// Validate the request body
+	return d.Validate(w, body, validatorFn)
+}
+
+// HandleError handles the error response
+func (d *DefaultHandler) HandleError(
+	w http.ResponseWriter,
+	err error,
+	httpStatus int,
+) {
+	// Check if the errors is a request error
+	var e gonethttpresponse.RequestError
+	if errors.As(err, &e) {
+		d.HandleResponse(
+			w, gonethttpresponse.NewFailResponse(
+				gonethttpresponse.NewRequestErrorsBodyData(e),
+				nil,
+				httpStatus,
+			),
+		)
+		return
+	}
+
+	d.HandleResponse(
+		w, gonethttpresponse.NewDebugErrorResponse(
+			gonethttpstatuserrors.InternalServerError,
+			err,
+			nil, nil, http.StatusInternalServerError,
+		),
+	)
 }
 
 // HandleResponse handles the response
@@ -143,7 +177,7 @@ func (d *DefaultHandler) HandleResponse(
 		d.HandleResponse(
 			w,
 			gonethttpresponse.NewDebugErrorResponse(
-				gonethttperrors.InternalServerError,
+				gonethttpstatuserrors.InternalServerError,
 				gonethttpresponse.ErrNilResponse,
 				nil, nil,
 				http.StatusInternalServerError,
