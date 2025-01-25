@@ -10,7 +10,7 @@ type (
 		CreateRouter(baseRouter gonethttproute.RouterWrapper, path string) error
 		GetRouter() gonethttproute.RouterWrapper
 		RegisterRoutes()
-		RegisterGroups()
+		RegisterGroups() error
 		gonethttproute.RouterWrapper
 	}
 
@@ -35,8 +35,7 @@ func (c *Controller) CreateRouter(
 
 	// Register the controller routes and groups
 	c.RegisterRoutes()
-	c.RegisterGroups()
-	return nil
+	return c.RegisterGroups()
 }
 
 // GetRouter returns the router
@@ -48,4 +47,6 @@ func (c *Controller) GetRouter() gonethttproute.RouterWrapper {
 func (c *Controller) RegisterRoutes() {}
 
 // RegisterGroups registers the groups
-func (c *Controller) RegisterGroups() {}
+func (c *Controller) RegisterGroups() error {
+	return nil
+}
