@@ -16,9 +16,9 @@ type (
 
 	// Module is the struct for the route module
 	Module struct {
-		Service    *Service
-		Validator  *Validator
-		Controller *Controller
+		Service    ServiceWrapper
+		Validator  ValidatorWrapper
+		Controller ControllerWrapper
 	}
 )
 

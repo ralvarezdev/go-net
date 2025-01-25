@@ -5,8 +5,8 @@ import (
 )
 
 type (
-	// Validator is the struct for the route validator
-	Validator struct {
+	// ValidatorWrapper is the interface for the route validator
+	ValidatorWrapper interface {
 		govalidatormappervalidator.Service
 	}
 )
