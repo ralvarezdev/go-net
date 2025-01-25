@@ -28,13 +28,13 @@ type (
 		Validate(
 			w http.ResponseWriter,
 			body interface{},
-			validatorFn func(body interface{}) (interface{}, error),
+			validatorFn func() (interface{}, error),
 		) bool
-		DecodeAndValidate(
+		Parse(
 			w http.ResponseWriter,
 			r *http.Request,
 			dest interface{},
-			validatorFn func(body interface{}) (interface{}, error),
+			validatorFn func() (interface{}, error),
 		) bool
 		GetParameters(
 			r *http.Request,
@@ -102,10 +102,10 @@ func (d *DefaultHandler) Decode(
 func (d *DefaultHandler) Validate(
 	w http.ResponseWriter,
 	body interface{},
-	validatorFn func(body interface{}) (interface{}, error),
+	validatorFn func() (interface{}, error),
 ) bool {
 	// Validate the request body
-	validations, err := validatorFn(body)
+	validations, err := validatorFn()
 
 	// Check if the error is nil and there are no validations
 	if err == nil && validations == nil {
@@ -134,12 +134,12 @@ func (d *DefaultHandler) Validate(
 	return false
 }
 
-// DecodeAndValidate decodes and validates the request body
-func (d *DefaultHandler) DecodeAndValidate(
+// Parse decodes and validates the request body
+func (d *DefaultHandler) Parse(
 	w http.ResponseWriter,
 	r *http.Request,
 	body interface{},
-	validatorFn func(body interface{}) (interface{}, error),
+	validatorFn func() (interface{}, error),
 ) bool {
 	// Decode the request body
 	if err := d.Decode(w, r, body); err != nil {

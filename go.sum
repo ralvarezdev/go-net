@@ -2,11 +2,11 @@ github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17w
 github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/ralvarezdev/go-flags v0.3.1 h1:YxGYUonmr0dwJL+9oDY/4GqCl1CYwYDJExpGXXMc9rU=
 github.com/ralvarezdev/go-flags v0.3.1/go.mod h1:R3yVBYvzwqfOp26LidaiJ/zftVAnPC3pKunVpV/vosE=
-github.com/ralvarezdev/go-jwt v0.3.15 h1:Na6UapjKp9K1YlLr8ynwBhqgJOtyHRs9zG13JOUZl3A=
-github.com/ralvarezdev/go-jwt v0.3.15/go.mod h1:wW4DdxQ+IiUKn2xnH3VI44f2LaRLN3vfhpVrS3VziCs=
+github.com/ralvarezdev/go-jwt v0.4.8 h1:ugZ0Lyfen7QzmgweLnJynya3yih8rPev48Xjj7HYiZY=
+github.com/ralvarezdev/go-jwt v0.4.8/go.mod h1:RGGbn72uT5av5Hlo50H4xSXg6chmnpecl/a2yGAFNzQ=
 github.com/ralvarezdev/go-logger v0.4.5 h1:Lw7DdZUb4YSQDA7J9nv79soojw1eFHVVzO8wdE9d+Qg=
 github.com/ralvarezdev/go-logger v0.4.5/go.mod h1:vq47onxpED19/o3dh5/YbBKK0eZhqJENPgACYkqNNi8=
-github.com/ralvarezdev/go-strings v0.1.0 h1:bE4eEkdfsHwpgUw+s8/EdLPkRTPki/FTGZx8iEOOQBQ=
-github.com/ralvarezdev/go-strings v0.1.0/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=
+github.com/ralvarezdev/go-strings v0.1.6 h1:NWI+XCipWaOo0vhSNpZz+7Eb4igk/GXD5RaFsk4ZPqY=
+github.com/ralvarezdev/go-strings v0.1.6/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=
 golang.org/x/crypto v0.32.0 h1:euUpcYgM8WcP71gNpTqQCn6rC2t6ULUPiOzfWaXVVfc=
 golang.org/x/crypto v0.32.0/go.mod h1:ZnnJkOaASj8g0AjIduWNlq2NRxL0PlBrbKVyZ6V/Ugc=
