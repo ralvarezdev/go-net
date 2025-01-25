@@ -67,7 +67,9 @@ func (m *Module) Create(
 	}
 
 	// Load the module
-	m.loadFn()
+	if m.loadFn != nil {
+		m.loadFn()
+	}
 	return nil
 }
 
