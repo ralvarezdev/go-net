@@ -15,6 +15,7 @@ type (
 		GetValidator() ValidatorWrapper
 		GetController() ControllerWrapper
 		GetPath() string
+		GetSubmodules() *[]ModuleWrapper
 	}
 
 	// Module is the struct for the route module
@@ -23,6 +24,7 @@ type (
 		service    ServiceWrapper
 		validator  ValidatorWrapper
 		controller ControllerWrapper
+		submodules []ModuleWrapper
 	}
 )
 
@@ -32,20 +34,34 @@ func NewModule(
 	service ServiceWrapper,
 	validator ValidatorWrapper,
 	controller ControllerWrapper,
+	submodules ...ModuleWrapper,
 ) ModuleWrapper {
 	return &Module{
 		path:       path,
 		service:    service,
 		validator:  validator,
 		controller: controller,
+		submodules: submodules,
 	}
 }
 
-// Create is a function that creates a new instance of the Module struct
+// Create is a function that creates the router for the controller and its submodules
 func (m *Module) Create(
 	baseRouter gonethttproute.RouterWrapper,
 ) error {
-	return m.controller.CreateRouter(baseRouter, m.path)
+	// Create the router for the controller
+	if err := m.controller.CreateRouter(baseRouter, m.path); err != nil {
+		return err
+	}
+
+	// Create the submodules controllers router
+	router := m.controller.GetRouter()
+	for _, submodule := range m.submodules {
+		if err := submodule.Create(router); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // GetRouter is a function that returns the router
@@ -76,4 +92,9 @@ func (m *Module) GetValidator() ValidatorWrapper {
 // GetController is a function that returns the controller
 func (m *Module) GetController() ControllerWrapper {
 	return m.controller
+}
+
+// GetSubmodules is a function that returns the submodules
+func (m *Module) GetSubmodules() *[]ModuleWrapper {
+	return &m.submodules
 }
