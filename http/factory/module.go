@@ -15,6 +15,7 @@ type (
 		GetValidator() ValidatorWrapper
 		GetController() ControllerWrapper
 		GetPath() string
+		GetLoadFn() func()
 		GetSubmodules() *[]ModuleWrapper
 	}
 
@@ -24,6 +25,7 @@ type (
 		service    ServiceWrapper
 		validator  ValidatorWrapper
 		controller ControllerWrapper
+		loadFn     func()
 		submodules []ModuleWrapper
 	}
 )
@@ -34,6 +36,7 @@ func NewModule(
 	service ServiceWrapper,
 	validator ValidatorWrapper,
 	controller ControllerWrapper,
+	loadFn func(),
 	submodules ...ModuleWrapper,
 ) ModuleWrapper {
 	return &Module{
@@ -41,11 +44,12 @@ func NewModule(
 		service:    service,
 		validator:  validator,
 		controller: controller,
+		loadFn:     loadFn,
 		submodules: submodules,
 	}
 }
 
-// Create is a function that creates the router for the controller and its submodules
+// Create is a function that creates the router for the controller and its submodules, and loads the module
 func (m *Module) Create(
 	baseRouter gonethttproute.RouterWrapper,
 ) error {
@@ -61,6 +65,9 @@ func (m *Module) Create(
 			return err
 		}
 	}
+
+	// Load the module
+	m.loadFn()
 	return nil
 }
 
@@ -92,6 +99,11 @@ func (m *Module) GetValidator() ValidatorWrapper {
 // GetController is a function that returns the controller
 func (m *Module) GetController() ControllerWrapper {
 	return m.controller
+}
+
+// GetLoadFn is a function that returns the load function
+func (m *Module) GetLoadFn() func() {
+	return m.loadFn
 }
 
 // GetSubmodules is a function that returns the submodules
