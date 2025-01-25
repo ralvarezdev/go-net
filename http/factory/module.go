@@ -58,6 +58,9 @@ func (m *Module) Create(
 		return err
 	}
 
+	// Register the controller routes
+	m.controller.RegisterRoutes()
+
 	// Create the submodules controllers router
 	router := m.controller.GetRouter()
 	for _, submodule := range m.submodules {
