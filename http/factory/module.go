@@ -8,7 +8,6 @@ type (
 	// ModuleWrapper is the interface for the route module
 	ModuleWrapper interface {
 		Create(baseRouter gonethttproute.RouterWrapper, path string) error
-		CreateSubmodule(submodule ModuleWrapper, path string) error
 	}
 
 	// Module is the struct for the route module
@@ -37,10 +36,6 @@ func (m *Module) Create(
 	baseRouter gonethttproute.RouterWrapper,
 	path string,
 ) error {
-	return m.Controller.Create(baseRouter, path)
-}
+	return m.Controller.CreateRouter(baseRouter, path)
 
-// CreateSubmodule is a function that creates a new submodule of the Module struct
-func (m *Module) CreateSubmodule(submodule ModuleWrapper, path string) error {
-	return submodule.Create(m.Controller, path)
 }

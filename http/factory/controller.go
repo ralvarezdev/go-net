@@ -1,14 +1,14 @@
 package factory
 
 import (
-	"github.com/goccy/go-json"
 	gonethttproute "github.com/ralvarezdev/go-net/http/route"
 )
 
 type (
 	// ControllerWrapper is the interface for the route controller
 	ControllerWrapper interface {
-		Create(baseRouter gonethttproute.RouterWrapper, path string) error
+		CreateRouter(baseRouter gonethttproute.RouterWrapper, path string) error
+		GetRouter() gonethttproute.RouterWrapper
 		RegisterRoutes()
 		RegisterGroups()
 		gonethttproute.RouterWrapper
@@ -18,26 +18,34 @@ type (
 	Controller struct {
 		gonethttproute.RouterWrapper
 	}
+)
 
-	// Create creates the controller
-	func (c *Controller) Create(baseRouter gonethttproute.RouterWrapper, path string) error {
-		// Check if the base route is nil
-		if baseRouter == nil {
-			return gonethttproute.ErrNilRouter
-		}
-
-		// Set the base route
-		c.RouterWrapper = baseRouter.NewGroup(path)
-
-		// Register the controller routes and groups
-		c.RegisterRoutes()
-		c.RegisterGroups()
-		return nil
+// CreateRouter creates the controller
+func (c *Controller) CreateRouter(
+	baseRouter gonethttproute.RouterWrapper,
+	path string,
+) error {
+	// Check if the base route is nil
+	if baseRouter == nil {
+		return gonethttproute.ErrNilRouter
 	}
 
-	// RegisterRoutes registers the routes
-	func (c *Controller) RegisterRoutes() {}
+	// Set the base route
+	c.RouterWrapper = baseRouter.NewGroup(path)
 
-	// RegisterGroups registers the groups
-	func (c *Controller) RegisterGroups() {}
-)
+	// Register the controller routes and groups
+	c.RegisterRoutes()
+	c.RegisterGroups()
+	return nil
+}
+
+// GetRouter returns the router
+func (c *Controller) GetRouter() gonethttproute.RouterWrapper {
+	return c.RouterWrapper
+}
+
+// RegisterRoutes registers the routes
+func (c *Controller) RegisterRoutes() {}
+
+// RegisterGroups registers the groups
+func (c *Controller) RegisterGroups() {}
