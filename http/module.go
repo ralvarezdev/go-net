@@ -15,7 +15,8 @@ type (
 		GetValidator() interface{}
 		GetController() interface{}
 		GetPath() string
-		GetLoadFn() func()
+		GetLoadFn() func(*Module)
+		GetRegisterRoutesFn() func(*Module)
 		GetSubmodules() *[]ModuleWrapper
 		gonethttproute.RouterWrapper
 	}
@@ -26,8 +27,8 @@ type (
 		Service          interface{}
 		Validator        interface{}
 		Controller       interface{}
-		LoadFn           func()
-		RegisterRoutesFn func()
+		LoadFn           func(*Module)
+		RegisterRoutesFn func(*Module)
 		Submodules       *[]ModuleWrapper
 		gonethttproute.RouterWrapper
 	}
@@ -52,7 +53,7 @@ func (m *Module) Create(
 
 	// Register the routes
 	if m.RegisterRoutesFn != nil {
-		m.RegisterRoutesFn()
+		m.RegisterRoutesFn(m)
 	}
 
 	// Create the submodules controllers router
@@ -67,7 +68,7 @@ func (m *Module) Create(
 
 	// Load the module
 	if m.LoadFn != nil {
-		m.LoadFn()
+		m.LoadFn(m)
 	}
 	return nil
 }
@@ -103,11 +104,16 @@ func (m *Module) GetController() interface{} {
 }
 
 // GetLoadFn is a function that returns the load function
-func (m *Module) GetLoadFn() func() {
+func (m *Module) GetLoadFn() func(*Module) {
 	return m.LoadFn
 }
 
 // GetSubmodules is a function that returns the submodules
 func (m *Module) GetSubmodules() *[]ModuleWrapper {
 	return m.Submodules
+}
+
+// GetRegisterRoutesFn is a function that returns the register routes function
+func (m *Module) GetRegisterRoutesFn() func(*Module) {
+	return m.RegisterRoutesFn
 }
