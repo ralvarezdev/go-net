@@ -11,32 +11,36 @@ type (
 		Create(baseRouter gonethttproute.RouterWrapper) error
 		GetRouter() gonethttproute.RouterWrapper
 		Handler() http.Handler
-		GetService() ServiceWrapper
-		GetValidator() ValidatorWrapper
-		GetController() ControllerWrapper
+		GetService() interface{}
+		GetValidator() interface{}
+		GetController() interface{}
 		GetPath() string
+		SetLoadFn(loadFn func())
 		GetLoadFn() func()
+		SetRegisterRoutesFn(registerRoutesFn func())
 		GetSubmodules() *[]ModuleWrapper
+		gonethttproute.RouterWrapper
 	}
 
 	// Module is the struct for the route module
 	Module struct {
-		path       string
-		service    ServiceWrapper
-		validator  ValidatorWrapper
-		controller ControllerWrapper
-		loadFn     func()
-		submodules []ModuleWrapper
+		path             string
+		service          interface{}
+		validator        interface{}
+		controller       interface{}
+		loadFn           func()
+		registerRoutesFn func()
+		submodules       []ModuleWrapper
+		gonethttproute.RouterWrapper
 	}
 )
 
 // NewModule is a function that creates a new instance of the Module struct
 func NewModule(
 	path string,
-	service ServiceWrapper,
-	validator ValidatorWrapper,
-	controller ControllerWrapper,
-	loadFn func(),
+	service,
+	validator,
+	controller interface{},
 	submodules ...ModuleWrapper,
 ) ModuleWrapper {
 	return &Module{
@@ -44,7 +48,6 @@ func NewModule(
 		service:    service,
 		validator:  validator,
 		controller: controller,
-		loadFn:     loadFn,
 		submodules: submodules,
 	}
 }
@@ -53,16 +56,21 @@ func NewModule(
 func (m *Module) Create(
 	baseRouter gonethttproute.RouterWrapper,
 ) error {
-	// Create the router for the controller
-	if err := m.controller.CreateRouter(baseRouter, m.path); err != nil {
-		return err
+	// Check if the base route is nil
+	if baseRouter == nil {
+		return gonethttproute.ErrNilRouter
 	}
 
-	// Register the controller routes
-	m.controller.RegisterRoutes()
+	// Set the base route
+	m.RouterWrapper = baseRouter.NewGroup(m.path)
+
+	// Register the routes
+	if m.registerRoutesFn != nil {
+		m.registerRoutesFn()
+	}
 
 	// Create the submodules controllers router
-	router := m.controller.GetRouter()
+	router := m.GetRouter()
 	for _, submodule := range m.submodules {
 		if err := submodule.Create(router); err != nil {
 			return err
@@ -76,14 +84,14 @@ func (m *Module) Create(
 	return nil
 }
 
-// GetRouter is a function that returns the router
+// GetRouter returns the router
 func (m *Module) GetRouter() gonethttproute.RouterWrapper {
-	return m.controller.GetRouter()
+	return m.RouterWrapper
 }
 
 // Handler is a function that returns the handler
 func (m *Module) Handler() http.Handler {
-	return m.controller.Handler()
+	return m.Handler()
 }
 
 // GetPath is a function that returns the path
@@ -92,23 +100,33 @@ func (m *Module) GetPath() string {
 }
 
 // GetService is a function that returns the service
-func (m *Module) GetService() ServiceWrapper {
+func (m *Module) GetService() interface{} {
 	return m.service
 }
 
 // GetValidator is a function that returns the validator
-func (m *Module) GetValidator() ValidatorWrapper {
+func (m *Module) GetValidator() interface{} {
 	return m.validator
 }
 
 // GetController is a function that returns the controller
-func (m *Module) GetController() ControllerWrapper {
+func (m *Module) GetController() interface{} {
 	return m.controller
+}
+
+// SetLoadFn is a function that sets the load function
+func (m *Module) SetLoadFn(loadFn func()) {
+	m.loadFn = loadFn
 }
 
 // GetLoadFn is a function that returns the load function
 func (m *Module) GetLoadFn() func() {
 	return m.loadFn
+}
+
+// SetRegisterRoutesFn is a function that sets the register routes function
+func (m *Module) SetRegisterRoutesFn(registerRoutesFn func()) {
+	m.registerRoutesFn = registerRoutesFn
 }
 
 // GetSubmodules is a function that returns the submodules
