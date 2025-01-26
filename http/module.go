@@ -80,7 +80,11 @@ func (m *Module) GetRouter() gonethttproute.RouterWrapper {
 
 // Handler is a function that returns the handler
 func (m *Module) Handler() http.Handler {
-	return m.Handler()
+	// Check if the router is nil
+	if m.RouterWrapper == nil {
+		return nil
+	}
+	return m.RouterWrapper.Handler()
 }
 
 // GetPath is a function that returns the path
