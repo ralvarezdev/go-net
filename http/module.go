@@ -1,4 +1,4 @@
-package factory
+package http
 
 import (
 	gonethttproute "github.com/ralvarezdev/go-net/http/route"
@@ -57,9 +57,11 @@ func (m *Module) Create(
 
 	// Create the submodules controllers router
 	router := m.GetRouter()
-	for _, submodule := range m.Submodules {
-		if err := submodule.Create(router); err != nil {
-			return err
+	if m.Submodules != nil {
+		for _, submodule := range *m.Submodules {
+			if err := submodule.Create(router); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -107,5 +109,5 @@ func (m *Module) GetLoadFn() func() {
 
 // GetSubmodules is a function that returns the submodules
 func (m *Module) GetSubmodules() *[]ModuleWrapper {
-	return &m.Submodules
+	return m.Submodules
 }
