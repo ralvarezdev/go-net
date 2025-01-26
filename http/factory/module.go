@@ -15,9 +15,7 @@ type (
 		GetValidator() interface{}
 		GetController() interface{}
 		GetPath() string
-		SetLoadFn(loadFn func())
 		GetLoadFn() func()
-		SetRegisterRoutesFn(registerRoutesFn func())
 		GetSubmodules() *[]ModuleWrapper
 		gonethttproute.RouterWrapper
 	}
@@ -30,10 +28,15 @@ type (
 		Controller       interface{}
 		LoadFn           func()
 		RegisterRoutesFn func()
-		Submodules       []ModuleWrapper
+		Submodules       *[]ModuleWrapper
 		gonethttproute.RouterWrapper
 	}
 )
+
+// NewSubmodules is a function that creates a new submodules
+func NewSubmodules(submodules ...ModuleWrapper) *[]ModuleWrapper {
+	return &submodules
+}
 
 // Create is a function that creates the router for the controller and its submodules, and loads the module
 func (m *Module) Create(
