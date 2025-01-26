@@ -24,33 +24,16 @@ type (
 
 	// Module is the struct for the route module
 	Module struct {
-		path             string
-		service          interface{}
-		validator        interface{}
-		controller       interface{}
-		loadFn           func()
-		registerRoutesFn func()
-		submodules       []ModuleWrapper
+		Path             string
+		Service          interface{}
+		Validator        interface{}
+		Controller       interface{}
+		LoadFn           func()
+		RegisterRoutesFn func()
+		Submodules       []ModuleWrapper
 		gonethttproute.RouterWrapper
 	}
 )
-
-// NewModule is a function that creates a new instance of the Module struct
-func NewModule(
-	path string,
-	service,
-	validator,
-	controller interface{},
-	submodules ...ModuleWrapper,
-) ModuleWrapper {
-	return &Module{
-		path:       path,
-		service:    service,
-		validator:  validator,
-		controller: controller,
-		submodules: submodules,
-	}
-}
 
 // Create is a function that creates the router for the controller and its submodules, and loads the module
 func (m *Module) Create(
@@ -62,24 +45,24 @@ func (m *Module) Create(
 	}
 
 	// Set the base route
-	m.RouterWrapper = baseRouter.NewGroup(m.path)
+	m.RouterWrapper = baseRouter.NewGroup(m.Path)
 
 	// Register the routes
-	if m.registerRoutesFn != nil {
-		m.registerRoutesFn()
+	if m.RegisterRoutesFn != nil {
+		m.RegisterRoutesFn()
 	}
 
 	// Create the submodules controllers router
 	router := m.GetRouter()
-	for _, submodule := range m.submodules {
+	for _, submodule := range m.Submodules {
 		if err := submodule.Create(router); err != nil {
 			return err
 		}
 	}
 
 	// Load the module
-	if m.loadFn != nil {
-		m.loadFn()
+	if m.LoadFn != nil {
+		m.LoadFn()
 	}
 	return nil
 }
@@ -96,40 +79,30 @@ func (m *Module) Handler() http.Handler {
 
 // GetPath is a function that returns the path
 func (m *Module) GetPath() string {
-	return m.path
+	return m.Path
 }
 
 // GetService is a function that returns the service
 func (m *Module) GetService() interface{} {
-	return m.service
+	return m.Service
 }
 
 // GetValidator is a function that returns the validator
 func (m *Module) GetValidator() interface{} {
-	return m.validator
+	return m.Validator
 }
 
 // GetController is a function that returns the controller
 func (m *Module) GetController() interface{} {
-	return m.controller
-}
-
-// SetLoadFn is a function that sets the load function
-func (m *Module) SetLoadFn(loadFn func()) {
-	m.loadFn = loadFn
+	return m.Controller
 }
 
 // GetLoadFn is a function that returns the load function
 func (m *Module) GetLoadFn() func() {
-	return m.loadFn
-}
-
-// SetRegisterRoutesFn is a function that sets the register routes function
-func (m *Module) SetRegisterRoutesFn(registerRoutesFn func()) {
-	m.registerRoutesFn = registerRoutesFn
+	return m.LoadFn
 }
 
 // GetSubmodules is a function that returns the submodules
 func (m *Module) GetSubmodules() *[]ModuleWrapper {
-	return &m.submodules
+	return &m.Submodules
 }
