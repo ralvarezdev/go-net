@@ -45,6 +45,8 @@ func (m *Middleware) Validate(
 	// Dereference the body type if it is a pointer
 	if bodyType.Kind() == reflect.Pointer {
 		bodyType = bodyType.Elem()
+	} else {
+		body = &body
 	}
 
 	// Create the mapper
@@ -53,17 +55,37 @@ func (m *Middleware) Validate(
 		panic(err)
 	}
 
+	// Check if the createValidateFn is valid
+	if createValidateFn == nil {
+		panic(ErrNilCreateValidateFn)
+	}
+
+	// Check if the type of the createValidateFn is a function and the parameters are correct
+	fnValuePtr, paramsValuesPtr, err := goreflect.CheckFunction(
+		createValidateFn,
+		body,
+		mapper,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// Check if the parameters values are not nil
+	if paramsValuesPtr == nil {
+		panic(ErrNilParametersValues)
+	}
+	paramsValues := *paramsValuesPtr
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				// Get a new instance of the body
 				dest := goreflect.NewInstanceFromType(bodyType)
 
-				// Get the validate function
-				results, err := goreflect.CallFunction(
-					createValidateFn,
-					dest,
-					mapper,
+				// Call the validate function
+				results, err := goreflect.UnsafeCallFunction(
+					fnValuePtr,
+					paramsValues...,
 				)
 				if err != nil {
 					panic(err)

@@ -6,7 +6,7 @@ require (
 	github.com/ralvarezdev/go-flags v0.3.1
 	github.com/ralvarezdev/go-jwt v0.4.8
 	github.com/ralvarezdev/go-logger v0.4.5
-	github.com/ralvarezdev/go-reflect v0.2.1
+	github.com/ralvarezdev/go-reflect v0.2.3
 	github.com/ralvarezdev/go-validator v0.5.22
 )
 
