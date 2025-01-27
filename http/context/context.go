@@ -12,11 +12,6 @@ func SetCtxBody(r *http.Request, body interface{}) *http.Request {
 }
 
 // GetCtxBody tries to get the body from the context
-func GetCtxBody(r *http.Request) (interface{}, error) {
-	// Get the token claims from the context
-	value := r.Context().Value(CtxBodyKey)
-	if value == nil {
-		return nil, ErrMissingBodyInContext
-	}
-	return value, nil
+func GetCtxBody(r *http.Request) interface{} {
+	return r.Context().Value(CtxBodyKey)
 }
