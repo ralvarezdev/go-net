@@ -13,15 +13,18 @@ type (
 		HandleFunc(
 			path string,
 			handler http.HandlerFunc,
-			middlewares ...func(http.Handler) http.Handler,
+			middlewares ...func(next http.Handler) http.Handler,
 		)
 		RegisterRoute(
 			path string,
 			handler http.HandlerFunc,
-			middlewares ...func(http.Handler) http.Handler,
+			middlewares ...func(next http.Handler) http.Handler,
 		)
 		RegisterHandler(path string, handler http.Handler)
-		NewGroup(path string) *Router
+		NewGroup(
+			path string,
+			middlewares ...func(next http.Handler) http.Handler,
+		) *Router
 		RegisterGroup(path string, router *Router)
 	}
 
@@ -40,7 +43,7 @@ func NewRouter(
 	path string,
 	mode *goflagsmode.Flag,
 	logger *Logger,
-	middlewares ...func(http.Handler) http.Handler,
+	middlewares ...func(next http.Handler) http.Handler,
 ) *Router {
 	// Check if the path is empty
 	if path == "" {
@@ -66,7 +69,7 @@ func NewRouter(
 func NewBaseRouter(
 	mode *goflagsmode.Flag,
 	logger *Logger,
-	middlewares ...func(http.Handler) http.Handler,
+	middlewares ...func(next http.Handler) http.Handler,
 ) *Router {
 	return NewRouter("", mode, logger, middlewares...)
 }
@@ -75,7 +78,7 @@ func NewBaseRouter(
 func NewGroup(
 	baseRouter *Router,
 	path string,
-	middlewares ...func(http.Handler) http.Handler,
+	middlewares ...func(next http.Handler) http.Handler,
 ) (*Router, error) {
 	// Check if the base router is nil
 	if baseRouter == nil {
@@ -166,7 +169,10 @@ func (r *Router) RegisterGroup(path string, router *Router) {
 }
 
 // NewGroup creates a new router group with a path
-func (r *Router) NewGroup(path string) *Router {
-	newGroup, _ := NewGroup(r, path)
+func (r *Router) NewGroup(
+	path string,
+	middlewares ...func(next http.Handler) http.Handler,
+) *Router {
+	newGroup, _ := NewGroup(r, path, middlewares...)
 	return newGroup
 }
