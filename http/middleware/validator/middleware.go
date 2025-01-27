@@ -6,6 +6,7 @@ import (
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatorstructmapper "github.com/ralvarezdev/go-validator/struct/mapper"
 	"net/http"
+	"reflect"
 )
 
 // Middleware struct
@@ -40,6 +41,11 @@ func (m *Middleware) Validate(
 ) func(next http.Handler) http.Handler {
 	// Get the type of the body
 	bodyType := goreflect.GetTypeOf(body)
+
+	// Dereference the body type if it is a pointer
+	if bodyType.Kind() == reflect.Pointer {
+		bodyType = bodyType.Elem()
+	}
 
 	// Create the mapper
 	mapper, err := m.generator.NewMapper(body)
