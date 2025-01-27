@@ -84,12 +84,10 @@ func (m *Middleware) Validate(
 				}
 
 				// Store the validated body in the context
-				ctx := context.WithValue(
-					r.Context(),
-					gonethttpctx.CtxBodyKey,
-					dest,
-				)
-				next.ServeHTTP(w, r.WithContext(ctx))
+				r = gonethttpctx.SetCtxBody(r, dest)
+
+				// Call the next handler
+				next.ServeHTTP(w, r)
 			},
 		)
 	}
