@@ -20,6 +20,5 @@ func ChainHandlers(
 	for i := n - 1; i >= 0; i = i - 1 {
 		chainedHandler = handlers[i](chainedHandler)
 	}
-
 	return chainedHandler
 }

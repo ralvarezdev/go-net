@@ -10,6 +10,7 @@ type (
 	RouterWrapper interface {
 		Handler() http.Handler
 		Mux() *http.ServeMux
+		GetMiddlewares() *[]func(http.Handler) http.Handler
 		HandleFunc(
 			path string,
 			handler http.HandlerFunc,
@@ -30,6 +31,7 @@ type (
 
 	// Router is the route group struct
 	Router struct {
+		middlewares  []func(http.Handler) http.Handler
 		firstHandler http.Handler
 		mux          *http.ServeMux
 		path         string
@@ -54,10 +56,11 @@ func NewRouter(
 	mux := http.NewServeMux()
 
 	// Chain the handlers
-	firstChainedHandler := ChainHandlers(mux, middlewares...)
+	firstHandler := ChainHandlers(mux, middlewares...)
 
 	return &Router{
-		firstHandler: firstChainedHandler,
+		middlewares:  middlewares,
+		firstHandler: firstHandler,
 		mux:          mux,
 		logger:       logger,
 		path:         path,
@@ -95,11 +98,12 @@ func NewGroup(
 	mux := http.NewServeMux()
 
 	// Chain the handlers
-	firstChainedHandler := ChainHandlers(mux, middlewares...)
+	firstHandler := ChainHandlers(mux, middlewares...)
 
 	// Create a new router
 	instance := &Router{
-		firstHandler: firstChainedHandler,
+		middlewares:  middlewares,
+		firstHandler: firstHandler,
 		mux:          mux,
 		logger:       baseRouter.logger,
 		path:         routerPath,
@@ -122,6 +126,11 @@ func (r *Router) Mux() *http.ServeMux {
 	return r.mux
 }
 
+// GetMiddlewares returns the middlewares
+func (r *Router) GetMiddlewares() *[]func(http.Handler) http.Handler {
+	return &r.middlewares
+}
+
 // HandleFunc registers a new route with a path, the handler function and the middlewares
 func (r *Router) HandleFunc(
 	path string,
@@ -129,10 +138,10 @@ func (r *Router) HandleFunc(
 	middlewares ...func(http.Handler) http.Handler,
 ) {
 	// Chain the handlers
-	firstChainedHandler := ChainHandlers(handler, middlewares...)
+	firstHandler := ChainHandlers(handler, middlewares...)
 
 	// Register the route
-	r.mux.HandleFunc(path, firstChainedHandler.ServeHTTP)
+	r.mux.HandleFunc(path, firstHandler.ServeHTTP)
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
 		r.logger.RegisterRoute(r.path, path)
@@ -173,6 +182,10 @@ func (r *Router) NewGroup(
 	path string,
 	middlewares ...func(next http.Handler) http.Handler,
 ) *Router {
+	// Append the base router middlewares
+	middlewares = append(middlewares, r.middlewares...)
+
+	// Create a new group
 	newGroup, _ := NewGroup(r, path, middlewares...)
 	return newGroup
 }
