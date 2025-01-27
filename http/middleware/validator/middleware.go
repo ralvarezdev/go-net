@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"context"
 	gonethttpctx "github.com/ralvarezdev/go-net/http/context"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
