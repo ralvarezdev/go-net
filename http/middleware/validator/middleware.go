@@ -60,22 +60,6 @@ func (m *Middleware) Validate(
 		panic(ErrNilCreateValidateFn)
 	}
 
-	// Check if the type of the createValidateFn is a function and the parameters are correct
-	fnValuePtr, paramsValuesPtr, err := goreflect.CheckFunction(
-		createValidateFn,
-		body,
-		mapper,
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	// Check if the parameters values are not nil
-	if paramsValuesPtr == nil {
-		panic(ErrNilParametersValues)
-	}
-	paramsValues := *paramsValuesPtr
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
@@ -83,9 +67,10 @@ func (m *Middleware) Validate(
 				dest := goreflect.NewInstanceFromType(bodyType)
 
 				// Call the validate function
-				results, err := goreflect.UnsafeCallFunction(
-					fnValuePtr,
-					paramsValues...,
+				results, err := goreflect.SafeCallFunction(
+					createValidateFn,
+					dest,
+					mapper,
 				)
 				if err != nil {
 					panic(err)
