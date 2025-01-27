@@ -35,7 +35,7 @@ func NewMiddleware(
 
 // Validate validates the request body and stores it in the context
 func (m *Middleware) Validate(
-	body interface{},
+	body,
 	createValidateFn interface{},
 ) func(next http.Handler) http.Handler {
 	// Get the type of the body

@@ -7,6 +7,7 @@ import (
 // Validator interface
 type Validator interface {
 	Validate(
-		createValidateFn func() (interface{}, func() (interface{}, error)),
+		body,
+		createValidateFn interface{},
 	) func(next http.Handler) http.Handler
 }
