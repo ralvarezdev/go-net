@@ -31,10 +31,10 @@ func NewFieldError(
 	field, err string, httpStatus int, errorCode *string,
 ) *FieldError {
 	return &FieldError{
-		field:      field,
-		err:        err,
-		httpStatus: httpStatus,
-		errorCode:  errorCode,
+		field,
+		err,
+		httpStatus,
+		errorCode,
 	}
 }
 
@@ -63,10 +63,10 @@ func NewHeaderError(
 	header, err string, httpStatus int, errorCode *string,
 ) *HeaderError {
 	return &HeaderError{
-		header:     header,
-		err:        err,
-		httpStatus: httpStatus,
-		errorCode:  errorCode,
+		header,
+		err,
+		httpStatus,
+		errorCode,
 	}
 }
 

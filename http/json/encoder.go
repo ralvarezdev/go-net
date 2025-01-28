@@ -29,7 +29,7 @@ type (
 
 // NewDefaultEncoder creates a new default JSON encoder
 func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
-	return &DefaultEncoder{mode: mode}
+	return &DefaultEncoder{mode}
 }
 
 // Encode encodes the body into JSON and writes it to the response

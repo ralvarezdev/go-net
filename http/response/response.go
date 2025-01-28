@@ -37,8 +37,8 @@ func NewSuccessResponse(
 	httpStatus int,
 ) *SuccessResponse {
 	return &SuccessResponse{
-		body:       body,
-		httpStatus: httpStatus,
+		body,
+		httpStatus,
 	}
 }
 
@@ -66,8 +66,8 @@ func NewFailResponse(
 	httpStatus int,
 ) *FailResponse {
 	return &FailResponse{
-		body:       body,
-		httpStatus: httpStatus,
+		body,
+		httpStatus,
 	}
 }
 
@@ -102,9 +102,9 @@ func NewErrorResponse(
 	}
 
 	return &ErrorResponse{
-		body:       body,
-		debugBody:  debugBody,
-		httpStatus: httpStatus,
+		body,
+		debugBody,
+		httpStatus,
 	}
 }
 

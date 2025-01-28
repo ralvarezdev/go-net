@@ -26,8 +26,8 @@ func NewDefaultStreamDecoder(
 	}
 
 	return &DefaultStreamDecoder{
-		mode:    mode,
-		encoder: encoder,
+		mode,
+		encoder,
 	}, nil
 }
 

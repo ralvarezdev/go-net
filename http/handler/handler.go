@@ -83,9 +83,9 @@ func NewDefaultHandler(
 	}
 
 	return &DefaultHandler{
-		mode:        mode,
-		jsonEncoder: jsonEncoder,
-		jsonDecoder: jsonDecoder,
+		mode,
+		jsonEncoder,
+		jsonDecoder,
 	}, nil
 }
 

@@ -29,8 +29,8 @@ func NewMiddleware(
 	}
 
 	return &Middleware{
-		handler:   handler,
-		generator: generator,
+		handler,
+		generator,
 	}, nil
 }
 

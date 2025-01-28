@@ -18,7 +18,7 @@ func NewMiddleware(handler gonethttphandler.Handler) (*Middleware, error) {
 		return nil, gonethttphandler.ErrNilHandler
 	}
 	return &Middleware{
-		handler: handler,
+		handler,
 	}, nil
 }
 

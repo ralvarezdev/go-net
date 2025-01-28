@@ -59,12 +59,12 @@ func NewRouter(
 	firstHandler := ChainHandlers(mux, middlewares...)
 
 	return &Router{
-		middlewares:  middlewares,
-		firstHandler: firstHandler,
-		mux:          mux,
-		logger:       logger,
-		path:         path,
-		mode:         mode,
+		middlewares,
+		firstHandler,
+		mux,
+		path,
+		mode,
+		logger,
 	}
 }
 

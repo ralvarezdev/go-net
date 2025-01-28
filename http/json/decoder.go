@@ -42,8 +42,8 @@ func NewDefaultDecoder(
 	}
 
 	return &DefaultDecoder{
-		mode:    mode,
-		encoder: encoder,
+		mode,
+		encoder,
 	}, nil
 }
 

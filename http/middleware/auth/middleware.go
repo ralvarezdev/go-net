@@ -37,9 +37,9 @@ func NewMiddleware(
 	}
 
 	return &Middleware{
-		validator:               validator,
-		handler:                 handler,
-		jwtValidatorFailHandler: jwtValidatorFailHandler,
+		validator,
+		handler,
+		jwtValidatorFailHandler,
 	}, nil
 }
 

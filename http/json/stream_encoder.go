@@ -18,7 +18,7 @@ type (
 // NewDefaultStreamEncoder creates a new JSON encoder
 func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
 	return &DefaultStreamEncoder{
-		mode: mode,
+		mode,
 	}
 }
 
