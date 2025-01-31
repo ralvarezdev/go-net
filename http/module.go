@@ -6,25 +6,16 @@ import (
 )
 
 type (
-	// ModuleWrapper is the interface for the route module
-	ModuleWrapper interface {
-		Create(baseRouter gonethttproute.RouterWrapper) error
-		GetRouter() gonethttproute.RouterWrapper
-		GetService() interface{}
-		GetController() interface{}
-		GetPath() string
-		gonethttproute.RouterWrapper
-	}
-
 	// Module is the struct for the route module
 	Module struct {
 		Path             string
 		Service          interface{}
 		Controller       interface{}
-		LoadFn           func(m *Module)
+		BeforeLoadFn     func(m *Module)
 		RegisterRoutesFn func(m *Module)
+		AfterLoadFn      func(m *Module)
 		Middlewares      *[]func(next http.Handler) http.Handler
-		Submodules       *[]ModuleWrapper
+		Submodules       *[]Module
 		gonethttproute.RouterWrapper
 	}
 )
@@ -35,7 +26,7 @@ func NewMiddlewares(middlewares ...func(next http.Handler) http.Handler) *[]func
 }
 
 // NewSubmodules is a function that creates a new submodules slice
-func NewSubmodules(submodules ...ModuleWrapper) *[]ModuleWrapper {
+func NewSubmodules(submodules ...*Module) *[]*Module {
 	return &submodules
 }
 
@@ -46,6 +37,11 @@ func (m *Module) Create(
 	// Check if the base route is nil
 	if baseRouter == nil {
 		return gonethttproute.ErrNilRouter
+	}
+
+	// Run the before load function
+	if m.BeforeLoadFn != nil {
+		m.BeforeLoadFn(m)
 	}
 
 	// Set the base route
@@ -70,9 +66,9 @@ func (m *Module) Create(
 		}
 	}
 
-	// Load the module
-	if m.LoadFn != nil {
-		m.LoadFn(m)
+	// Run the after load function
+	if m.AfterLoadFn != nil {
+		m.AfterLoadFn(m)
 	}
 	return nil
 }
