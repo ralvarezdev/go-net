@@ -198,7 +198,7 @@ func (d *DefaultHandler) ParseWildcard(
 		// Handle the error
 		d.HandleResponse(
 			w,
-			gonethttpstatusresponse.NewJSendDebugInternalServerError(
+			gonethttpstatusresponse.NewJSendDebugBadRequest(
 				err,
 				ErrCodeWildcardParsingFailed,
 			),

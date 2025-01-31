@@ -59,3 +59,30 @@ func NewJSendNotImplemented(
 		http.StatusNotImplemented,
 	)
 }
+
+// NewJSendDebugBadRequest creates a new bad request JSend response with debug information
+func NewJSendDebugBadRequest(
+	debugErr error,
+	errorCode *string,
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewJSendErrorResponse(
+		gonethttpstatuserrors.BadRequest,
+		debugErr,
+		nil,
+		errorCode,
+		http.StatusBadRequest,
+	)
+}
+
+// NewJSendBadRequest creates a new bad request JSend response
+func NewJSendBadRequest(
+	errorCode *string,
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewJSendErrorResponse(
+		gonethttpstatuserrors.BadRequest,
+		nil,
+		nil,
+		errorCode,
+		http.StatusBadRequest,
+	)
+}
