@@ -32,3 +32,30 @@ func NewJSendInternalServerError(
 		http.StatusInternalServerError,
 	)
 }
+
+// NewJSendDebugNotImplemented creates a new not implemented JSend response with debug information
+func NewJSendDebugNotImplemented(
+	debugErr error,
+	errorCode *string,
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewJSendErrorResponse(
+		gonethttpstatuserrors.NotImplemented,
+		debugErr,
+		nil,
+		errorCode,
+		http.StatusNotImplemented,
+	)
+}
+
+// NewJSendNotImplemented creates a new not implemented JSend response
+func NewJSendNotImplemented(
+	errorCode *string,
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewJSendErrorResponse(
+		gonethttpstatuserrors.NotImplemented,
+		nil,
+		nil,
+		errorCode,
+		http.StatusNotImplemented,
+	)
+}

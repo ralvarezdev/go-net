@@ -9,6 +9,7 @@ var (
 	InternalServerError = http.StatusText(http.StatusInternalServerError)
 	ServiceUnavailable  = http.StatusText(http.StatusServiceUnavailable)
 	Unauthorized        = http.StatusText(http.StatusUnauthorized)
+	NotImplemented      = http.StatusText(http.StatusNotImplemented)
 )
 
 const (

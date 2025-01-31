@@ -2,13 +2,14 @@ package errors
 
 import (
 	"errors"
-	gonethttp "github.com/ralvarezdev/go-net/http/status"
+	gonethttpstatus "github.com/ralvarezdev/go-net/http/status"
 )
 
 var (
-	BadRequest          = errors.New(gonethttp.BadRequest)
-	InternalServerError = errors.New(gonethttp.InternalServerError)
-	ServiceUnavailable  = errors.New(gonethttp.ServiceUnavailable)
-	Unauthorized        = errors.New(gonethttp.Unauthorized)
+	BadRequest          = errors.New(gonethttpstatus.BadRequest)
+	InternalServerError = errors.New(gonethttpstatus.InternalServerError)
+	ServiceUnavailable  = errors.New(gonethttpstatus.ServiceUnavailable)
+	Unauthorized        = errors.New(gonethttpstatus.Unauthorized)
+	NotImplemented      = errors.New(gonethttpstatus.NotImplemented)
 	Unauthenticated     = errors.New("missing or invalid bearer token on authentication header")
 )
