@@ -43,8 +43,8 @@ func NewMiddleware(
 
 // Validate validates the request body and stores it in the context
 func (m *Middleware) Validate(
-	body,
-	auxiliaryValidatorFn interface{},
+	body interface{},
+	auxiliaryValidatorFns ...interface{},
 ) func(next http.Handler) http.Handler {
 	// Get the type of the body
 	bodyType := goreflect.GetTypeOf(body)
@@ -65,7 +65,7 @@ func (m *Middleware) Validate(
 	// Create the validator function
 	validatorFn, err := m.validator.CreateValidateFn(
 		mapper,
-		auxiliaryValidatorFn,
+		auxiliaryValidatorFns...,
 	)
 	if err != nil {
 		panic(err)
