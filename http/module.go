@@ -52,11 +52,6 @@ func (m *Module) Create(
 		m.RouterWrapper = baseRouter.NewGroup(m.Path)
 	}
 
-	// Register the routes
-	if m.RegisterRoutesFn != nil {
-		m.RegisterRoutesFn(m)
-	}
-
 	// Create the submodules controllers router
 	router := m.GetRouter()
 	if m.Submodules != nil {
@@ -69,6 +64,11 @@ func (m *Module) Create(
 				return err
 			}
 		}
+	}
+
+	// Register the routes
+	if m.RegisterRoutesFn != nil {
+		m.RegisterRoutesFn(m)
 	}
 
 	// Run the after load function
