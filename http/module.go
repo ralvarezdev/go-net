@@ -47,7 +47,7 @@ func (m *Module) Create(
 
 	// Set the base route
 	if m.Middlewares != nil {
-		baseRouter = baseRouter.NewGroup(m.Path, *m.Middlewares...)
+		m.RouterWrapper = baseRouter.NewGroup(m.Path, *m.Middlewares...)
 	} else {
 		m.RouterWrapper = baseRouter.NewGroup(m.Path)
 	}

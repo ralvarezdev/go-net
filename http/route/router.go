@@ -197,10 +197,16 @@ func (r *Router) NewGroup(
 	path string,
 	middlewares ...func(next http.Handler) http.Handler,
 ) *Router {
+	// Create the middlewares slice
+	var fullMiddlewares []func(http.Handler) http.Handler
+
 	// Append the base router middlewares
-	middlewares = append(middlewares, r.middlewares...)
+	fullMiddlewares = append(fullMiddlewares, r.middlewares...)
+
+	// Append the new middlewares
+	fullMiddlewares = append(fullMiddlewares, middlewares...)
 
 	// Create a new group
-	newGroup, _ := NewGroup(r, path, middlewares...)
+	newGroup, _ := NewGroup(r, path, fullMiddlewares...)
 	return newGroup
 }
