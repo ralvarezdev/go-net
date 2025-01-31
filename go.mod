@@ -7,7 +7,7 @@ require (
 	github.com/ralvarezdev/go-jwt v0.4.9
 	github.com/ralvarezdev/go-logger v0.4.6
 	github.com/ralvarezdev/go-reflect v0.2.4
-	github.com/ralvarezdev/go-validator v0.5.26
+	github.com/ralvarezdev/go-validator v0.5.27
 )
 
 require (

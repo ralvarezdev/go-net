@@ -5,7 +5,6 @@ import (
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatorstructmapper "github.com/ralvarezdev/go-validator/struct/mapper"
-	"github.com/ralvarezdev/go-validator/struct/mapper/validation"
 	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
 	"net/http"
 	"reflect"
@@ -44,8 +43,8 @@ func NewMiddleware(
 
 // Validate validates the request body and stores it in the context
 func (m *Middleware) Validate(
-	body interface{},
-	validatorFns ...func(*validation.StructValidations) error,
+	body,
+	auxiliaryValidatorFn interface{},
 ) func(next http.Handler) http.Handler {
 	// Get the type of the body
 	bodyType := goreflect.GetTypeOf(body)
@@ -66,7 +65,7 @@ func (m *Middleware) Validate(
 	// Create the validator function
 	validatorFn, err := m.validator.CreateValidateFn(
 		mapper,
-		validatorFns...,
+		auxiliaryValidatorFn,
 	)
 	if err != nil {
 		panic(err)
