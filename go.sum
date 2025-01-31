@@ -10,7 +10,7 @@ github.com/ralvarezdev/go-reflect v0.2.4 h1:PLyzbrdNvUiRzpxSHuI9b7hJEhFes22gjNLZ
 github.com/ralvarezdev/go-reflect v0.2.4/go.mod h1:jv3EqQfUixWtNeJd/Rnzf0IDcYZ1z3GApRdAGQHdHZQ=
 github.com/ralvarezdev/go-strings v0.1.7 h1:rO+4TJmHJTghRWl4Nq6gfnGSyNRerunJrkS03x1SLz4=
 github.com/ralvarezdev/go-strings v0.1.7/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=
-github.com/ralvarezdev/go-validator v0.5.28 h1:kQjIiEu4c8sJ3Ybe3I8Zf+LwWGQkzXGzGorPHMa/S2g=
-github.com/ralvarezdev/go-validator v0.5.28/go.mod h1:DqePOybfNHgcT6Pm315BQRAsms2hBLAGJfQgBlyhDv8=
+github.com/ralvarezdev/go-validator v0.5.29 h1:aYDIf4wHsCZg8cCXvObMvlDlP47vD9cf1fA8ib6Fxyg=
+github.com/ralvarezdev/go-validator v0.5.29/go.mod h1:DqePOybfNHgcT6Pm315BQRAsms2hBLAGJfQgBlyhDv8=
 golang.org/x/crypto v0.32.0 h1:euUpcYgM8WcP71gNpTqQCn6rC2t6ULUPiOzfWaXVVfc=
 golang.org/x/crypto v0.32.0/go.mod h1:ZnnJkOaASj8g0AjIduWNlq2NRxL0PlBrbKVyZ6V/Ugc=

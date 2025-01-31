@@ -11,7 +11,6 @@ type (
 		Create(baseRouter gonethttproute.RouterWrapper) error
 		GetRouter() gonethttproute.RouterWrapper
 		GetService() interface{}
-		GetValidator() interface{}
 		GetController() interface{}
 		GetPath() string
 		gonethttproute.RouterWrapper
@@ -21,7 +20,6 @@ type (
 	Module struct {
 		Path             string
 		Service          interface{}
-		Validator        interface{}
 		Controller       interface{}
 		LoadFn           func(m *Module)
 		RegisterRoutesFn func(m *Module)
@@ -92,11 +90,6 @@ func (m *Module) GetPath() string {
 // GetService is a function that returns the service
 func (m *Module) GetService() interface{} {
 	return m.Service
-}
-
-// GetValidator is a function that returns the validator
-func (m *Module) GetValidator() interface{} {
-	return m.Validator
 }
 
 // GetController is a function that returns the controller
