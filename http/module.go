@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	gonethttproute "github.com/ralvarezdev/go-net/http/route"
 	"net/http"
 )
@@ -15,7 +16,7 @@ type (
 		RegisterRoutesFn func(m *Module)
 		AfterLoadFn      func(m *Module)
 		Middlewares      *[]func(next http.Handler) http.Handler
-		Submodules       *[]Module
+		Submodules       *[]*Module
 		gonethttproute.RouterWrapper
 	}
 )
@@ -59,7 +60,11 @@ func (m *Module) Create(
 	// Create the submodules controllers router
 	router := m.GetRouter()
 	if m.Submodules != nil {
-		for _, submodule := range *m.Submodules {
+		for i, submodule := range *m.Submodules {
+			if submodule == nil {
+				return fmt.Errorf(ErrNilSubmodule, m.Path, i)
+			}
+
 			if err := submodule.Create(router); err != nil {
 				return err
 			}

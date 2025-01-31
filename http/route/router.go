@@ -1,6 +1,7 @@
 package route
 
 import (
+	"fmt"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	"net/http"
 )
@@ -46,7 +47,7 @@ func NewRouter(
 	mode *goflagsmode.Flag,
 	logger *Logger,
 	middlewares ...func(next http.Handler) http.Handler,
-) *Router {
+) (*Router, error) {
 	// Check if the path is empty
 	if path == "" {
 		path = "/"
@@ -54,6 +55,13 @@ func NewRouter(
 
 	// Initialize the multiplexer
 	mux := http.NewServeMux()
+
+	// Check if there is a nil middleware
+	for i, middleware := range middlewares {
+		if middleware == nil {
+			return nil, fmt.Errorf(ErrNilMiddleware, path, i)
+		}
+	}
 
 	// Chain the handlers
 	firstHandler := ChainHandlers(mux, middlewares...)
@@ -65,7 +73,7 @@ func NewRouter(
 		path,
 		mode,
 		logger,
-	}
+	}, nil
 }
 
 // NewBaseRouter creates a new base router
@@ -73,7 +81,7 @@ func NewBaseRouter(
 	mode *goflagsmode.Flag,
 	logger *Logger,
 	middlewares ...func(next http.Handler) http.Handler,
-) *Router {
+) (*Router, error) {
 	return NewRouter("", mode, logger, middlewares...)
 }
 
@@ -96,6 +104,13 @@ func NewGroup(
 
 	// Initialize the multiplexer
 	mux := http.NewServeMux()
+
+	// Check if there is a nil middleware
+	for i, middleware := range middlewares {
+		if middleware == nil {
+			return nil, fmt.Errorf(ErrNilMiddleware, path, i)
+		}
+	}
 
 	// Chain the handlers
 	firstHandler := ChainHandlers(mux, middlewares...)
