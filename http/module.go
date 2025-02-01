@@ -9,7 +9,7 @@ import (
 type (
 	// Module is the struct for the route module
 	Module struct {
-		Path             string
+		Pattern          string
 		Service          interface{}
 		Controller       interface{}
 		BeforeLoadFn     func(m *Module)
@@ -47,9 +47,9 @@ func (m *Module) Create(
 
 	// Set the base route
 	if m.Middlewares != nil {
-		m.RouterWrapper = baseRouter.NewGroup(m.Path, *m.Middlewares...)
+		m.RouterWrapper = baseRouter.NewGroup(m.Pattern, *m.Middlewares...)
 	} else {
-		m.RouterWrapper = baseRouter.NewGroup(m.Path)
+		m.RouterWrapper = baseRouter.NewGroup(m.Pattern)
 	}
 
 	// Create the submodules controllers router
@@ -57,7 +57,7 @@ func (m *Module) Create(
 	if m.Submodules != nil {
 		for i, submodule := range *m.Submodules {
 			if submodule == nil {
-				return fmt.Errorf(ErrNilSubmodule, m.Path, i)
+				return fmt.Errorf(ErrNilSubmodule, m.Pattern, i)
 			}
 
 			if err := submodule.Create(router); err != nil {
@@ -81,19 +81,4 @@ func (m *Module) Create(
 // GetRouter returns the router
 func (m *Module) GetRouter() gonethttproute.RouterWrapper {
 	return m.RouterWrapper
-}
-
-// GetPath is a function that returns the path
-func (m *Module) GetPath() string {
-	return m.Path
-}
-
-// GetService is a function that returns the service
-func (m *Module) GetService() interface{} {
-	return m.Service
-}
-
-// GetController is a function that returns the controller
-func (m *Module) GetController() interface{} {
-	return m.Controller
 }

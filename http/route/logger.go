@@ -22,19 +22,19 @@ func NewLogger(header string, modeLogger gologgermode.Logger) (*Logger, error) {
 }
 
 // RegisterRouteGroup registers a route group
-func (l *Logger) RegisterRouteGroup(routerPath string, routerGroupPath string) {
+func (l *Logger) RegisterRouteGroup(fullPath, pattern string) {
 	l.logger.Debug(
 		"registering route group",
-		"router path: "+routerPath,
-		"router group path: "+routerGroupPath,
+		"router path: "+fullPath,
+		"router group pattern: "+pattern,
 	)
 }
 
 // RegisterRoute registers a route
-func (l *Logger) RegisterRoute(routerPath string, routePath string) {
+func (l *Logger) RegisterRoute(fullPath, pattern string) {
 	l.logger.Debug(
 		"registering route",
-		"router path: "+routerPath,
-		"route path: "+routePath,
+		"router path: "+fullPath,
+		"route pattern: "+pattern,
 	)
 }

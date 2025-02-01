@@ -4,6 +4,7 @@ import (
 	"fmt"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	"net/http"
+	"strings"
 )
 
 type (
@@ -38,8 +39,10 @@ type (
 			middlewares ...func(next http.Handler) http.Handler,
 		) *Router
 		RegisterGroup(router *Router)
+		Pattern() string
 		RelativePath() string
 		FullPath() string
+		Method() string
 	}
 
 	// Router is the route group struct
@@ -47,32 +50,56 @@ type (
 		middlewares  []func(http.Handler) http.Handler
 		firstHandler http.Handler
 		mux          *http.ServeMux
+		pattern      string
 		relativePath string
 		fullPath     string
+		method       string
 		mode         *goflagsmode.Flag
 		logger       *Logger
 	}
 )
 
-// AddSlash adds a slash to the path
-func AddSlash(path string) string {
-	if path == "" {
-		return "/"
-	} else if path[0] != '/' {
-		return "/" + path
+// SplitPattern returns the method and the path from the pattern
+func SplitPattern(pattern string) (string, string, error) {
+	// Trim the pattern
+	strings.Trim(pattern, " ")
+
+	// Check if the pattern is empty
+	if pattern == "" {
+		return "", "", ErrEmptyPattern
 	}
-	return path
+
+	// Split the pattern by the first space
+	spaceIndex := 0
+	for i, char := range pattern {
+		if char == ' ' {
+			spaceIndex = i
+			break
+		}
+	}
+
+	// Get the method and the path
+	method := pattern[:spaceIndex]
+	path := pattern[spaceIndex+1:]
+
+	// Trim the path
+	strings.Trim(path, " ")
+
+	return method, path, nil
 }
 
 // NewRouter creates a new router
 func NewRouter(
-	path string,
+	pattern string,
 	mode *goflagsmode.Flag,
 	logger *Logger,
 	middlewares ...func(next http.Handler) http.Handler,
 ) (*Router, error) {
-	// Add a slash to the path if it does not have it
-	path = AddSlash(path)
+	// Split the method and path from the pattern
+	method, path, err := SplitPattern(pattern)
+	if err != nil {
+		return nil, err
+	}
 
 	// Initialize the multiplexer
 	mux := http.NewServeMux()
@@ -91,8 +118,10 @@ func NewRouter(
 		middlewares,
 		firstHandler,
 		mux,
+		pattern,
 		path,
 		path,
+		method,
 		mode,
 		logger,
 	}, nil
@@ -110,7 +139,7 @@ func NewBaseRouter(
 // NewGroup creates a new router group
 func NewGroup(
 	baseRouter *Router,
-	relativePath string,
+	pattern string,
 	middlewares ...func(next http.Handler) http.Handler,
 ) (*Router, error) {
 	// Check if the base router is nil
@@ -118,8 +147,11 @@ func NewGroup(
 		return nil, ErrNilRouter
 	}
 
-	// Add a slash to the path if it does not have it
-	relativePath = AddSlash(relativePath)
+	// Split the method and path from the pattern
+	method, relativePath, err := SplitPattern(pattern)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check the base router path
 	var fullPath string
@@ -148,8 +180,10 @@ func NewGroup(
 		firstHandler: firstHandler,
 		mux:          mux,
 		logger:       baseRouter.logger,
+		pattern:      pattern,
 		relativePath: relativePath,
 		fullPath:     fullPath,
+		method:       method,
 		mode:         baseRouter.mode,
 	}
 
@@ -176,7 +210,7 @@ func (r *Router) GetMiddlewares() *[]func(http.Handler) http.Handler {
 
 // HandleFunc registers a new route with a path, the handler function and the middlewares
 func (r *Router) HandleFunc(
-	relativePath string,
+	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
@@ -184,35 +218,38 @@ func (r *Router) HandleFunc(
 	firstHandler := ChainHandlers(handler, middlewares...)
 
 	// Register the route
-	r.mux.HandleFunc(relativePath, firstHandler.ServeHTTP)
+	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRoute(r.relativePath, relativePath)
+		r.logger.RegisterRoute(r.relativePath, pattern)
 	}
 }
 
 // ExactHandleFunc registers a new route with a path, the handler function and the middlewares
 func (r *Router) ExactHandleFunc(
-	relativePath string,
+	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
-	// Add slash to the path
-	relativePath = AddSlash(relativePath)
+	// Split the method and path from the pattern
+	method, path, err := SplitPattern(pattern)
+	if err != nil {
+		panic(err)
+	}
 
 	// Chain the handlers
 	firstHandler := ChainHandlers(handler, middlewares...)
 
 	// Add the '$' wildcard to the end of the path to match the exact path
-	if relativePath[len(relativePath)-1] == '/' {
-		relativePath += "{$}"
+	if path[len(path)-1] == '/' {
+		path += "{$}"
 	}
 
 	// Register the route
-	r.mux.HandleFunc(relativePath, firstHandler.ServeHTTP)
+	r.mux.HandleFunc(method+" "+path, firstHandler.ServeHTTP)
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRoute(r.relativePath, relativePath)
+		r.logger.RegisterRoute(r.relativePath, pattern)
 	}
 }
 
@@ -237,28 +274,28 @@ func (r *Router) RegisterExactRoute(
 }
 
 // RegisterHandler registers a new route group with a path and a handler function
-func (r *Router) RegisterHandler(relativePath string, handler http.Handler) {
-	// Check if the path contains a trailing slash and remove it
-	if len(relativePath) > 1 && relativePath[len(relativePath)-1] == '/' {
-		relativePath = relativePath[:len(relativePath)-1]
+func (r *Router) RegisterHandler(pattern string, handler http.Handler) {
+	// Check if the pattern contains a trailing slash and remove it
+	if len(pattern) > 0 && pattern[len(pattern)-1] == '/' {
+		pattern = pattern[:len(pattern)-1]
 	}
 
 	// Register the route group
-	r.mux.Handle(relativePath+"/", http.StripPrefix(relativePath, handler))
+	r.mux.Handle(pattern+"/", http.StripPrefix(pattern, handler))
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRouteGroup(r.relativePath, relativePath)
+		r.logger.RegisterRouteGroup(r.fullPath, pattern)
 	}
 }
 
 // RegisterGroup registers a new router group with a path and a router
 func (r *Router) RegisterGroup(router *Router) {
-	r.RegisterHandler(router.RelativePath(), router.mux)
+	r.RegisterHandler(router.Pattern(), router.mux)
 }
 
 // NewGroup creates a new router group with a path
 func (r *Router) NewGroup(
-	relativePath string,
+	pattern string,
 	middlewares ...func(next http.Handler) http.Handler,
 ) *Router {
 	// Create the middlewares slice
@@ -271,8 +308,13 @@ func (r *Router) NewGroup(
 	fullMiddlewares = append(fullMiddlewares, middlewares...)
 
 	// Create a new group
-	newGroup, _ := NewGroup(r, relativePath, fullMiddlewares...)
+	newGroup, _ := NewGroup(r, pattern, fullMiddlewares...)
 	return newGroup
+}
+
+// Pattern returns the pattern
+func (r *Router) Pattern() string {
+	return r.pattern
 }
 
 // RelativePath returns the relative path
@@ -283,4 +325,9 @@ func (r *Router) RelativePath() string {
 // FullPath returns the full path
 func (r *Router) FullPath() string {
 	return r.fullPath
+}
+
+// Method returns the method
+func (r *Router) Method() string {
+	return r.method
 }
