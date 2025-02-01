@@ -14,28 +14,28 @@ type (
 		Mux() *http.ServeMux
 		GetMiddlewares() *[]func(http.Handler) http.Handler
 		HandleFunc(
-			relativePath string,
+			pattern string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
 		ExactHandleFunc(
-			relativePath string,
+			pattern string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
 		RegisterRoute(
-			relativePath string,
+			pattern string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
 		RegisterExactRoute(
-			relativePath string,
+			pattern string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
-		RegisterHandler(relativePath string, handler http.Handler)
+		RegisterHandler(pattern string, handler http.Handler)
 		NewGroup(
-			relativePath string,
+			pattern string,
 			middlewares ...func(next http.Handler) http.Handler,
 		) *Router
 		RegisterGroup(router *Router)
@@ -133,7 +133,7 @@ func NewBaseRouter(
 	logger *Logger,
 	middlewares ...func(next http.Handler) http.Handler,
 ) (*Router, error) {
-	return NewRouter("", mode, logger, middlewares...)
+	return NewRouter("/", mode, logger, middlewares...)
 }
 
 // NewGroup creates a new router group
@@ -256,21 +256,21 @@ func (r *Router) ExactHandleFunc(
 // RegisterRoute registers a new route with a path, the handler function and the middlewares.
 // This does not match the exact path
 func (r *Router) RegisterRoute(
-	relativePath string,
+	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
-	r.HandleFunc(relativePath, handler, middlewares...)
+	r.HandleFunc(pattern, handler, middlewares...)
 }
 
 // RegisterExactRoute registers a new route with a path, the handler function and the middlewares.
 // This matches the exact path
 func (r *Router) RegisterExactRoute(
-	relativePath string,
+	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
-	r.ExactHandleFunc(relativePath, handler, middlewares...)
+	r.ExactHandleFunc(pattern, handler, middlewares...)
 }
 
 // RegisterHandler registers a new route group with a path and a handler function
