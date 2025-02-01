@@ -155,10 +155,12 @@ func NewGroup(
 
 	// Check the base router path
 	var fullPath string
-	if baseRouter.fullPath[len(baseRouter.fullPath)-1] == '/' {
-		fullPath = baseRouter.fullPath + relativePath
+	if relativePath == "/" && baseRouter.fullPath == "/" {
+		fullPath = "/"
+	} else if baseRouter.fullPath[len(baseRouter.fullPath)-1] == '/' {
+		fullPath = baseRouter.fullPath + relativePath[1:]
 	} else {
-		fullPath = baseRouter.fullPath + "/" + relativePath
+		fullPath = baseRouter.fullPath + relativePath
 	}
 
 	// Initialize the multiplexer
@@ -221,7 +223,7 @@ func (r *Router) HandleFunc(
 	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRoute(r.relativePath, pattern)
+		r.logger.RegisterRoute(r.fullPath, pattern)
 	}
 }
 
@@ -249,7 +251,7 @@ func (r *Router) ExactHandleFunc(
 	r.mux.HandleFunc(method+" "+path, firstHandler.ServeHTTP)
 
 	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRoute(r.relativePath, pattern)
+		r.logger.RegisterRoute(r.fullPath, pattern)
 	}
 }
 
