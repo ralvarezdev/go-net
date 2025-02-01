@@ -155,10 +155,10 @@ func NewGroup(
 
 	// Check the base router path
 	var fullPath string
-	if baseRouter.fullPath != "/" {
+	if baseRouter.fullPath[len(baseRouter.fullPath)-1] == '/' {
 		fullPath = baseRouter.fullPath + relativePath
 	} else {
-		fullPath = relativePath
+		fullPath = baseRouter.fullPath + "/" + relativePath
 	}
 
 	// Initialize the multiplexer
