@@ -17,7 +17,17 @@ type (
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
+		ExactHandleFunc(
+			relativePath string,
+			handler http.HandlerFunc,
+			middlewares ...func(next http.Handler) http.Handler,
+		)
 		RegisterRoute(
+			relativePath string,
+			handler http.HandlerFunc,
+			middlewares ...func(next http.Handler) http.Handler,
+		)
+		RegisterExactRoute(
 			relativePath string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
@@ -181,13 +191,49 @@ func (r *Router) HandleFunc(
 	}
 }
 
-// RegisterRoute registers a new route with a path, the handler function and the middlewares
+// ExactHandleFunc registers a new route with a path, the handler function and the middlewares
+func (r *Router) ExactHandleFunc(
+	relativePath string,
+	handler http.HandlerFunc,
+	middlewares ...func(http.Handler) http.Handler,
+) {
+	// Add slash to the path
+	relativePath = AddSlash(relativePath)
+
+	// Chain the handlers
+	firstHandler := ChainHandlers(handler, middlewares...)
+
+	// Add the '$' wildcard to the end of the path to match the exact path
+	if relativePath[len(relativePath)-1] == '/' {
+		relativePath += "{$}"
+	}
+
+	// Register the route
+	r.mux.HandleFunc(relativePath, firstHandler.ServeHTTP)
+
+	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
+		r.logger.RegisterRoute(r.relativePath, relativePath)
+	}
+}
+
+// RegisterRoute registers a new route with a path, the handler function and the middlewares.
+// This does not match the exact path
 func (r *Router) RegisterRoute(
 	relativePath string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
 	r.HandleFunc(relativePath, handler, middlewares...)
+}
+
+// RegisterExactRoute registers a new route with a path, the handler function and the middlewares.
+// This matches the exact path
+func (r *Router) RegisterExactRoute(
+	relativePath string,
+	handler http.HandlerFunc,
+	middlewares ...func(http.Handler) http.Handler,
+) {
+	r.ExactHandleFunc(relativePath, handler, middlewares...)
 }
 
 // RegisterHandler registers a new route group with a path and a handler function
