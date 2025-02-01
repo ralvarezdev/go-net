@@ -69,18 +69,18 @@ func SplitPattern(pattern string) (string, string, error) {
 		return "", "", ErrEmptyPattern
 	}
 
-	// Split the pattern by the first space
-	spaceIndex := 0
+	// Iterate over the pattern
+	var method string
+	path := pattern
 	for i, char := range pattern {
+		// Split the pattern by the first space
 		if char == ' ' {
-			spaceIndex = i
+			// Get the method and the path
+			method = pattern[:i]
+			path = pattern[i+1:]
 			break
 		}
 	}
-
-	// Get the method and the path
-	method := pattern[:spaceIndex]
-	path := pattern[spaceIndex+1:]
 
 	// Trim the path
 	strings.Trim(path, " ")
