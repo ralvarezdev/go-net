@@ -24,6 +24,14 @@ type (
 		httpStatus int
 		errorCode  *string
 	}
+
+	// CookieError struct
+	CookieError struct {
+		name       string
+		err        string
+		httpStatus int
+		errorCode  *string
+	}
 )
 
 // NewFieldError creates a new field error
@@ -88,6 +96,38 @@ func (h *HeaderError) HTTPStatus() int {
 // ErrorCode returns the error code
 func (h *HeaderError) ErrorCode() *string {
 	return h.errorCode
+}
+
+// NewCookieError creates a new cookie error
+func NewCookieError(
+	name, err string, httpStatus int, errorCode *string,
+) *CookieError {
+	return &CookieError{
+		name,
+		err,
+		httpStatus,
+		errorCode,
+	}
+}
+
+// Name returns the cookie name
+func (c *CookieError) Name() string {
+	return c.name
+}
+
+// Error returns the cookie error as a string
+func (c *CookieError) Error() string {
+	return c.err
+}
+
+// HTTPStatus returns the HTTP status
+func (c *CookieError) HTTPStatus() int {
+	return c.httpStatus
+}
+
+// ErrorCode returns the error code
+func (c *CookieError) ErrorCode() *string {
+	return c.errorCode
 }
 
 // NewRequestErrorBodyData creates a new request errors body data
