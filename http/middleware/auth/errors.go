@@ -9,6 +9,7 @@ import (
 
 var (
 	ErrCodeInvalidAuthorizationHeader *string
+	ErrCodeInvalidTokenClaims         *string
 )
 
 var (

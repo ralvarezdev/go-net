@@ -8,6 +8,12 @@ import (
 // Authenticator interface
 type Authenticator interface {
 	Authenticate(
+		errorHandler func(
+			w http.ResponseWriter,
+			err string,
+			httpStatus int,
+			errorCode *string,
+		),
 		token gojwttoken.Token,
 		rawToken string,
 	) func(next http.Handler) http.Handler

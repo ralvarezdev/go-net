@@ -8,7 +8,6 @@ import (
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
-	gonethttpjwtvalidator "github.com/ralvarezdev/go-net/http/jwt/validator"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"net/http"
 	"strings"
@@ -16,16 +15,14 @@ import (
 
 // Middleware struct
 type Middleware struct {
-	validator               gojwtvalidator.Validator
-	handler                 gonethttphandler.Handler
-	jwtValidatorFailHandler gonethttpjwtvalidator.FailHandler
+	validator gojwtvalidator.Validator
+	handler   gonethttphandler.Handler
 }
 
 // NewMiddleware creates a new authentication middleware
 func NewMiddleware(
 	validator gojwtvalidator.Validator,
 	handler gonethttphandler.Handler,
-	jwtValidatorFailHandler gonethttpjwtvalidator.FailHandler,
 ) (*Middleware, error) {
 	// Check if either the validator, response handler or validator handler is nil
 	if validator == nil {
@@ -34,19 +31,21 @@ func NewMiddleware(
 	if handler == nil {
 		return nil, gonethttphandler.ErrNilHandler
 	}
-	if jwtValidatorFailHandler == nil {
-		return nil, gonethttpjwtvalidator.ErrNilFailHandler
-	}
 
 	return &Middleware{
 		validator,
 		handler,
-		jwtValidatorFailHandler,
 	}, nil
 }
 
 // Authenticate return the middleware function that authenticates the request
 func (m *Middleware) Authenticate(
+	errorHandler func(
+		w http.ResponseWriter,
+		err string,
+		httpStatus int,
+		errorCode *string,
+	),
 	token gojwttoken.Token,
 	rawToken string,
 ) func(next http.Handler) http.Handler {
@@ -59,7 +58,12 @@ func (m *Middleware) Authenticate(
 					token,
 				)
 				if err != nil {
-					m.jwtValidatorFailHandler(w, err)
+					errorHandler(
+						w,
+						err.Error(),
+						http.StatusUnauthorized,
+						ErrCodeInvalidTokenClaims,
+					)
 					return
 				}
 
@@ -77,6 +81,24 @@ func (m *Middleware) Authenticate(
 func (m *Middleware) AuthenticateFromHeader(
 	token gojwttoken.Token,
 ) func(next http.Handler) http.Handler {
+	// Create the error handler function
+	errorHandler := func(
+		w http.ResponseWriter,
+		err string,
+		httpStatus int,
+		errorCode *string,
+	) {
+		m.handler.HandleError(
+			w,
+			gonethttpresponse.NewHeaderError(
+				gojwtnethttp.AuthorizationHeaderKey,
+				err,
+				httpStatus,
+				errorCode,
+			),
+		)
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
@@ -88,9 +110,11 @@ func (m *Middleware) AuthenticateFromHeader(
 
 				// Return an error if the authorization is missing or invalid
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-					m.jwtValidatorFailHandler(
+					errorHandler(
 						w,
-						ErrInvalidAuthorizationHeader,
+						ErrInvalidAuthorizationHeader.Error(),
+						http.StatusUnauthorized,
+						ErrCodeInvalidAuthorizationHeader,
 					)
 					return
 				}
@@ -99,7 +123,10 @@ func (m *Middleware) AuthenticateFromHeader(
 				rawToken := parts[1]
 
 				// Call the Authenticate function
-				m.Authenticate(token, rawToken)(next).ServeHTTP(w, r)
+				m.Authenticate(errorHandler, token, rawToken)(next).ServeHTTP(
+					w,
+					r,
+				)
 			},
 		)
 	}
@@ -110,6 +137,24 @@ func (m *Middleware) AuthenticateFromCookie(
 	token gojwttoken.Token,
 	cookieName string,
 ) func(next http.Handler) http.Handler {
+	// Create the error handler function
+	errorHandler := func(
+		w http.ResponseWriter,
+		err string,
+		httpStatus int,
+		errorCode *string,
+	) {
+		m.handler.HandleError(
+			w,
+			gonethttpresponse.NewCookieError(
+				cookieName,
+				err,
+				httpStatus,
+				errorCode,
+			),
+		)
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
@@ -118,14 +163,11 @@ func (m *Middleware) AuthenticateFromCookie(
 
 				// Return an error if the cookie is missing
 				if err != nil {
-					m.jwtValidatorFailHandler(
+					errorHandler(
 						w,
-						gonethttpresponse.NewCookieError(
-							cookieName,
-							gonethttp.ErrCookieNotFound.Error(),
-							http.StatusUnauthorized,
-							gonethttp.ErrCodeCookieNotFound,
-						),
+						gonethttp.ErrCookieNotFound.Error(),
+						http.StatusUnauthorized,
+						gonethttp.ErrCodeCookieNotFound,
 					)
 					return
 				}
@@ -134,7 +176,10 @@ func (m *Middleware) AuthenticateFromCookie(
 				rawToken := cookie.Value
 
 				// Call the Authenticate function
-				m.Authenticate(token, rawToken)(next).ServeHTTP(w, r)
+				m.Authenticate(errorHandler, token, rawToken)(next).ServeHTTP(
+					w,
+					r,
+				)
 			},
 		)
 	}
