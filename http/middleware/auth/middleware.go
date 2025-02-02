@@ -122,7 +122,7 @@ func (m *Middleware) AuthenticateFromCookie(
 						w,
 						gonethttpresponse.NewCookieError(
 							cookieName,
-							gonethttp.ErrCookieNotFound,
+							gonethttp.ErrCookieNotFound.Error(),
 							http.StatusUnauthorized,
 							gonethttp.ErrCodeCookieNotFound,
 						),
