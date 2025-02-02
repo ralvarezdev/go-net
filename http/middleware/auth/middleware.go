@@ -40,7 +40,7 @@ func NewMiddleware(
 
 // Authenticate return the middleware function that authenticates the request
 func (m *Middleware) Authenticate(
-	errorHandler func(
+	failHandler func(
 		w http.ResponseWriter,
 		err string,
 		httpStatus int,
@@ -58,7 +58,7 @@ func (m *Middleware) Authenticate(
 					token,
 				)
 				if err != nil {
-					errorHandler(
+					failHandler(
 						w,
 						err.Error(),
 						http.StatusUnauthorized,
@@ -81,8 +81,8 @@ func (m *Middleware) Authenticate(
 func (m *Middleware) AuthenticateFromHeader(
 	token gojwttoken.Token,
 ) func(next http.Handler) http.Handler {
-	// Create the error handler function
-	errorHandler := func(
+	// Create the fail handler function
+	failHandler := func(
 		w http.ResponseWriter,
 		err string,
 		httpStatus int,
@@ -110,7 +110,7 @@ func (m *Middleware) AuthenticateFromHeader(
 
 				// Return an error if the authorization is missing or invalid
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-					errorHandler(
+					failHandler(
 						w,
 						ErrInvalidAuthorizationHeader.Error(),
 						http.StatusUnauthorized,
@@ -123,7 +123,7 @@ func (m *Middleware) AuthenticateFromHeader(
 				rawToken := parts[1]
 
 				// Call the Authenticate function
-				m.Authenticate(errorHandler, token, rawToken)(next).ServeHTTP(
+				m.Authenticate(failHandler, token, rawToken)(next).ServeHTTP(
 					w,
 					r,
 				)
@@ -137,8 +137,8 @@ func (m *Middleware) AuthenticateFromCookie(
 	token gojwttoken.Token,
 	cookieName string,
 ) func(next http.Handler) http.Handler {
-	// Create the error handler function
-	errorHandler := func(
+	// Create the fail handler function
+	failHandler := func(
 		w http.ResponseWriter,
 		err string,
 		httpStatus int,
@@ -163,7 +163,7 @@ func (m *Middleware) AuthenticateFromCookie(
 
 				// Return an error if the cookie is missing
 				if err != nil {
-					errorHandler(
+					failHandler(
 						w,
 						gonethttp.ErrCookieNotFound.Error(),
 						http.StatusUnauthorized,
@@ -176,7 +176,7 @@ func (m *Middleware) AuthenticateFromCookie(
 				rawToken := cookie.Value
 
 				// Call the Authenticate function
-				m.Authenticate(errorHandler, token, rawToken)(next).ServeHTTP(
+				m.Authenticate(failHandler, token, rawToken)(next).ServeHTTP(
 					w,
 					r,
 				)

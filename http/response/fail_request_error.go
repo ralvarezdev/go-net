@@ -1,8 +1,8 @@
 package response
 
 type (
-	// RequestError struct
-	RequestError interface {
+	// FailRequestError struct
+	FailRequestError interface {
 		Key() string
 		Error() string
 		HTTPStatus() int
@@ -115,6 +115,11 @@ func (c *CookieError) Name() string {
 	return c.name
 }
 
+// Key returns the cookie name
+func (c *CookieError) Key() string {
+	return c.Name()
+}
+
 // Error returns the cookie error as a string
 func (c *CookieError) Error() string {
 	return c.err
@@ -130,25 +135,27 @@ func (c *CookieError) ErrorCode() *string {
 	return c.errorCode
 }
 
-// NewRequestErrorBodyData creates a new request errors body data
-func NewRequestErrorBodyData(
-	requestError RequestError,
+// NewRequestErrorsBodyData creates a new request errors body data
+func NewRequestErrorsBodyData(
+	requestErrors ...FailRequestError,
 ) *map[string]*[]string {
 	// Initialize the request errors map
 	requestErrorsMap := make(map[string]*[]string)
 
 	// Add the request error to the request errors map
-	requestErrorsMap[requestError.Key()] = &[]string{requestError.Error()}
+	for _, requestError := range requestErrors {
+		requestErrorsMap[requestError.Key()] = &[]string{requestError.Error()}
+	}
 
 	return &requestErrorsMap
 }
 
-// NewResponseFromRequestError creates a new fail response from a request error
-func NewResponseFromRequestError(
-	requestError RequestError,
+// NewResponseFromFailRequestError creates a new fail response from a fail request error
+func NewResponseFromFailRequestError(
+	requestError FailRequestError,
 ) *FailResponse {
 	return NewJSendFailResponse(
-		NewRequestErrorBodyData(requestError),
+		NewRequestErrorsBodyData(requestError),
 		requestError.ErrorCode(),
 		requestError.HTTPStatus(),
 	)

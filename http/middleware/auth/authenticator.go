@@ -8,7 +8,7 @@ import (
 // Authenticator interface
 type Authenticator interface {
 	Authenticate(
-		errorHandler func(
+		failHandler func(
 			w http.ResponseWriter,
 			err string,
 			httpStatus int,

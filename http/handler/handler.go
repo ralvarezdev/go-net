@@ -234,11 +234,11 @@ func (d *DefaultHandler) HandleError(
 	w http.ResponseWriter,
 	err error,
 ) {
-	// Check if the errors is a request error
-	var e gonethttpresponse.RequestError
+	// Check if the errors is a fail request error
+	var e gonethttpresponse.FailRequestError
 	if errors.As(err, &e) {
 		d.HandleResponse(
-			w, gonethttpresponse.NewResponseFromRequestError(e),
+			w, gonethttpresponse.NewResponseFromFailRequestError(e),
 		)
 		return
 	}
