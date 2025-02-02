@@ -35,7 +35,7 @@ func bodyDecodeErrorHandler(
 		if fieldName != "" {
 			return encoder.Encode(
 				w,
-				gonethttpresponse.NewResponseFromRequestError(
+				gonethttpresponse.NewResponseFromFailRequestError(
 					gonethttpresponse.NewFieldError(
 						fieldName,
 						fmt.Sprintf(
