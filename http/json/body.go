@@ -163,6 +163,7 @@ func BodyDecodeErrorHandler(
 		return encoder.Encode(
 			w,
 			NewMaxBodySizeExceededErrorResponse(maxBytesError.Limit),
+		)
 	}
 
 	return encoder.Encode(

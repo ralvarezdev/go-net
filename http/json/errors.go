@@ -8,7 +8,6 @@ import (
 
 var (
 	ErrCodeInvalidContentType *string
-	Er
 )
 
 var (
@@ -22,8 +21,8 @@ var (
 		http.StatusUnsupportedMediaType,
 	)
 	ErrMaxBodySizeExceeded = "json body size exceeds the maximum allowed size, limit is %d bytes"
-	ErrSyntaxError   = "json body contains badly-formed JSON at position %d"
-	ErrUnexpectedEOF = errors.New("json body contains badly-formed JSON")
-	ErrEmptyBody     = errors.New("json body is empty")
-	ErrUnknownField  = "json body contains an unknown field %s"
+	ErrSyntaxError         = "json body contains badly-formed JSON at position %d"
+	ErrUnexpectedEOF       = errors.New("json body contains badly-formed JSON")
+	ErrEmptyBody           = errors.New("json body is empty")
+	ErrUnknownField        = "json body contains an unknown field %s"
 )
