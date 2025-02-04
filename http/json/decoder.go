@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrCodeReadBodyFailed *string
-	ErrCodeNilDestination *string
+	ErrCodeFailedToReadBody *string
+	ErrCodeNilDestination   *string
 )
 
 type (
@@ -53,6 +53,14 @@ func (d *DefaultDecoder) Decode(
 	r *http.Request,
 	dest interface{},
 ) (err error) {
+	// Check the content type
+	if !CheckContentType(r) {
+		_ = d.encoder.Encode(
+			w,
+			gonethttpresponse.NewResponseFromFailRequestError(ErrInvalidContentType),
+		)
+	}
+
 	// Check the decoder destination
 	if dest == nil {
 		_ = d.encoder.Encode(
@@ -66,12 +74,9 @@ func (d *DefaultDecoder) Decode(
 	if err != nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewJSendErrorResponse(
+			gonethttpstatusresponse.NewJSendDebugInternalServerError(
 				err,
-				nil,
-				nil,
-				ErrCodeReadBodyFailed,
-				http.StatusBadRequest,
+				ErrCodeFailedToReadBody,
 			),
 		)
 		return err
@@ -79,7 +84,7 @@ func (d *DefaultDecoder) Decode(
 
 	// Decode JSON body into destination
 	if err = json.Unmarshal(body, dest); err != nil {
-		_ = bodyDecodeErrorHandler(w, err, d.encoder)
+		_ = BodyDecodeErrorHandler(w, err, d.encoder)
 	}
 	return err
 }

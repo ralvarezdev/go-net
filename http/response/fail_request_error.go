@@ -36,7 +36,7 @@ type (
 
 // NewFieldError creates a new field error
 func NewFieldError(
-	field, err string, httpStatus int, errorCode *string,
+	field, err string, errorCode *string, httpStatus int,
 ) *FieldError {
 	return &FieldError{
 		field,
@@ -68,7 +68,7 @@ func (f *FieldError) ErrorCode() *string {
 
 // NewHeaderError creates a new header error
 func NewHeaderError(
-	header, err string, httpStatus int, errorCode *string,
+	header, err string, errorCode *string, httpStatus int,
 ) *HeaderError {
 	return &HeaderError{
 		header,
@@ -100,7 +100,7 @@ func (h *HeaderError) ErrorCode() *string {
 
 // NewCookieError creates a new cookie error
 func NewCookieError(
-	name, err string, httpStatus int, errorCode *string,
+	name, err string, errorCode *string, httpStatus int,
 ) *CookieError {
 	return &CookieError{
 		name,

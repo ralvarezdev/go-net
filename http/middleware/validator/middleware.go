@@ -10,7 +10,7 @@ import (
 	"reflect"
 )
 
-// Middleware struct
+// Middleware struct is the validation middleware
 type Middleware struct {
 	handler   gonethttphandler.Handler
 	validator govalidatorstructmappervalidator.Service

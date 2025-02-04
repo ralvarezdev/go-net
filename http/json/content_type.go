@@ -1,0 +1,26 @@
+package json
+
+import (
+	"net/http"
+	"strings"
+)
+
+// Inspired by:
+// https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
+
+// CheckContentType checks if the content type is JSON
+func CheckContentType(r *http.Request) bool {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "" {
+		mediaType := strings.ToLower(
+			strings.TrimSpace(
+				strings.Split(
+					contentType,
+					";",
+				)[0],
+			),
+		)
+		return mediaType == "application/json"
+	}
+	return false
+}

@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// Middleware struct
+// Middleware struct is the error handler middleware
 type Middleware struct {
 	handler gonethttphandler.Handler
 }

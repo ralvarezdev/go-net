@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"net/http"
 )
@@ -37,6 +38,14 @@ func (d *DefaultStreamDecoder) Decode(
 	r *http.Request,
 	dest interface{},
 ) (err error) {
+	// Check the content type
+	if !CheckContentType(r) {
+		_ = d.encoder.Encode(
+			w,
+			gonethttpresponse.NewResponseFromFailRequestError(ErrInvalidContentType),
+		)
+	}
+
 	// Check the decoder destination
 	if dest == nil {
 		_ = d.encoder.Encode(
@@ -48,9 +57,13 @@ func (d *DefaultStreamDecoder) Decode(
 		)
 	}
 
+	// Create a new reader from the body
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
 	// Decode JSON body into destination
-	if err = json.NewDecoder(r.Body).Decode(dest); err != nil {
-		_ = bodyDecodeErrorHandler(w, err, d.encoder)
+	if err = decoder.Decode(dest); err != nil {
+		_ = BodyDecodeErrorHandler(w, err, d.encoder)
 	}
 	return err
 }

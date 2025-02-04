@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-// Middleware struct
+// Middleware struct is the authentication middleware
 type Middleware struct {
 	validator gojwtvalidator.Validator
 	handler   gonethttphandler.Handler
@@ -43,8 +43,8 @@ func (m *Middleware) Authenticate(
 	failHandler func(
 		w http.ResponseWriter,
 		err string,
-		httpStatus int,
 		errorCode *string,
+		httpStatus int,
 	),
 	token gojwttoken.Token,
 	rawToken string,
@@ -61,8 +61,8 @@ func (m *Middleware) Authenticate(
 					failHandler(
 						w,
 						err.Error(),
-						http.StatusUnauthorized,
 						ErrCodeInvalidTokenClaims,
+						http.StatusUnauthorized,
 					)
 					return
 				}
@@ -85,16 +85,16 @@ func (m *Middleware) AuthenticateFromHeader(
 	failHandler := func(
 		w http.ResponseWriter,
 		err string,
-		httpStatus int,
 		errorCode *string,
+		httpStatus int,
 	) {
 		m.handler.HandleError(
 			w,
 			gonethttpresponse.NewHeaderError(
 				gojwtnethttp.AuthorizationHeaderKey,
 				err,
-				httpStatus,
 				errorCode,
+				httpStatus,
 			),
 		)
 	}
@@ -113,8 +113,8 @@ func (m *Middleware) AuthenticateFromHeader(
 					failHandler(
 						w,
 						ErrInvalidAuthorizationHeader.Error(),
-						http.StatusUnauthorized,
 						ErrCodeInvalidAuthorizationHeader,
+						http.StatusUnauthorized,
 					)
 					return
 				}
@@ -141,16 +141,16 @@ func (m *Middleware) AuthenticateFromCookie(
 	failHandler := func(
 		w http.ResponseWriter,
 		err string,
-		httpStatus int,
 		errorCode *string,
+		httpStatus int,
 	) {
 		m.handler.HandleError(
 			w,
 			gonethttpresponse.NewCookieError(
 				cookieName,
 				err,
-				httpStatus,
 				errorCode,
+				httpStatus,
 			),
 		)
 	}
@@ -166,8 +166,8 @@ func (m *Middleware) AuthenticateFromCookie(
 					failHandler(
 						w,
 						gonethttp.ErrCookieNotFound.Error(),
-						http.StatusUnauthorized,
 						gonethttp.ErrCodeCookieNotFound,
+						http.StatusUnauthorized,
 					)
 					return
 				}

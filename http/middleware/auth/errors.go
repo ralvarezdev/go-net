@@ -17,7 +17,7 @@ var (
 	ErrInvalidAuthorizationHeader = gonethttpresponse.NewHeaderError(
 		gojwtnethttp.AuthorizationHeaderKey,
 		"invalid authorization header",
-		http.StatusUnauthorized,
 		ErrCodeInvalidAuthorizationHeader,
+		http.StatusUnauthorized,
 	)
 )
