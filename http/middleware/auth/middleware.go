@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"errors"
+	"github.com/golang-jwt/jwt/v5"
 	gojwt "github.com/ralvarezdev/go-jwt"
 	gojwtnethttp "github.com/ralvarezdev/go-jwt/net/http"
 	gojwtnethttpctx "github.com/ralvarezdev/go-jwt/net/http/context"
@@ -40,14 +42,19 @@ func NewMiddleware(
 
 // Authenticate return the middleware function that authenticates the request
 func (m *Middleware) Authenticate(
+	token gojwttoken.Token,
+	rawToken string,
 	failHandler func(
 		w http.ResponseWriter,
 		err string,
 		errorCode *string,
 		httpStatus int,
 	),
-	token gojwttoken.Token,
-	rawToken string,
+	refreshTokenFn func(
+		w http.ResponseWriter,
+		r *http.Request,
+	) error,
+	authenticateFn func(next http.Handler) http.Handler,
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
@@ -58,11 +65,35 @@ func (m *Middleware) Authenticate(
 					token,
 				)
 				if err != nil {
-					failHandler(
+					// Check if the error is a token expired error
+					if token == gojwttoken.RefreshToken || !errors.Is(
+						err,
+						jwt.ErrTokenExpired,
+					) || refreshTokenFn == nil {
+						failHandler(
+							w,
+							err.Error(),
+							ErrCodeInvalidTokenClaims,
+							http.StatusUnauthorized,
+						)
+						return
+					}
+
+					// Refresh the token
+					if err = refreshTokenFn(w, r); err != nil {
+						failHandler(
+							w,
+							err.Error(),
+							ErrCodeFailedToRefreshToken,
+							http.StatusUnauthorized,
+						)
+						return
+					}
+
+					// Authenticate again
+					authenticateFn(next).ServeHTTP(
 						w,
-						err.Error(),
-						ErrCodeInvalidTokenClaims,
-						http.StatusUnauthorized,
+						r,
 					)
 					return
 				}
@@ -123,7 +154,13 @@ func (m *Middleware) AuthenticateFromHeader(
 				rawToken := parts[1]
 
 				// Call the Authenticate function
-				m.Authenticate(failHandler, token, rawToken)(next).ServeHTTP(
+				m.Authenticate(
+					token,
+					rawToken,
+					failHandler,
+					nil,
+					nil,
+				)(next).ServeHTTP(
 					w,
 					r,
 				)
@@ -136,6 +173,10 @@ func (m *Middleware) AuthenticateFromHeader(
 func (m *Middleware) AuthenticateFromCookie(
 	token gojwttoken.Token,
 	cookieName string,
+	refreshTokenFn func(
+		w http.ResponseWriter,
+		r *http.Request,
+	) error,
 ) func(next http.Handler) http.Handler {
 	// Create the fail handler function
 	failHandler := func(
@@ -155,7 +196,9 @@ func (m *Middleware) AuthenticateFromCookie(
 		)
 	}
 
-	return func(next http.Handler) http.Handler {
+	// Create the authenticate function
+	var authenticateFn func(next http.Handler) http.Handler
+	authenticateFn = func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				// Get the cookie
@@ -176,11 +219,19 @@ func (m *Middleware) AuthenticateFromCookie(
 				rawToken := cookie.Value
 
 				// Call the Authenticate function
-				m.Authenticate(failHandler, token, rawToken)(next).ServeHTTP(
+				m.Authenticate(
+					token,
+					rawToken,
+					failHandler,
+					refreshTokenFn,
+					authenticateFn,
+				)(next).ServeHTTP(
 					w,
 					r,
 				)
 			},
 		)
 	}
+
+	return authenticateFn
 }

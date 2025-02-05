@@ -10,6 +10,7 @@ import (
 var (
 	ErrCodeInvalidAuthorizationHeader *string
 	ErrCodeInvalidTokenClaims         *string
+	ErrCodeFailedToRefreshToken       *string
 )
 
 var (
