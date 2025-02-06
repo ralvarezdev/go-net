@@ -41,12 +41,13 @@ func SetCookie(
 func SetTimestampCookie(
 	w http.ResponseWriter,
 	attributes *Attributes,
+	value,
 	expiresAt time.Time,
 ) {
 	SetCookie(
 		w,
 		attributes,
-		expiresAt.Format(time.RFC3339),
+		value.Format(time.RFC3339),
 		expiresAt,
 	)
 }
