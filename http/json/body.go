@@ -27,42 +27,50 @@ func NewUnmarshalTypeErrorResponse(
 	fieldName string,
 	fieldTypeName string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponseFromFailRequestError(
-		gonethttpresponse.NewFieldError(
-			fieldName,
-			fmt.Sprintf(
-				gonethttpresponse.ErrInvalidFieldValueType,
-				fieldTypeName,
+	return gonethttpresponse.NewResponse(
+		gonethttpresponse.NewBodyFromFailBodyError(
+			gonethttpresponse.NewFailBodyError(
+				fieldName,
+				fmt.Sprintf(
+					gonethttpresponse.ErrInvalidFieldValueType,
+					fieldTypeName,
+				),
+				ErrCodeUnmarshalTypeError,
 			),
-			ErrCodeUnmarshalTypeError,
-			http.StatusBadRequest,
 		),
+		http.StatusBadRequest,
 	)
 }
 
 // NewSyntaxErrorResponse creates a new response for a SyntaxError
-func NewSyntaxErrorResponse(offset int64) gonethttpresponse.Response {
+func NewSyntaxErrorResponse(
+	debugErr error,
+	offset int64,
+) gonethttpresponse.Response {
 	// Create the error
 	err := fmt.Errorf(ErrSyntaxError, offset)
 
-	return gonethttpresponse.NewJSendErrorResponse(
-		err,
-		err,
-		nil,
-		ErrCodeSyntaxError,
+	return gonethttpresponse.NewResponse(
+		gonethttpresponse.NewJSendErrorBody(
+			nil,
+			err.Error(),
+			ErrCodeSyntaxError,
+		),
 		http.StatusBadRequest,
 	)
 }
 
 // NewUnknownFieldErrorResponse creates a new response for an unknown field error
 func NewUnknownFieldErrorResponse(fieldName string) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponseFromFailRequestError(
-		gonethttpresponse.NewFieldError(
-			fieldName,
-			fmt.Sprintf(ErrUnknownField, fieldName),
-			ErrCodeUnknownField,
-			http.StatusBadRequest,
+	return gonethttpresponse.NewResponse(
+		gonethttpresponse.NewBodyFromFailBodyError(
+			gonethttpresponse.NewFailBodyError(
+				fieldName,
+				fmt.Sprintf(ErrUnknownField, fieldName),
+				ErrCodeUnknownField,
+			),
 		),
+		http.StatusBadRequest,
 	)
 }
 
@@ -71,11 +79,12 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 	// Create the error
 	err := fmt.Errorf(ErrMaxBodySizeExceeded, limit)
 
-	return gonethttpresponse.NewJSendErrorResponse(
-		err,
-		err,
-		nil,
-		ErrCodeMaxBodySizeExceeded,
+	return gonethttpresponse.NewResponse(
+		gonethttpresponse.NewJSendErrorBody(
+			nil,
+			err.Error(),
+			ErrCodeMaxBodySizeExceeded,
+		),
 		http.StatusRequestEntityTooLarge,
 	)
 }
@@ -115,7 +124,7 @@ func BodyDecodeErrorHandler(
 	if errors.As(err, &syntaxError) {
 		return encoder.Encode(
 			w,
-			NewSyntaxErrorResponse(syntaxError.Offset),
+			NewSyntaxErrorResponse(err, syntaxError.Offset),
 		)
 	}
 
@@ -123,11 +132,12 @@ func BodyDecodeErrorHandler(
 	if errors.Is(err, io.ErrUnexpectedEOF) {
 		return encoder.Encode(
 			w,
-			gonethttpresponse.NewJSendErrorResponse(
-				ErrUnexpectedEOF,
-				ErrUnexpectedEOF,
-				nil,
-				ErrCodeSyntaxError,
+			gonethttpresponse.NewResponse(
+				gonethttpresponse.NewJSendErrorBody(
+					nil,
+					ErrUnexpectedEOF.Error(),
+					ErrCodeSyntaxError,
+				),
 				http.StatusBadRequest,
 			),
 		)
@@ -148,11 +158,12 @@ func BodyDecodeErrorHandler(
 	if errors.Is(err, io.EOF) {
 		return encoder.Encode(
 			w,
-			gonethttpresponse.NewJSendErrorResponse(
-				ErrEmptyBody,
-				ErrEmptyBody,
-				nil,
-				ErrCodeEmptyBody,
+			gonethttpresponse.NewResponse(
+				gonethttpresponse.NewJSendErrorBody(
+					nil,
+					ErrEmptyBody.Error(),
+					ErrCodeEmptyBody,
+				),
 				http.StatusBadRequest,
 			),
 		)
@@ -168,11 +179,17 @@ func BodyDecodeErrorHandler(
 
 	return encoder.Encode(
 		w,
-		gonethttpresponse.NewJSendErrorResponse(
-			ErrUnmarshalBodyFailed,
-			err,
-			nil,
-			ErrCodeUnmarshalRequestBodyFailed,
+		gonethttpresponse.NewDebugResponse(
+			gonethttpresponse.NewJSendErrorBody(
+				nil,
+				ErrUnmarshalBodyFailed.Error(),
+				ErrCodeUnmarshalRequestBodyFailed,
+			),
+			gonethttpresponse.NewJSendErrorBody(
+				nil,
+				err.Error(),
+				ErrCodeUnmarshalRequestBodyFailed,
+			),
 			http.StatusBadRequest,
 		),
 	)

@@ -121,7 +121,7 @@ func (m *Middleware) AuthenticateFromHeader(
 	) {
 		m.handler.HandleError(
 			w,
-			gonethttpresponse.NewHeaderError(
+			gonethttpresponse.NewFailResponseError(
 				gojwtnethttp.AuthorizationHeaderKey,
 				err,
 				errorCode,
@@ -143,7 +143,7 @@ func (m *Middleware) AuthenticateFromHeader(
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 					failHandler(
 						w,
-						ErrInvalidAuthorizationHeader.Error(),
+						ErrInvalidAuthorizationHeader,
 						ErrCodeInvalidAuthorizationHeader,
 						http.StatusUnauthorized,
 					)
@@ -187,7 +187,7 @@ func (m *Middleware) AuthenticateFromCookie(
 	) {
 		m.handler.HandleError(
 			w,
-			gonethttpresponse.NewCookieError(
+			gonethttpresponse.NewFailResponseError(
 				cookieName,
 				err,
 				errorCode,
@@ -208,7 +208,7 @@ func (m *Middleware) AuthenticateFromCookie(
 				if err != nil {
 					failHandler(
 						w,
-						gonethttp.ErrCookieNotFound.Error(),
+						gonethttp.ErrCookieNotFound,
 						gonethttp.ErrCodeCookieNotFound,
 						http.StatusUnauthorized,
 					)

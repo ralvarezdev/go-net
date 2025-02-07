@@ -1,40 +1,44 @@
 package response
 
 type (
-	// JSendBody struct
-	JSendBody struct {
-		Status string      `json:"status"`
-		Data   interface{} `json:"data"`
-	}
-
-	// JSendSuccessBody struct
-	JSendSuccessBody struct {
-		JSendBody
-	}
-
-	// JSendFailBody struct
-	JSendFailBody struct {
-		JSendBody
-		Code *string `json:"code,omitempty"`
-	}
-
-	// JSendErrorBody struct
-	JSendErrorBody struct {
-		JSendBody
+	// BaseJSendBody struct. The 'data' field must be defined on derived structs of this base struct.
+	BaseJSendBody struct {
+		Status  string  `json:"status"`
 		Message *string `json:"message,omitempty"`
 		Code    *string `json:"code,omitempty"`
 	}
+
+	// JSendBody struct
+	JSendBody struct {
+		BaseJSendBody
+		Data interface{} `json:"data,omitempty"`
+	}
 )
+
+// NewBaseJSendSuccessBody creates a new base JSend success response body
+func NewBaseJSendSuccessBody() *BaseJSendBody {
+	return &BaseJSendBody{
+		Status: "success",
+	}
+}
 
 // NewJSendSuccessBody creates a new JSend success response body
 func NewJSendSuccessBody(
 	data interface{},
-) *JSendSuccessBody {
-	return &JSendSuccessBody{
-		JSendBody: JSendBody{
-			Status: "success",
-			Data:   data,
-		},
+) *JSendBody {
+	return &JSendBody{
+		BaseJSendBody: *NewBaseJSendSuccessBody(),
+		Data:          data,
+	}
+}
+
+// NewBaseJSendFailBody creates a new base JSend fail response body
+func NewBaseJSendFailBody(
+	code *string,
+) *BaseJSendBody {
+	return &BaseJSendBody{
+		Status: "fail",
+		Code:   code,
 	}
 }
 
@@ -42,28 +46,33 @@ func NewJSendSuccessBody(
 func NewJSendFailBody(
 	data interface{},
 	code *string,
-) *JSendFailBody {
-	return &JSendFailBody{
-		JSendBody: JSendBody{
-			Status: "fail",
-			Data:   data,
-		},
-		Code: code,
+) *JSendBody {
+	return &JSendBody{
+		BaseJSendBody: *NewBaseJSendFailBody(code),
+		Data:          data,
+	}
+}
+
+// NewBaseJSendErrorBody creates a new base JSend error response body
+func NewBaseJSendErrorBody(
+	message string,
+	code *string,
+) *BaseJSendBody {
+	return &BaseJSendBody{
+		Status:  "error",
+		Message: &message,
+		Code:    code,
 	}
 }
 
 // NewJSendErrorBody creates a new JSend error response body
 func NewJSendErrorBody(
-	message string,
 	data interface{},
+	message string,
 	code *string,
-) *JSendErrorBody {
-	return &JSendErrorBody{
-		JSendBody: JSendBody{
-			Status: "error",
-			Data:   data,
-		},
-		Message: &message,
-		Code:    code,
+) *JSendBody {
+	return &JSendBody{
+		BaseJSendBody: *NewBaseJSendErrorBody(message, code),
+		Data:          data,
 	}
 }

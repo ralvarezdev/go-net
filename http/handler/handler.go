@@ -124,9 +124,11 @@ func (d *DefaultHandler) Validate(
 	} else {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewJSendFailResponse(
-				validations,
-				ErrCodeValidationFailed,
+			gonethttpresponse.NewResponse(
+				gonethttpresponse.NewJSendFailBody(
+					validations,
+					ErrCodeValidationFailed,
+				),
 				http.StatusBadRequest,
 			),
 		)
@@ -234,11 +236,12 @@ func (d *DefaultHandler) HandleError(
 	w http.ResponseWriter,
 	err error,
 ) {
-	// Check if the errors is a fail request error
-	var e gonethttpresponse.FailRequestError
-	if errors.As(err, &e) {
+	// Check if the errors is a fail body error or a fail request error
+	var failResponseErrorTarget gonethttpresponse.FailResponseError
+	if errors.As(err, &failResponseErrorTarget) {
 		d.HandleResponse(
-			w, gonethttpresponse.NewResponseFromFailRequestError(e),
+			w,
+			gonethttpresponse.NewResponseFromFailResponseError(failResponseErrorTarget),
 		)
 		return
 	}
