@@ -28,16 +28,14 @@ func NewUnmarshalTypeErrorResponse(
 	fieldTypeName string,
 ) gonethttpresponse.Response {
 	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewBodyFromFailBodyError(
-			gonethttpresponse.NewFailBodyError(
-				fieldName,
-				fmt.Sprintf(
-					gonethttpresponse.ErrInvalidFieldValueType,
-					fieldTypeName,
-				),
-				ErrCodeUnmarshalTypeError,
+		gonethttpresponse.NewFailBodyError(
+			fieldName,
+			fmt.Sprintf(
+				gonethttpresponse.ErrInvalidFieldValueType,
+				fieldTypeName,
 			),
-		),
+			ErrCodeUnmarshalTypeError,
+		).Body(),
 		http.StatusBadRequest,
 	)
 }
@@ -61,13 +59,11 @@ func NewSyntaxErrorResponse(
 // NewUnknownFieldErrorResponse creates a new response for an unknown field error
 func NewUnknownFieldErrorResponse(fieldName string) gonethttpresponse.Response {
 	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewBodyFromFailBodyError(
-			gonethttpresponse.NewFailBodyError(
-				fieldName,
-				fmt.Sprintf(ErrUnknownField, fieldName),
-				ErrCodeUnknownField,
-			),
-		),
+		gonethttpresponse.NewFailBodyError(
+			fieldName,
+			fmt.Sprintf(ErrUnknownField, fieldName),
+			ErrCodeUnknownField,
+		).Body(),
 		http.StatusBadRequest,
 	)
 }

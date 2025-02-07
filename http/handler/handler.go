@@ -239,7 +239,7 @@ func (d *DefaultHandler) HandleError(
 	if errors.As(err, &failResponseErrorTarget) {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewResponseFromFailResponseError(failResponseErrorTarget),
+			failResponseErrorTarget.Response(),
 		)
 		return
 	}

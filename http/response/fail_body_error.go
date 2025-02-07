@@ -35,30 +35,21 @@ func (f *FailBodyError) ErrorCode() *string {
 	return f.errorCode
 }
 
-// NewDataFromFailBodyError creates a new data map from fail body error
-func NewDataFromFailBodyError(
-	failBodyError *FailBodyError,
-) *map[string]*[]string {
-	// Check if the fail body error is nil
-	if failBodyError == nil {
-		return nil
-	}
-
+// Data returns a response data map from the fail body error
+func (f *FailBodyError) Data() *map[string]*[]string {
 	// Initialize the data map
 	data := make(map[string]*[]string)
 
 	// Add the fail body error to the data map
-	data[failBodyError.Key()] = &[]string{failBodyError.Error()}
+	data[f.Key()] = &[]string{f.Error()}
 
 	return &data
 }
 
-// NewBodyFromFailBodyError creates a new body from fail body error
-func NewBodyFromFailBodyError(
-	failBodyError *FailBodyError,
-) *JSendBody {
+// Body returns a response body from the fail body error
+func (f *FailBodyError) Body() *JSendFailBody {
 	return NewJSendFailBody(
-		NewDataFromFailBodyError(failBodyError),
-		failBodyError.ErrorCode(),
+		f.Data(),
+		f.ErrorCode(),
 	)
 }

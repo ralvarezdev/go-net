@@ -3,7 +3,6 @@ package json
 import (
 	"encoding/json"
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"net/http"
 )
@@ -42,7 +41,7 @@ func (d *DefaultStreamDecoder) Decode(
 	if !CheckContentType(r) {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewResponseFromFailRequestError(ErrInvalidContentType),
+			ErrInvalidContentType.Response(),
 		)
 	}
 

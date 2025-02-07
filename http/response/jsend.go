@@ -1,23 +1,46 @@
 package response
 
 type (
-	// BaseJSendBody struct. The 'data' field must be defined on derived structs of this base struct.
-	BaseJSendBody struct {
+	// BaseJSendSuccessBody struct
+	BaseJSendSuccessBody struct {
+		Status string `json:"status"`
+	}
+
+	// JSendSuccessBody struct
+	JSendSuccessBody struct {
+		BaseJSendSuccessBody
+		Data interface{} `json:"data,omitempty"`
+	}
+
+	// BaseJSendFailBody struct
+	BaseJSendFailBody struct {
+		Status string  `json:"status"`
+		Code   *string `json:"code,omitempty"`
+	}
+
+	// JSendFailBody struct
+	JSendFailBody struct {
+		BaseJSendFailBody
+		Data interface{} `json:"data,omitempty"`
+	}
+
+	// BaseJSendErrorBody struct
+	BaseJSendErrorBody struct {
 		Status  string  `json:"status"`
 		Message *string `json:"message,omitempty"`
 		Code    *string `json:"code,omitempty"`
 	}
 
-	// JSendBody struct
-	JSendBody struct {
-		BaseJSendBody
+	// JSendErrorBody struct
+	JSendErrorBody struct {
+		BaseJSendErrorBody
 		Data interface{} `json:"data,omitempty"`
 	}
 )
 
 // NewBaseJSendSuccessBody creates a new base JSend success response body
-func NewBaseJSendSuccessBody() *BaseJSendBody {
-	return &BaseJSendBody{
+func NewBaseJSendSuccessBody() *BaseJSendSuccessBody {
+	return &BaseJSendSuccessBody{
 		Status: "success",
 	}
 }
@@ -25,10 +48,10 @@ func NewBaseJSendSuccessBody() *BaseJSendBody {
 // NewJSendSuccessBody creates a new JSend success response body
 func NewJSendSuccessBody(
 	data interface{},
-) *JSendBody {
-	return &JSendBody{
-		BaseJSendBody: *NewBaseJSendSuccessBody(),
-		Data:          data,
+) *JSendSuccessBody {
+	return &JSendSuccessBody{
+		BaseJSendSuccessBody: *NewBaseJSendSuccessBody(),
+		Data:                 data,
 	}
 }
 
@@ -43,8 +66,8 @@ func NewJSendSuccessResponse(
 // NewBaseJSendFailBody creates a new base JSend fail response body
 func NewBaseJSendFailBody(
 	code *string,
-) *BaseJSendBody {
-	return &BaseJSendBody{
+) *BaseJSendFailBody {
+	return &BaseJSendFailBody{
 		Status: "fail",
 		Code:   code,
 	}
@@ -54,10 +77,10 @@ func NewBaseJSendFailBody(
 func NewJSendFailBody(
 	data interface{},
 	code *string,
-) *JSendBody {
-	return &JSendBody{
-		BaseJSendBody: *NewBaseJSendFailBody(code),
-		Data:          data,
+) *JSendFailBody {
+	return &JSendFailBody{
+		BaseJSendFailBody: *NewBaseJSendFailBody(code),
+		Data:              data,
 	}
 }
 
@@ -74,8 +97,8 @@ func NewJSendFailResponse(
 func NewBaseJSendErrorBody(
 	message string,
 	code *string,
-) *BaseJSendBody {
-	return &BaseJSendBody{
+) *BaseJSendErrorBody {
+	return &BaseJSendErrorBody{
 		Status:  "error",
 		Message: &message,
 		Code:    code,
@@ -87,10 +110,10 @@ func NewJSendErrorBody(
 	data interface{},
 	message string,
 	code *string,
-) *JSendBody {
-	return &JSendBody{
-		BaseJSendBody: *NewBaseJSendErrorBody(message, code),
-		Data:          data,
+) *JSendErrorBody {
+	return &JSendErrorBody{
+		BaseJSendErrorBody: *NewBaseJSendErrorBody(message, code),
+		Data:               data,
 	}
 }
 

@@ -42,12 +42,10 @@ func (f *FailResponseError) HTTPStatus() int {
 	return f.httpStatus
 }
 
-// NewResponseFromFailResponseError creates a new fail response from a fail response error
-func NewResponseFromFailResponseError(
-	failResponseError FailResponseError,
-) Response {
+// Response creates a new response from a fail response error
+func (f *FailResponseError) Response() Response {
 	return NewResponse(
-		NewBodyFromFailBodyError(failResponseError.FailBodyError),
-		failResponseError.HTTPStatus(),
+		f.FailBodyError.Body(),
+		f.HTTPStatus(),
 	)
 }
