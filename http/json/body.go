@@ -50,12 +50,10 @@ func NewSyntaxErrorResponse(
 	// Create the error
 	err := fmt.Errorf(ErrSyntaxError, offset)
 
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			err.Error(),
-			ErrCodeSyntaxError,
-		),
+	return gonethttpresponse.NewJSendErrorResponse(
+		nil,
+		err.Error(),
+		ErrCodeSyntaxError,
 		http.StatusBadRequest,
 	)
 }
@@ -79,12 +77,10 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 	// Create the error
 	err := fmt.Errorf(ErrMaxBodySizeExceeded, limit)
 
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			err.Error(),
-			ErrCodeMaxBodySizeExceeded,
-		),
+	return gonethttpresponse.NewJSendErrorResponse(
+		nil,
+		err.Error(),
+		ErrCodeMaxBodySizeExceeded,
 		http.StatusRequestEntityTooLarge,
 	)
 }
@@ -132,12 +128,10 @@ func BodyDecodeErrorHandler(
 	if errors.Is(err, io.ErrUnexpectedEOF) {
 		return encoder.Encode(
 			w,
-			gonethttpresponse.NewResponse(
-				gonethttpresponse.NewJSendErrorBody(
-					nil,
-					ErrUnexpectedEOF.Error(),
-					ErrCodeSyntaxError,
-				),
+			gonethttpresponse.NewJSendErrorResponse(
+				nil,
+				ErrUnexpectedEOF.Error(),
+				ErrCodeSyntaxError,
 				http.StatusBadRequest,
 			),
 		)
@@ -158,12 +152,10 @@ func BodyDecodeErrorHandler(
 	if errors.Is(err, io.EOF) {
 		return encoder.Encode(
 			w,
-			gonethttpresponse.NewResponse(
-				gonethttpresponse.NewJSendErrorBody(
-					nil,
-					ErrEmptyBody.Error(),
-					ErrCodeEmptyBody,
-				),
+			gonethttpresponse.NewJSendErrorResponse(
+				nil,
+				ErrEmptyBody.Error(),
+				ErrCodeEmptyBody,
 				http.StatusBadRequest,
 			),
 		)
@@ -179,17 +171,11 @@ func BodyDecodeErrorHandler(
 
 	return encoder.Encode(
 		w,
-		gonethttpresponse.NewDebugResponse(
-			gonethttpresponse.NewJSendErrorBody(
-				nil,
-				ErrUnmarshalBodyFailed.Error(),
-				ErrCodeUnmarshalRequestBodyFailed,
-			),
-			gonethttpresponse.NewJSendErrorBody(
-				nil,
-				err.Error(),
-				ErrCodeUnmarshalRequestBodyFailed,
-			),
+		gonethttpresponse.NewJSendErrorDebugResponse(
+			nil,
+			ErrUnmarshalBodyFailed.Error(),
+			err.Error(),
+			ErrCodeUnmarshalRequestBodyFailed,
 			http.StatusBadRequest,
 		),
 	)

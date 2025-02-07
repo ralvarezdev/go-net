@@ -11,17 +11,11 @@ func NewJSendDebugInternalServerError(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewDebugResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			gonethttpstatuserrors.InternalServerError.Error(),
-			errorCode,
-		),
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			debugErr.Error(),
-			errorCode,
-		),
+	return gonethttpresponse.NewJSendErrorDebugResponse(
+		nil,
+		gonethttpstatuserrors.InternalServerError.Error(),
+		debugErr.Error(),
+		errorCode,
 		http.StatusInternalServerError,
 	)
 }
@@ -30,12 +24,10 @@ func NewJSendDebugInternalServerError(
 func NewJSendInternalServerError(
 	errorCode *string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			gonethttpstatuserrors.InternalServerError.Error(),
-			errorCode,
-		),
+	return gonethttpresponse.NewJSendErrorResponse(
+		nil,
+		gonethttpstatuserrors.InternalServerError.Error(),
+		errorCode,
 		http.StatusInternalServerError,
 	)
 }
@@ -45,17 +37,11 @@ func NewJSendDebugNotImplemented(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewDebugResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			gonethttpstatuserrors.NotImplemented.Error(),
-			errorCode,
-		),
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			debugErr.Error(),
-			errorCode,
-		),
+	return gonethttpresponse.NewJSendErrorDebugResponse(
+		nil,
+		gonethttpstatuserrors.NotImplemented.Error(),
+		debugErr.Error(),
+		errorCode,
 		http.StatusNotImplemented,
 	)
 }
@@ -64,12 +50,10 @@ func NewJSendDebugNotImplemented(
 func NewJSendNotImplemented(
 	errorCode *string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			gonethttpstatuserrors.NotImplemented.Error(),
-			errorCode,
-		),
+	return gonethttpresponse.NewJSendErrorResponse(
+		nil,
+		gonethttpstatuserrors.NotImplemented.Error(),
+		errorCode,
 		http.StatusNotImplemented,
 	)
 }
@@ -79,17 +63,11 @@ func NewJSendDebugBadRequest(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewDebugResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			gonethttpstatuserrors.BadRequest.Error(),
-			errorCode,
-		),
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			debugErr.Error(),
-			errorCode,
-		),
+	return gonethttpresponse.NewJSendErrorDebugResponse(
+		nil,
+		gonethttpstatuserrors.BadRequest.Error(),
+		debugErr.Error(),
+		errorCode,
 		http.StatusBadRequest,
 	)
 }
@@ -98,12 +76,10 @@ func NewJSendDebugBadRequest(
 func NewJSendBadRequest(
 	errorCode *string,
 ) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewJSendErrorBody(
-			nil,
-			gonethttpstatuserrors.BadRequest.Error(),
-			errorCode,
-		),
+	return gonethttpresponse.NewJSendErrorResponse(
+		nil,
+		gonethttpstatuserrors.BadRequest.Error(),
+		errorCode,
 		http.StatusBadRequest,
 	)
 }

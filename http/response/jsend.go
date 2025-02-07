@@ -32,6 +32,14 @@ func NewJSendSuccessBody(
 	}
 }
 
+// NewJSendSuccessResponse creates a new JSend success response
+func NewJSendSuccessResponse(
+	data interface{},
+	httpStatus int,
+) Response {
+	return NewResponse(NewJSendSuccessBody(data), httpStatus)
+}
+
 // NewBaseJSendFailBody creates a new base JSend fail response body
 func NewBaseJSendFailBody(
 	code *string,
@@ -51,6 +59,15 @@ func NewJSendFailBody(
 		BaseJSendBody: *NewBaseJSendFailBody(code),
 		Data:          data,
 	}
+}
+
+// NewJSendFailResponse creates a new JSend fail response
+func NewJSendFailResponse(
+	data interface{},
+	code *string,
+	httpStatus int,
+) Response {
+	return NewResponse(NewJSendFailBody(data, code), httpStatus)
 }
 
 // NewBaseJSendErrorBody creates a new base JSend error response body
@@ -75,4 +92,29 @@ func NewJSendErrorBody(
 		BaseJSendBody: *NewBaseJSendErrorBody(message, code),
 		Data:          data,
 	}
+}
+
+// NewJSendErrorResponse creates a new JSend error response
+func NewJSendErrorResponse(
+	data interface{},
+	message string,
+	code *string,
+	httpStatus int,
+) Response {
+	return NewResponse(NewJSendErrorBody(data, message, code), httpStatus)
+}
+
+// NewJSendErrorDebugResponse creates a new JSend error response with debug information
+func NewJSendErrorDebugResponse(
+	data interface{},
+	message string,
+	debugMessage string,
+	code *string,
+	httpStatus int,
+) Response {
+	return NewDebugResponse(
+		NewJSendErrorBody(data, message, code),
+		NewJSendErrorBody(data, debugMessage, code),
+		httpStatus,
+	)
 }

@@ -124,11 +124,9 @@ func (d *DefaultHandler) Validate(
 	} else {
 		d.HandleResponse(
 			w,
-			gonethttpresponse.NewResponse(
-				gonethttpresponse.NewJSendFailBody(
-					validations,
-					ErrCodeValidationFailed,
-				),
+			gonethttpresponse.NewJSendFailResponse(
+				validations,
+				ErrCodeValidationFailed,
 				http.StatusBadRequest,
 			),
 		)
