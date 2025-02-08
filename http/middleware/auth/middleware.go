@@ -143,7 +143,7 @@ func (m *Middleware) AuthenticateFromHeader(
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 					failHandler(
 						w,
-						ErrInvalidAuthorizationHeader,
+						ErrInvalidAuthorizationHeader.Error(),
 						ErrCodeInvalidAuthorizationHeader,
 						http.StatusUnauthorized,
 					)
