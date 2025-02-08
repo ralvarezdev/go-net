@@ -15,7 +15,7 @@ var (
 
 var (
 	ErrNilAuthenticator           = errors.New("authenticator cannot be nil")
-	ErrInvalidAuthorizationHeader = gonethttpresponse.NewHeaderError(
+	ErrInvalidAuthorizationHeader = gonethttpresponse.NewFailResponseError(
 		gojwtnethttp.AuthorizationHeaderKey,
 		"invalid authorization header",
 		ErrCodeInvalidAuthorizationHeader,

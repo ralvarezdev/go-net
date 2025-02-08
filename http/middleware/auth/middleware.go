@@ -208,7 +208,7 @@ func (m *Middleware) AuthenticateFromCookie(
 				if err != nil {
 					failHandler(
 						w,
-						gonethttp.ErrCookieNotFound,
+						gonethttp.ErrCookieNotFound.Error(),
 						gonethttp.ErrCodeCookieNotFound,
 						http.StatusUnauthorized,
 					)
