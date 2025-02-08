@@ -12,8 +12,7 @@ type Authenticator interface {
 		rawToken string,
 		failHandler func(
 			w http.ResponseWriter,
-			err string,
-			httpStatus int,
+			err error,
 			errorCode *string,
 		),
 		refreshTokenFn func(

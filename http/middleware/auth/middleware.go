@@ -46,9 +46,8 @@ func (m *Middleware) Authenticate(
 	rawToken string,
 	failHandler func(
 		w http.ResponseWriter,
-		err string,
+		err error,
 		errorCode *string,
-		httpStatus int,
 	),
 	refreshTokenFn func(
 		w http.ResponseWriter,
@@ -72,9 +71,8 @@ func (m *Middleware) Authenticate(
 					) || refreshTokenFn == nil {
 						failHandler(
 							w,
-							err.Error(),
+							err,
 							ErrCodeInvalidTokenClaims,
-							http.StatusUnauthorized,
 						)
 						return
 					}
@@ -83,9 +81,8 @@ func (m *Middleware) Authenticate(
 					if err = refreshTokenFn(w, r); err != nil {
 						failHandler(
 							w,
-							err.Error(),
+							err,
 							ErrCodeFailedToRefreshToken,
-							http.StatusUnauthorized,
 						)
 						return
 					}
@@ -115,17 +112,16 @@ func (m *Middleware) AuthenticateFromHeader(
 	// Create the fail handler function
 	failHandler := func(
 		w http.ResponseWriter,
-		err string,
+		err error,
 		errorCode *string,
-		httpStatus int,
 	) {
 		m.handler.HandleError(
 			w,
 			gonethttpresponse.NewFailResponseError(
 				gojwtnethttp.AuthorizationHeaderKey,
-				err,
+				err.Error(),
 				errorCode,
-				httpStatus,
+				http.StatusUnauthorized,
 			),
 		)
 	}
@@ -143,9 +139,8 @@ func (m *Middleware) AuthenticateFromHeader(
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 					failHandler(
 						w,
-						ErrInvalidAuthorizationHeader.Error(),
+						ErrInvalidAuthorizationHeader,
 						ErrCodeInvalidAuthorizationHeader,
-						http.StatusUnauthorized,
 					)
 					return
 				}
@@ -181,17 +176,16 @@ func (m *Middleware) AuthenticateFromCookie(
 	// Create the fail handler function
 	failHandler := func(
 		w http.ResponseWriter,
-		err string,
+		err error,
 		errorCode *string,
-		httpStatus int,
 	) {
 		m.handler.HandleError(
 			w,
 			gonethttpresponse.NewFailResponseError(
 				cookieName,
-				err,
+				err.Error(),
 				errorCode,
-				httpStatus,
+				http.StatusUnauthorized,
 			),
 		)
 	}
@@ -208,9 +202,8 @@ func (m *Middleware) AuthenticateFromCookie(
 				if err != nil {
 					failHandler(
 						w,
-						gonethttp.ErrCookieNotFound.Error(),
+						gonethttp.ErrCookieNotFound,
 						gonethttp.ErrCodeCookieNotFound,
-						http.StatusUnauthorized,
 					)
 					return
 				}
