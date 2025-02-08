@@ -43,6 +43,7 @@ type (
 		RelativePath() string
 		FullPath() string
 		Method() string
+		ServeStaticFiles(pattern, path string)
 	}
 
 	// Router is the route group struct
@@ -332,4 +333,21 @@ func (r *Router) FullPath() string {
 // Method returns the method
 func (r *Router) Method() string {
 	return r.method
+}
+
+// ServeStaticFiles serves the static files
+func (r *Router) ServeStaticFiles(
+	pattern,
+	path string,
+) {
+	// Check if the pattern contains a trailing slash and add it
+	if len(pattern) == 0 || pattern[len(pattern)-1] != '/' {
+		pattern = pattern + "/"
+	}
+
+	// Serve the static files
+	r.mux.HandleFunc(
+		pattern,
+		http.StripPrefix(pattern, http.FileServer(http.Dir(path))).ServeHTTP,
+	)
 }
