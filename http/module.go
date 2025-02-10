@@ -45,6 +45,22 @@ func (m *Module) Create(
 		m.BeforeLoadFn(m)
 	}
 
+	// Append the router middlewares to the module middlewares
+	if baseRouter.GetMiddlewares() != nil {
+		if m.Middlewares == nil {
+			m.Middlewares = NewMiddlewares(*baseRouter.GetMiddlewares()...)
+		} else {
+			// Get the base router middlewares
+			moduleMiddlewares := NewMiddlewares(*baseRouter.GetMiddlewares()...)
+
+			// Append the module middlewares to the base router middlewares
+			*moduleMiddlewares = append(*moduleMiddlewares, *m.Middlewares...)
+
+			// Set the module middlewares
+			m.Middlewares = moduleMiddlewares
+		}
+	}
+
 	// Set the base route
 	if m.Middlewares != nil {
 		m.RouterWrapper = baseRouter.NewGroup(m.Pattern, *m.Middlewares...)
