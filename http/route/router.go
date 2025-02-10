@@ -37,13 +37,15 @@ type (
 		NewGroup(
 			pattern string,
 			middlewares ...func(next http.Handler) http.Handler,
-		) *Router
-		RegisterGroup(router *Router)
+		) RouterWrapper
+		RegisterGroup(router RouterWrapper)
 		Pattern() string
 		RelativePath() string
 		FullPath() string
 		Method() string
 		ServeStaticFiles(pattern, path string)
+		Logger() *Logger
+		Mode() *goflagsmode.Flag
 	}
 
 	// Router is the route group struct
@@ -95,7 +97,7 @@ func NewRouter(
 	mode *goflagsmode.Flag,
 	logger *Logger,
 	middlewares ...func(next http.Handler) http.Handler,
-) (*Router, error) {
+) (RouterWrapper, error) {
 	// Split the method and path from the pattern
 	method, path, err := SplitPattern(pattern)
 	if err != nil {
@@ -133,16 +135,16 @@ func NewBaseRouter(
 	mode *goflagsmode.Flag,
 	logger *Logger,
 	middlewares ...func(next http.Handler) http.Handler,
-) (*Router, error) {
+) (RouterWrapper, error) {
 	return NewRouter("/", mode, logger, middlewares...)
 }
 
 // NewGroup creates a new router group
 func NewGroup(
-	baseRouter *Router,
+	baseRouter RouterWrapper,
 	pattern string,
 	middlewares ...func(next http.Handler) http.Handler,
-) (*Router, error) {
+) (RouterWrapper, error) {
 	// Check if the base router is nil
 	if baseRouter == nil {
 		return nil, ErrNilRouter
@@ -156,12 +158,12 @@ func NewGroup(
 
 	// Check the base router path
 	var fullPath string
-	if relativePath == "/" && baseRouter.fullPath == "/" {
+	if relativePath == "/" && baseRouter.FullPath() == "/" {
 		fullPath = "/"
-	} else if baseRouter.fullPath[len(baseRouter.fullPath)-1] == '/' {
-		fullPath = baseRouter.fullPath + relativePath[1:]
+	} else if baseRouter.FullPath()[len(baseRouter.FullPath())-1] == '/' {
+		fullPath = baseRouter.FullPath() + relativePath[1:]
 	} else {
-		fullPath = baseRouter.fullPath + relativePath
+		fullPath = baseRouter.FullPath() + relativePath
 	}
 
 	// Initialize the multiplexer
@@ -191,12 +193,12 @@ func NewGroup(
 		middlewares:  allMiddlewares,
 		firstHandler: firstHandler,
 		mux:          mux,
-		logger:       baseRouter.logger,
+		logger:       baseRouter.Logger(),
 		pattern:      pattern,
 		relativePath: relativePath,
 		fullPath:     fullPath,
 		method:       method,
-		mode:         baseRouter.mode,
+		mode:         baseRouter.Mode(),
 	}
 
 	// Register the group
@@ -301,15 +303,15 @@ func (r *Router) RegisterHandler(pattern string, handler http.Handler) {
 }
 
 // RegisterGroup registers a new router group with a path and a router
-func (r *Router) RegisterGroup(router *Router) {
-	r.RegisterHandler(router.Pattern(), router.mux)
+func (r *Router) RegisterGroup(router RouterWrapper) {
+	r.RegisterHandler(router.Pattern(), router.Mux())
 }
 
 // NewGroup creates a new router group with a path
 func (r *Router) NewGroup(
 	pattern string,
 	middlewares ...func(next http.Handler) http.Handler,
-) *Router {
+) RouterWrapper {
 	// Create a new group
 	newGroup, _ := NewGroup(r, pattern, middlewares...)
 	return newGroup
@@ -350,4 +352,14 @@ func (r *Router) ServeStaticFiles(
 		pattern,
 		http.StripPrefix(pattern, http.FileServer(http.Dir(path))).ServeHTTP,
 	)
+}
+
+// Logger returns the logger
+func (r *Router) Logger() *Logger {
+	return r.logger
+}
+
+// Mode returns the mode
+func (r *Router) Mode() *goflagsmode.Flag {
+	return r.mode
 }
