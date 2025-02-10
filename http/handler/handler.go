@@ -235,7 +235,7 @@ func (d *DefaultHandler) HandleError(
 	err error,
 ) {
 	// Check if the errors is a fail body error or a fail request error
-	var failResponseErrorTarget gonethttpresponse.FailResponseError
+	var failResponseErrorTarget *gonethttpresponse.FailResponseError
 	if errors.As(err, &failResponseErrorTarget) {
 		d.HandleResponse(
 			w,

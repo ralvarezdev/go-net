@@ -42,7 +42,6 @@ func NewUnmarshalTypeErrorResponse(
 
 // NewSyntaxErrorResponse creates a new response for a SyntaxError
 func NewSyntaxErrorResponse(
-	debugErr error,
 	offset int64,
 ) gonethttpresponse.Response {
 	// Create the error
@@ -116,7 +115,7 @@ func BodyDecodeErrorHandler(
 	if errors.As(err, &syntaxError) {
 		return encoder.Encode(
 			w,
-			NewSyntaxErrorResponse(err, syntaxError.Offset),
+			NewSyntaxErrorResponse(syntaxError.Offset),
 		)
 	}
 
