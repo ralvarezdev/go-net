@@ -167,19 +167,28 @@ func NewGroup(
 	// Initialize the multiplexer
 	mux := http.NewServeMux()
 
+	// Create the middlewares slice
+	var allMiddlewares []func(http.Handler) http.Handler
+
+	// Append the base router middlewares
+	allMiddlewares = append(allMiddlewares, *baseRouter.GetMiddlewares()...)
+
+	// Append the new middlewares
+	allMiddlewares = append(allMiddlewares, middlewares...)
+
 	// Check if there is a nil middleware
-	for i, middleware := range middlewares {
+	for i, middleware := range allMiddlewares {
 		if middleware == nil {
 			return nil, fmt.Errorf(ErrNilMiddleware, fullPath, i)
 		}
 	}
 
 	// Chain the handlers
-	firstHandler := ChainHandlers(mux, middlewares...)
+	firstHandler := ChainHandlers(mux, allMiddlewares...)
 
 	// Create a new router
 	instance := &Router{
-		middlewares:  middlewares,
+		middlewares:  allMiddlewares,
 		firstHandler: firstHandler,
 		mux:          mux,
 		logger:       baseRouter.logger,
@@ -301,17 +310,8 @@ func (r *Router) NewGroup(
 	pattern string,
 	middlewares ...func(next http.Handler) http.Handler,
 ) *Router {
-	// Create the middlewares slice
-	var fullMiddlewares []func(http.Handler) http.Handler
-
-	// Append the base router middlewares
-	fullMiddlewares = append(fullMiddlewares, r.middlewares...)
-
-	// Append the new middlewares
-	fullMiddlewares = append(fullMiddlewares, middlewares...)
-
 	// Create a new group
-	newGroup, _ := NewGroup(r, pattern, fullMiddlewares...)
+	newGroup, _ := NewGroup(r, pattern, middlewares...)
 	return newGroup
 }
 
