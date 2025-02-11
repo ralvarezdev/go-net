@@ -53,12 +53,18 @@ func (d *DefaultEncoder) Encode(
 		)
 	}
 
-	// Write the JSON body to the response
-	w.WriteHeader(httpStatus)
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(jsonBody)
-	if err != nil {
-		return err
+	// Set the Content-Type header if it hasn't been set already
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json")
 	}
-	return nil
+
+	// Write the HTTP status if it hasn't been written already
+	if w.Header().Get("X-Status-Written") == "" {
+		w.Header().Set("X-Status-Written", "true")
+		w.WriteHeader(httpStatus)
+	}
+
+	// Write the JSON body to the response
+	_, err = w.Write(jsonBody)
+	return err
 }

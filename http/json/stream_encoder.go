@@ -31,8 +31,23 @@ func (d *DefaultStreamEncoder) Encode(
 	body := response.Body(d.mode)
 	httpStatus := response.HTTPStatus()
 
+	// Set the Content-Type header if it hasn't been set already
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json")
+	}
+
+	// Write the HTTP status if it hasn't been written already
+	if w.Header().Get("X-Status-Written") == "" {
+		w.Header().Set("X-Status-Written", "true")
+		w.WriteHeader(httpStatus)
+	}
+
 	// Encode the JSON body
 	if err = json.NewEncoder(w).Encode(body); err != nil {
+		// Overwrite the status on error
+		w.Header().Set("X-Status-Written", "true")
+		w.WriteHeader(http.StatusInternalServerError)
+
 		_ = d.Encode(
 			w,
 			gonethttpstatusresponse.NewJSendDebugInternalServerError(
@@ -42,8 +57,5 @@ func (d *DefaultStreamEncoder) Encode(
 		)
 		return err
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(httpStatus)
-
 	return nil
 }
