@@ -246,7 +246,7 @@ func (m *Middleware) AuthenticateFromCookie(
 					m.Authenticate(
 						token,
 						rawToken,
-						failHandler,
+						failHandler(cookieName),
 					)(next).ServeHTTP(
 						w,
 						r,
