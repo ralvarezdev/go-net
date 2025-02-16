@@ -202,7 +202,7 @@ func (m *Middleware) AuthenticateFromCookie(
 						}
 					} else {
 						// Get the cookie from the request
-						cookie, err = r.Cookie(cookieAccessTokenName)
+						cookie, err = r.Cookie(cookieName)
 
 						// Check if there was an error getting the cookie
 						if err == nil {
@@ -234,7 +234,7 @@ func (m *Middleware) AuthenticateFromCookie(
 
 					// Check if the raw token is empty
 					if rawToken == "" {
-						failHandler(cookieAccessTokenName)(
+						failHandler(cookieName)(
 							w,
 							gonethttp.ErrCookieNotFound,
 							gonethttp.ErrCodeCookieNotFound,
