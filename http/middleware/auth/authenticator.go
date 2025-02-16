@@ -15,21 +15,17 @@ type Authenticator interface {
 			err error,
 			errorCode *string,
 		),
-		refreshTokenFn func(
-			w http.ResponseWriter,
-			r *http.Request,
-		) error,
-		authenticateFn func(next http.Handler) http.Handler,
 	) func(next http.Handler) http.Handler
 	AuthenticateFromHeader(
 		token gojwttoken.Token,
 	) func(next http.Handler) http.Handler
 	AuthenticateFromCookie(
 		token gojwttoken.Token,
-		cookieName string,
+		cookieRefreshTokenName,
+		cookieAccessTokenName string,
 		refreshTokenFn func(
 			w http.ResponseWriter,
 			r *http.Request,
-		) error,
+		) (*map[gojwttoken.Token]string, error),
 	) func(next http.Handler) http.Handler
 }
