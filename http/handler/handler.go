@@ -2,61 +2,16 @@ package handler
 
 import (
 	"errors"
+	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
-	"net/http"
-)
-
-var (
-	ErrCodeValidationFailed      *string
-	ErrCodeWildcardParsingFailed *string
-	ErrCodeNilResponse           *string
-	ErrCodeRequestFatalError     *string
+	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
 )
 
 type (
-	// Handler interface for handling the requests
-	Handler interface {
-		Decode(
-			w http.ResponseWriter,
-			r *http.Request,
-			dest interface{},
-		) error
-		Validate(
-			w http.ResponseWriter,
-			body interface{},
-			validatorFn func(body interface{}) (interface{}, error),
-		) bool
-		Parse(
-			w http.ResponseWriter,
-			r *http.Request,
-			dest interface{},
-			validatorFn func(body interface{}) (interface{}, error),
-		) bool
-		GetParameters(
-			r *http.Request,
-			keys ...string,
-		) *map[string]string
-		ParseWildcard(
-			w http.ResponseWriter,
-			r *http.Request,
-			wildcardKey string,
-			dest interface{},
-			toTypeFn func(wildcard string, dest interface{}) error,
-		) bool
-		HandleResponse(
-			w http.ResponseWriter,
-			response gonethttpresponse.Response,
-		)
-		HandleError(
-			w http.ResponseWriter,
-			err error,
-		)
-	}
-
 	// DefaultHandler struct
 	DefaultHandler struct {
 		mode        *goflagsmode.Flag
@@ -66,6 +21,17 @@ type (
 )
 
 // NewDefaultHandler creates a new default request handler
+//
+// Parameters:
+//
+//   - mode: The flag mode
+//   - jsonEncoder: The JSON encoder
+//   - jsonDecoder: The JSON decoder
+//
+// Returns:
+//
+//   - *DefaultHandler: The default handler
+//   - error: The error if any
 func NewDefaultHandler(
 	mode *goflagsmode.Flag,
 	jsonEncoder gonethttpjson.Encoder,
@@ -90,19 +56,39 @@ func NewDefaultHandler(
 }
 
 // Decode decodes the request body into the destination
-func (d *DefaultHandler) Decode(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//   - dest: The destination to decode the request body into
+//
+// Returns:
+//
+//   - error: The error if any
+func (d DefaultHandler) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
-) (err error) {
+) error {
 	return d.jsonDecoder.Decode(w, r, dest)
 }
 
 // Validate validates the request body
-func (d *DefaultHandler) Validate(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - body: The request body to validate
+//   - validatorFn: The validator function
+//
+// Returns:
+//
+//   - bool: True if the request body is valid, false otherwise
+func (d DefaultHandler) Validate(
 	w http.ResponseWriter,
 	body interface{},
-	validatorFn func(body interface{}) (interface{}, error),
+	validatorFn govalidatorstructmappervalidator.ValidateFn,
 ) bool {
 	// Validate the request body
 	validations, err := validatorFn(body)
@@ -121,25 +107,37 @@ func (d *DefaultHandler) Validate(
 				ErrCodeValidationFailed,
 			),
 		)
-	} else {
-		d.HandleResponse(
-			w,
-			gonethttpresponse.NewJSendFailResponse(
-				validations,
-				ErrCodeValidationFailed,
-				http.StatusBadRequest,
-			),
-		)
+		return false
 	}
+
+	d.HandleResponse(
+		w,
+		gonethttpresponse.NewJSendFailResponse(
+			validations,
+			ErrCodeValidationFailed,
+			http.StatusBadRequest,
+		),
+	)
 	return false
 }
 
 // Parse decodes and validates the request body
-func (d *DefaultHandler) Parse(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//   - dest: The destination to decode the request body into
+//   - validatorFn: The validator function
+//
+// Returns:
+//
+//   - bool: True if the request body is valid, false otherwise
+func (d DefaultHandler) Parse(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
-	validatorFn func(body interface{}) (interface{}, error),
+	validatorFn govalidatorstructmappervalidator.ValidateFn,
 ) bool {
 	// Decode the request body
 	if err := d.Decode(w, r, dest); err != nil {
@@ -151,10 +149,19 @@ func (d *DefaultHandler) Parse(
 }
 
 // GetParameters gets the parameters from the request
-func (d *DefaultHandler) GetParameters(
+//
+// Parameters:
+//
+//   - r: The HTTP request
+//   - keys: The keys of the parameters to get
+//
+// Returns:
+//
+//   - map[string]string: The parameters map
+func (d DefaultHandler) GetParameters(
 	r *http.Request,
 	keys ...string,
-) *map[string]string {
+) map[string]string {
 	// Check if the request is nil
 	if r == nil {
 		return nil
@@ -179,16 +186,28 @@ func (d *DefaultHandler) GetParameters(
 		// Add the parameter to the map
 		parameters[key] = value
 	}
-	return &parameters
+	return parameters
 }
 
 // ParseWildcard parses the wildcard from the request and stores it in the destination
-func (d *DefaultHandler) ParseWildcard(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//   - wildcardKey: The key of the wildcard to parse
+//   - dest: The destination to store the parsed wildcard
+//   - toTypeFn: The function to convert the wildcard value to the desired type
+//
+// Returns:
+//
+//   - bool: True if the wildcard was parsed successfully, false otherwise
+func (d DefaultHandler) ParseWildcard(
 	w http.ResponseWriter,
 	r *http.Request,
 	wildcardKey string,
 	dest interface{},
-	toTypeFn func(wildcard string, dest interface{}) error,
+	toTypeFn ToTypeFn,
 ) bool {
 	// Get the wildcard from the request
 	wildcardValue := r.PathValue(wildcardKey)
@@ -209,7 +228,12 @@ func (d *DefaultHandler) ParseWildcard(
 }
 
 // HandleResponse handles the response
-func (d *DefaultHandler) HandleResponse(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - response: The response to handle
+func (d DefaultHandler) HandleResponse(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) {
@@ -230,7 +254,12 @@ func (d *DefaultHandler) HandleResponse(
 }
 
 // HandleError handles the error response
-func (d *DefaultHandler) HandleError(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - err: The error to handle
+func (d DefaultHandler) HandleError(
 	w http.ResponseWriter,
 	err error,
 ) {

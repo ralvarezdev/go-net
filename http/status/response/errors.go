@@ -1,16 +1,30 @@
 package response
 
 import (
+	"net/http"
+
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
-	"net/http"
 )
 
 // NewJSendDebugInternalServerError creates a new internal server error JSend response with debug information
+//
+// Parameters:
+//
+//   - debugErr: The debug error
+//   - errorCode: The error code
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewJSendDebugInternalServerError(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
+	if debugErr == nil {
+		return NewJSendInternalServerError(errorCode)
+	}
+
 	return gonethttpresponse.NewJSendErrorDebugResponse(
 		nil,
 		gonethttpstatuserrors.InternalServerError.Error(),
@@ -21,6 +35,14 @@ func NewJSendDebugInternalServerError(
 }
 
 // NewJSendInternalServerError creates a new internal server error JSend response
+//
+// Parameters:
+//
+//   - errorCode: The error code
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewJSendInternalServerError(
 	errorCode *string,
 ) gonethttpresponse.Response {
@@ -33,10 +55,23 @@ func NewJSendInternalServerError(
 }
 
 // NewJSendDebugNotImplemented creates a new not implemented JSend response with debug information
+//
+// Parameters:
+//
+//   - debugErr: The debug error
+//   - errorCode: The error code
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewJSendDebugNotImplemented(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
+	if debugErr == nil {
+		return NewJSendNotImplemented(errorCode)
+	}
+
 	return gonethttpresponse.NewJSendErrorDebugResponse(
 		nil,
 		gonethttpstatuserrors.NotImplemented.Error(),
@@ -47,6 +82,14 @@ func NewJSendDebugNotImplemented(
 }
 
 // NewJSendNotImplemented creates a new not implemented JSend response
+//
+// Parameters:
+//
+//   - errorCode: The error code
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewJSendNotImplemented(
 	errorCode *string,
 ) gonethttpresponse.Response {
@@ -59,10 +102,23 @@ func NewJSendNotImplemented(
 }
 
 // NewJSendDebugBadRequest creates a new bad request JSend response with debug information
+//
+// Parameters:
+//
+//   - debugErr: The debug error
+//   - errorCode: The error code
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewJSendDebugBadRequest(
 	debugErr error,
 	errorCode *string,
 ) gonethttpresponse.Response {
+	if debugErr == nil {
+		return NewJSendBadRequest(errorCode)
+	}
+
 	return gonethttpresponse.NewJSendErrorDebugResponse(
 		nil,
 		gonethttpstatuserrors.BadRequest.Error(),
@@ -73,6 +129,14 @@ func NewJSendDebugBadRequest(
 }
 
 // NewJSendBadRequest creates a new bad request JSend response
+//
+// Parameters:
+//
+//   - errorCode: The error code
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewJSendBadRequest(
 	errorCode *string,
 ) gonethttpresponse.Response {

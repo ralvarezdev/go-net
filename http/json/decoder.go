@@ -2,27 +2,14 @@ package json
 
 import (
 	"encoding/json"
-	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	"io"
 	"net/http"
-)
 
-var (
-	ErrCodeFailedToReadBody *string
-	ErrCodeNilDestination   *string
+	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 )
 
 type (
-	// Decoder interface
-	Decoder interface {
-		Decode(
-			w http.ResponseWriter,
-			r *http.Request,
-			dest interface{},
-		) (err error)
-	}
-
 	// DefaultDecoder struct
 	DefaultDecoder struct {
 		mode    *goflagsmode.Flag
@@ -31,6 +18,16 @@ type (
 )
 
 // NewDefaultDecoder creates a new JSON decoder
+//
+// Parameters:
+//
+//   - mode: The flag mode
+//   - encoder: The JSON encoder
+//
+// Returns:
+//
+//   - *DefaultDecoder: The default decoder
+//   - error: The error if any
 func NewDefaultDecoder(
 	mode *goflagsmode.Flag,
 	encoder Encoder,
@@ -47,7 +44,17 @@ func NewDefaultDecoder(
 }
 
 // Decode decodes the JSON request body and stores it in the destination
-func (d *DefaultDecoder) Decode(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//   - dest: The destination to store the decoded body
+//
+// Returns:
+//
+//   - error: The error if any
+func (d DefaultDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},

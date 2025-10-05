@@ -4,25 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"io"
 	"net/http"
 	"strings"
+
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 // Inspired by:
 // https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
 
-var (
-	ErrCodeUnmarshalRequestBodyFailed *string
-	ErrCodeSyntaxError                *string
-	ErrCodeUnmarshalTypeError         *string
-	ErrCodeUnknownField               *string
-	ErrCodeEmptyBody                  *string
-	ErrCodeMaxBodySizeExceeded        *string
-)
-
 // NewUnmarshalTypeErrorResponse creates a new response for an UnmarshalTypeError
+//
+// Parameters:
+//
+//   - fieldName: The name of the field that caused the error
+//   - fieldTypeName: The type name of the field that caused the error
 func NewUnmarshalTypeErrorResponse(
 	fieldName string,
 	fieldTypeName string,
@@ -41,6 +38,10 @@ func NewUnmarshalTypeErrorResponse(
 }
 
 // NewSyntaxErrorResponse creates a new response for a SyntaxError
+//
+// Parameters:
+//
+//   - offset: The offset where the error occurred
 func NewSyntaxErrorResponse(
 	offset int64,
 ) gonethttpresponse.Response {
@@ -56,6 +57,14 @@ func NewSyntaxErrorResponse(
 }
 
 // NewUnknownFieldErrorResponse creates a new response for an unknown field error
+//
+// Parameters:
+//
+//   - fieldName: The name of the unknown field
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewUnknownFieldErrorResponse(fieldName string) gonethttpresponse.Response {
 	return gonethttpresponse.NewResponse(
 		gonethttpresponse.NewFailBodyError(
@@ -68,6 +77,14 @@ func NewUnknownFieldErrorResponse(fieldName string) gonethttpresponse.Response {
 }
 
 // NewMaxBodySizeExceededErrorResponse creates a new response for a body size exceeded error
+//
+// Parameters:
+//
+//   - limit: The maximum allowed body size
+//
+// Returns:
+//
+//   - gonethttpresponse.Response: The response
 func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response {
 	// Create the error
 	err := fmt.Errorf(ErrMaxBodySizeExceeded, limit)
@@ -81,6 +98,16 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 }
 
 // BodyDecodeErrorHandler handles the error on JSON body decoding
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - err: The error that occurred during decoding
+//   - encoder: The encoder to use for the response
+//
+// Returns:
+//
+//   - error: An error if the encoder is nil or if encoding the response fails
 func BodyDecodeErrorHandler(
 	w http.ResponseWriter,
 	err error,

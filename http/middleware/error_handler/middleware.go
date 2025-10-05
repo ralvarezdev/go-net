@@ -2,16 +2,28 @@ package error_handler
 
 import (
 	"fmt"
-	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	"net/http"
+
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
 
-// Middleware struct is the error handler middleware
-type Middleware struct {
-	handler gonethttphandler.Handler
-}
+type (
+	// Middleware struct is the error handler middleware
+	Middleware struct {
+		handler gonethttphandler.Handler
+	}
+)
 
 // NewMiddleware creates a new error handler middleware
+//
+// Parameters:
+//
+//   - handler: The HTTP handler to handle errors
+//
+// Returns:
+//
+//   - *Middleware: The error handler middleware
+//   - error: The error if any
 func NewMiddleware(handler gonethttphandler.Handler) (*Middleware, error) {
 	// Check if the handler is nil
 	if handler == nil {
@@ -23,7 +35,15 @@ func NewMiddleware(handler gonethttphandler.Handler) (*Middleware, error) {
 }
 
 // HandleError handles the error
-func (m *Middleware) HandleError(next http.Handler) http.Handler {
+//
+// Parameters:
+//
+//   - next: The next HTTP handler
+//
+// Returns:
+//
+//   - http.Handler: The HTTP handler
+func (m Middleware) HandleError(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			defer func() {

@@ -1,12 +1,24 @@
 package http
 
 import (
-	"github.com/ralvarezdev/go-net/http/status"
 	"net/http"
 	"strings"
+
+	"github.com/ralvarezdev/go-net/http/status"
 )
 
 // GetClientIP returns the client's IP address from the request
+//
+// It checks the X-Forwarded-For header first (in case of proxies or load balancers),
+// and falls back to the RemoteAddr if the header is not present.
+//
+// Parameters:
+//
+//   - r: The HTTP request
+//
+// Returns:
+//
+//   - string: The client's IP address
 func GetClientIP(r *http.Request) string {
 	// Check if the request has a forwarded IP from a proxy or load balancer
 	forwarded := r.Header.Get(status.XForwardedFor)

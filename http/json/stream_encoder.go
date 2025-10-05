@@ -2,10 +2,11 @@ package json
 
 import (
 	"encoding/json"
+	"net/http"
+
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
-	"net/http"
 )
 
 type (
@@ -16,6 +17,14 @@ type (
 )
 
 // NewDefaultStreamEncoder creates a new JSON encoder
+//
+// Parameters:
+//
+//   - mode: The flag mode
+//
+// Returns:
+//
+//   - *DefaultStreamEncoder: The default encoder
 func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
 	return &DefaultStreamEncoder{
 		mode,
@@ -23,7 +32,16 @@ func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
 }
 
 // Encode encodes the body into JSON and writes it to the response
-func (d *DefaultStreamEncoder) Encode(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - response: The response to encode
+//
+// Returns:
+//
+//   - error: The error if any
+func (d DefaultStreamEncoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {

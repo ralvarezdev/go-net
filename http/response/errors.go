@@ -4,8 +4,11 @@ import (
 	"errors"
 )
 
-var (
-	ErrNilResponse           = errors.New("response cannot be nil")
+const (
 	ErrInvalidFieldValueType = "invalid field value type, expected: '%s'"
-	ErrNilFailBodyError      = errors.New("fail body error cannot be nil")
+)
+
+var (
+	ErrNilResponse      = errors.New("response cannot be nil")
+	ErrNilFailBodyError = errors.New("fail body error cannot be nil")
 )

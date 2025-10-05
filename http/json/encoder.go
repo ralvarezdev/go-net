@@ -2,25 +2,14 @@ package json
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ralvarezdev/go-flags/mode"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
-	"net/http"
-)
-
-var (
-	ErrCodeMarshalResponseBodyFailed *string
 )
 
 type (
-	// Encoder interface
-	Encoder interface {
-		Encode(
-			w http.ResponseWriter,
-			response gonethttpresponse.Response,
-		) error
-	}
-
 	// DefaultEncoder struct
 	DefaultEncoder struct {
 		mode *mode.Flag
@@ -28,12 +17,29 @@ type (
 )
 
 // NewDefaultEncoder creates a new default JSON encoder
+//
+// Parameters:
+//
+//   - mode: The flag mode
+//
+// Returns:
+//
+//   - *DefaultEncoder: The default encoder
 func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
 	return &DefaultEncoder{mode}
 }
 
 // Encode encodes the body into JSON and writes it to the response
-func (d *DefaultEncoder) Encode(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - response: The response to encode
+//
+// Returns:
+//
+//   - error: The error if any
+func (d DefaultEncoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {

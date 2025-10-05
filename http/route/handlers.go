@@ -5,6 +5,15 @@ import (
 )
 
 // ChainHandlers chains the handlers
+//
+// Parameters:
+//
+//   - lastHandler: The last handler to be executed
+//   - handlers: The handlers to be chained
+//
+// Returns:
+//
+//   - http.Handler: The chained handler
 func ChainHandlers(
 	lastHandler http.Handler,
 	handlers ...func(http.Handler) http.Handler,

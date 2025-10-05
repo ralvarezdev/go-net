@@ -6,17 +6,33 @@ import (
 	"time"
 )
 
-// Attributes is the structure for the attributes of a cookie
-type Attributes struct {
-	Name     string
-	Path     string
-	Domain   string
-	Secure   bool
-	HTTPOnly bool
-	SameSite http.SameSite
-}
+type (
+	// NotFoundFn is the function to call when a cookie is not found
+	NotFoundFn func(
+		w http.ResponseWriter,
+		attributes *Attributes,
+		err error,
+	) error
+
+	// Attributes is the structure for the attributes of a cookie
+	Attributes struct {
+		Name     string
+		Path     string
+		Domain   string
+		Secure   bool
+		HTTPOnly bool
+		SameSite http.SameSite
+	}
+)
 
 // SetCookie sets a cookie
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - attributes: The attributes of the cookie
+//   - value: The value of the cookie
+//   - expiresAt: The expiration time of the cookie
 func SetCookie(
 	w http.ResponseWriter,
 	attributes *Attributes,
@@ -38,6 +54,13 @@ func SetCookie(
 }
 
 // SetTimestampCookie sets a cookie with a timestamp
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - attributes: The attributes of the cookie
+//   - value: The value of the cookie
+//   - expiresAt: The expiration time of the cookie
 func SetTimestampCookie(
 	w http.ResponseWriter,
 	attributes *Attributes,
@@ -53,6 +76,16 @@ func SetTimestampCookie(
 }
 
 // GetTimestampCookie gets a timestamp cookie
+//
+// Parameters:
+//
+//   - r: The HTTP request
+//   - attributes: The attributes of the cookie
+//
+// Returns:
+//
+//   - *time.Time: The value of the cookie, or nil if not found
+//   - error: An error if something went wrong
 func GetTimestampCookie(
 	r *http.Request,
 	attributes *Attributes,
@@ -85,6 +118,11 @@ func GetTimestampCookie(
 }
 
 // DeleteCookies deletes the cookies
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - attributesList: The list of attributes of the cookies to delete
 func DeleteCookies(w http.ResponseWriter, attributesList ...*Attributes) {
 	for _, attributes := range attributesList {
 		SetCookie(
@@ -97,16 +135,25 @@ func DeleteCookies(w http.ResponseWriter, attributesList ...*Attributes) {
 }
 
 // RenovateCookie creates a new cookie with the same value and a new expiration time
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//   - attributes: The attributes of the cookie
+//   - expiresAt: The new expiration time of the cookie
+//   - cookieNotFoundFn: The function to call if the cookie is not found
+//   - error: An error if something went wrong
+//
+// Returns:
+//
+//   - error: An error if something went wrong
 func RenovateCookie(
 	w http.ResponseWriter,
 	r *http.Request,
 	attributes *Attributes,
 	expiresAt time.Time,
-	cookieNotFoundFn func(
-		w http.ResponseWriter,
-		attributes *Attributes,
-		err error,
-	) error,
+	cookieNotFoundFn NotFoundFn,
 ) error {
 	// Check if the request or the attributes is nil
 	if r == nil {

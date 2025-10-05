@@ -1,23 +1,37 @@
 package validator
 
 import (
+	"net/http"
+	"reflect"
+
 	gonethttpctx "github.com/ralvarezdev/go-net/http/context"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatorstructmapper "github.com/ralvarezdev/go-validator/struct/mapper"
 	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
-	"net/http"
-	"reflect"
 )
 
-// Middleware struct is the validation middleware
-type Middleware struct {
-	handler   gonethttphandler.Handler
-	validator govalidatorstructmappervalidator.Service
-	generator govalidatorstructmapper.Generator
-}
+type (
+	// Middleware struct is the validation middleware
+	Middleware struct {
+		handler   gonethttphandler.Handler
+		validator govalidatorstructmappervalidator.Service
+		generator govalidatorstructmapper.Generator
+	}
+)
 
 // NewMiddleware creates a new Middleware instance
+//
+// Parameters:
+//
+//   - handler: The HTTP handler to parse the request body
+//   - validator: The struct validator service
+//   - generator: The struct mapper generator
+//
+// Returns:
+//
+//   - *Middleware: The middleware instance
+//   - error: The error if any
 func NewMiddleware(
 	handler gonethttphandler.Handler,
 	validator govalidatorstructmappervalidator.Service,
@@ -42,9 +56,18 @@ func NewMiddleware(
 }
 
 // Validate validates the request body and stores it in the context
-func (m *Middleware) Validate(
+//
+// Parameters:
+//
+//   - body: An instance of the body to validate
+//   - auxiliaryValidatorFns: Optional auxiliary validator functions
+//
+// Returns:
+//
+//   - func(next http.Handler) http.Handler: The middleware function
+func (m Middleware) Validate(
 	body interface{},
-	auxiliaryValidatorFns ...interface{},
+	auxiliaryValidatorFns ...govalidatorstructmappervalidator.AuxiliaryValidatorFn,
 ) func(next http.Handler) http.Handler {
 	// Get the type of the body
 	bodyType := goreflect.GetTypeOf(body)
@@ -62,8 +85,8 @@ func (m *Middleware) Validate(
 		panic(err)
 	}
 
-	// Create the validator function
-	validatorFn, err := m.validator.CreateValidateFn(
+	// Create the validate function
+	validateFn, err := m.validator.CreateValidateFn(
 		mapper,
 		auxiliaryValidatorFns...,
 	)
@@ -82,7 +105,7 @@ func (m *Middleware) Validate(
 					w,
 					r,
 					dest,
-					validatorFn,
+					validateFn,
 				) {
 					return
 				}

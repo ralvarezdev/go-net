@@ -2,52 +2,14 @@ package route
 
 import (
 	"fmt"
-	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	"log/slog"
 	"net/http"
 	"strings"
+
+	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 )
 
 type (
-	// RouterWrapper is the interface for the routes
-	RouterWrapper interface {
-		Handler() http.Handler
-		Mux() *http.ServeMux
-		GetMiddlewares() *[]func(http.Handler) http.Handler
-		HandleFunc(
-			pattern string,
-			handler http.HandlerFunc,
-			middlewares ...func(next http.Handler) http.Handler,
-		)
-		ExactHandleFunc(
-			pattern string,
-			handler http.HandlerFunc,
-			middlewares ...func(next http.Handler) http.Handler,
-		)
-		RegisterRoute(
-			pattern string,
-			handler http.HandlerFunc,
-			middlewares ...func(next http.Handler) http.Handler,
-		)
-		RegisterExactRoute(
-			pattern string,
-			handler http.HandlerFunc,
-			middlewares ...func(next http.Handler) http.Handler,
-		)
-		RegisterHandler(pattern string, handler http.Handler)
-		NewGroup(
-			pattern string,
-			middlewares ...func(next http.Handler) http.Handler,
-		) RouterWrapper
-		RegisterGroup(router RouterWrapper)
-		Pattern() string
-		RelativePath() string
-		FullPath() string
-		Method() string
-		ServeStaticFiles(pattern, path string)
-		Logger() *Logger
-		Mode() *goflagsmode.Flag
-	}
-
 	// Router is the route group struct
 	Router struct {
 		middlewares  []func(http.Handler) http.Handler
@@ -58,11 +20,21 @@ type (
 		fullPath     string
 		method       string
 		mode         *goflagsmode.Flag
-		logger       *Logger
+		logger       *slog.Logger
 	}
 )
 
 // SplitPattern returns the method and the path from the pattern
+//
+// Parameters:
+//
+//   - pattern: The pattern to split
+//
+// Returns:
+//
+//   - string: The method
+//   - string: The path
+//   - error: The error if any
 func SplitPattern(pattern string) (string, string, error) {
 	// Trim the pattern
 	strings.Trim(pattern, " ")
@@ -92,10 +64,21 @@ func SplitPattern(pattern string) (string, string, error) {
 }
 
 // NewRouter creates a new router
+//
+// Parameters:
+//
+//   - pattern: The pattern of the router
+//   - mode: The flag mode
+//   - logger: The logger
+//   - middlewares: The middlewares to apply to the router
+//
+// Returns:
+//
+//   - RouterWrapper: The router
 func NewRouter(
 	pattern string,
 	mode *goflagsmode.Flag,
-	logger *Logger,
+	logger *slog.Logger,
 	middlewares ...func(next http.Handler) http.Handler,
 ) (RouterWrapper, error) {
 	// Split the method and path from the pattern
@@ -117,6 +100,13 @@ func NewRouter(
 	// Chain the handlers
 	firstHandler := ChainHandlers(mux, middlewares...)
 
+	if logger != nil {
+		logger = logger.With(
+			slog.String("component", "router"),
+			slog.String("path", path),
+		)
+	}
+
 	return &Router{
 		middlewares,
 		firstHandler,
@@ -131,15 +121,37 @@ func NewRouter(
 }
 
 // NewBaseRouter creates a new base router
+//
+// Parameters:
+//
+//   - mode: The flag mode
+//   - logger: The logger
+//   - middlewares: The middlewares to apply to the router
+//
+// Returns:
+//
+//   - RouterWrapper: The router
+//   - error: The error if any
 func NewBaseRouter(
 	mode *goflagsmode.Flag,
-	logger *Logger,
+	logger *slog.Logger,
 	middlewares ...func(next http.Handler) http.Handler,
 ) (RouterWrapper, error) {
 	return NewRouter("/", mode, logger, middlewares...)
 }
 
 // NewGroup creates a new router group
+//
+// Parameters:
+//
+//   - baseRouter: The base router
+//   - pattern: The pattern of the group
+//   - middlewares: The middlewares to apply to the group
+//
+// Returns:
+//
+//   - RouterWrapper: The router group
+//   - error: The error if any
 func NewGroup(
 	baseRouter RouterWrapper,
 	pattern string,
@@ -199,43 +211,84 @@ func NewGroup(
 }
 
 // Handler returns the first handler
+//
+// Returns:
+//
+//   - http.Handler: The first handler
 func (r *Router) Handler() http.Handler {
+	if r == nil {
+		return nil
+	}
 	return r.firstHandler
 }
 
 // Mux returns the multiplexer
+//
+// Returns:
+//
+//   - *http.ServeMux: The multiplexer
 func (r *Router) Mux() *http.ServeMux {
+	if r == nil {
+		return nil
+	}
 	return r.mux
 }
 
 // GetMiddlewares returns the middlewares
-func (r *Router) GetMiddlewares() *[]func(http.Handler) http.Handler {
-	return &r.middlewares
+//
+// Returns:
+//
+//   - []func(http.Handler) http.Handler: The middlewares
+func (r *Router) GetMiddlewares() []func(http.Handler) http.Handler {
+	if r == nil {
+		return nil
+	}
+	return r.middlewares
 }
 
 // HandleFunc registers a new route with a path, the handler function and the middlewares
+//
+// Parameters:
+//
+//   - pattern: The pattern of the route
+//   - handler: The handler function
+//   - middlewares: The middlewares to apply to the route
 func (r *Router) HandleFunc(
 	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
+	if r == nil {
+		return
+	}
+
 	// Chain the handlers
 	firstHandler := ChainHandlers(handler, middlewares...)
 
 	// Register the route
 	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
 
-	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRoute(r.fullPath, pattern)
+	if r.mode != nil && r.mode.IsDebug() {
+		RegisterRoute(r.fullPath, pattern, r.logger)
 	}
 }
 
 // ExactHandleFunc registers a new route with a path, the handler function and the middlewares
+//
+// Parameters:
+//
+//   - pattern: The pattern of the route
+//   - handler: The handler function
+//   - middlewares: The middlewares to apply to the route
 func (r *Router) ExactHandleFunc(
 	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
+	if r == nil {
+		return
+	}
+
 	// Split the method and path from the pattern
 	method, path, err := SplitPattern(pattern)
 	if err != nil {
@@ -253,33 +306,60 @@ func (r *Router) ExactHandleFunc(
 	// Register the route
 	r.mux.HandleFunc(method+" "+path, firstHandler.ServeHTTP)
 
-	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRoute(r.fullPath, pattern)
+	if r.mode != nil && r.mode.IsDebug() {
+		RegisterRoute(r.fullPath, pattern, r.logger)
 	}
 }
 
 // RegisterRoute registers a new route with a path, the handler function and the middlewares.
 // This does not match the exact path
+//
+// Parameters:
+//
+//   - pattern: The pattern of the route
+//   - handler: The handler function
+//   - middlewares: The middlewares to apply to the route
 func (r *Router) RegisterRoute(
 	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
+	if r == nil {
+		return
+	}
 	r.HandleFunc(pattern, handler, middlewares...)
 }
 
 // RegisterExactRoute registers a new route with a path, the handler function and the middlewares.
 // This matches the exact path
+//
+// Parameters:
+//
+//   - pattern: The pattern of the route
+//   - handler: The handler function
+//   - middlewares: The middlewares to apply to the route
 func (r *Router) RegisterExactRoute(
 	pattern string,
 	handler http.HandlerFunc,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
+	if r == nil {
+		return
+	}
 	r.ExactHandleFunc(pattern, handler, middlewares...)
 }
 
 // RegisterHandler registers a new route group with a path and a handler function
+//
+// Parameters:
+//
+//   - pattern: The pattern of the route group
+//   - handler: The handler function
 func (r *Router) RegisterHandler(pattern string, handler http.Handler) {
+	if r == nil {
+		return
+	}
+
 	// Check if the pattern contains a trailing slash and remove it
 	if len(pattern) > 0 && pattern[len(pattern)-1] == '/' {
 		pattern = pattern[:len(pattern)-1]
@@ -288,51 +368,113 @@ func (r *Router) RegisterHandler(pattern string, handler http.Handler) {
 	// Register the route group
 	r.mux.Handle(pattern+"/", http.StripPrefix(pattern, handler))
 
-	if r.logger != nil && r.mode != nil && !r.mode.IsProd() {
-		r.logger.RegisterRouteGroup(r.fullPath, pattern)
+	if r.logger != nil && r.mode != nil && r.mode.IsDebug() {
+		r.logger.Debug(
+			"registering route group",
+			slog.String("full_path", r.fullPath),
+			slog.String("relative_path", r.relativePath),
+			slog.String("pattern", pattern),
+		)
 	}
 }
 
 // RegisterGroup registers a new router group with a path and a router
+//
+// Parameters:
+//
+//   - router: The router group
 func (r *Router) RegisterGroup(router RouterWrapper) {
+	if r == nil {
+		return
+	}
 	r.RegisterHandler(router.Pattern(), router.Handler())
 }
 
 // NewGroup creates a new router group with a path
+//
+// Parameters:
+//
+//   - pattern: The pattern of the group
+//   - middlewares: The middlewares to apply to the group
+//
+// Returns:
+//
+//   - RouterWrapper: The router group
 func (r *Router) NewGroup(
 	pattern string,
 	middlewares ...func(next http.Handler) http.Handler,
 ) RouterWrapper {
+	if r == nil {
+		return nil
+	}
+
 	// Create a new group
 	newGroup, _ := NewGroup(r, pattern, middlewares...)
 	return newGroup
 }
 
 // Pattern returns the pattern
+//
+// Returns:
+//
+//   - string: The pattern
 func (r *Router) Pattern() string {
+	if r == nil {
+		return ""
+	}
 	return r.pattern
 }
 
 // RelativePath returns the relative path
+//
+// Returns:
+//
+//   - string: The relative path
 func (r *Router) RelativePath() string {
+	if r == nil {
+		return ""
+	}
 	return r.relativePath
 }
 
 // FullPath returns the full path
+//
+// Returns:
+//
+//   - string: The full path
 func (r *Router) FullPath() string {
+	if r == nil {
+		return ""
+	}
 	return r.fullPath
 }
 
 // Method returns the method
+//
+// Returns:
+//
+//   - string: The method
 func (r *Router) Method() string {
+	if r == nil {
+		return ""
+	}
 	return r.method
 }
 
 // ServeStaticFiles serves the static files
+//
+// Parameters:
+//
+//   - pattern: The pattern to serve the static files
+//   - path: The path to the static files
 func (r *Router) ServeStaticFiles(
 	pattern,
 	path string,
 ) {
+	if r == nil {
+		return
+	}
+
 	// Check if the pattern contains a trailing slash and add it
 	if len(pattern) == 0 || pattern[len(pattern)-1] != '/' {
 		pattern = pattern + "/"
@@ -346,11 +488,25 @@ func (r *Router) ServeStaticFiles(
 }
 
 // Logger returns the logger
-func (r *Router) Logger() *Logger {
+//
+// Returns:
+//
+//   - *slog.Logger: The logger
+func (r *Router) Logger() *slog.Logger {
+	if r == nil {
+		return nil
+	}
 	return r.logger
 }
 
 // Mode returns the mode
+//
+// Returns:
+//
+//   - *goflagsmode.Flag: The mode
 func (r *Router) Mode() *goflagsmode.Flag {
+	if r == nil {
+		return nil
+	}
 	return r.mode
 }

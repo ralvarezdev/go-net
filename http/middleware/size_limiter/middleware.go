@@ -4,16 +4,30 @@ import (
 	"net/http"
 )
 
-// Middleware struct is the size limiter middleware
-type Middleware struct{}
+type (
+	// Middleware struct is the size limiter middleware
+	Middleware struct{}
+)
 
 // NewMiddleware returns a new instance of the size limiter middleware
+//
+// Returns:
+//
+//   - *Middleware: The middleware instance
 func NewMiddleware() *Middleware {
 	return &Middleware{}
 }
 
 // Limit is the size limiter middleware
-func (m *Middleware) Limit(bytesSizeLimit int64) func(next http.Handler) http.Handler {
+//
+// Parameters:
+//
+//   - bytesSizeLimit: The maximum size of the request body in bytes
+//
+// Returns:
+//
+//   - func(next http.Handler) http.Handler: The middleware function
+func (m Middleware) Limit(bytesSizeLimit int64) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {

@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+
 	gonethttpstatus "github.com/ralvarezdev/go-net/http/status"
 )
 

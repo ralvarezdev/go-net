@@ -2,6 +2,9 @@ package auth
 
 import (
 	"errors"
+	"net/http"
+	"strings"
+
 	gojwt "github.com/ralvarezdev/go-jwt"
 	gojwtnethttp "github.com/ralvarezdev/go-jwt/net/http"
 	gojwtnethttpctx "github.com/ralvarezdev/go-jwt/net/http/context"
@@ -10,17 +13,26 @@ import (
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	"net/http"
-	"strings"
 )
 
-// Middleware struct is the authentication middleware
-type Middleware struct {
-	validator gojwtvalidator.Validator
-	handler   gonethttphandler.Handler
-}
+type (
+	// Middleware struct is the authentication middleware
+	Middleware struct {
+		validator gojwtvalidator.Validator
+		handler   gonethttphandler.Handler
+	}
+)
 
 // NewMiddleware creates a new authentication middleware
+//
+// Parameters:
+//
+//   - validator: The JWT validator service
+//   - handler: The HTTP handler to handle errors
+//
+// Returns:
+//
+//   - *Middleware: The authentication middleware
 func NewMiddleware(
 	validator gojwtvalidator.Validator,
 	handler gonethttphandler.Handler,
@@ -40,14 +52,20 @@ func NewMiddleware(
 }
 
 // Authenticate return the middleware function that authenticates the request
+//
+// Parameters:
+//
+//   - token: The type of token to authenticate (access or refresh)
+//   - rawToken: The raw JWT token string
+//   - failHandler: The function to handle authentication failures
+//
+// Returns:
+//
+//   - func(next http.Handler) http.Handler: The middleware function
 func (m *Middleware) Authenticate(
 	token gojwttoken.Token,
 	rawToken string,
-	failHandler func(
-		w http.ResponseWriter,
-		err error,
-		errorCode *string,
-	),
+	failHandler FailHandlerFn,
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
@@ -69,6 +87,9 @@ func (m *Middleware) Authenticate(
 				// Set the token claims to the context
 				r = gojwtnethttpctx.SetCtxTokenClaims(r, claims)
 
+				// Set the raw token to the context
+				r, _ = gojwtnethttpctx.SetCtxToken(r, rawToken)
+
 				// Call the next handler
 				next.ServeHTTP(w, r)
 			},
@@ -77,6 +98,14 @@ func (m *Middleware) Authenticate(
 }
 
 // AuthenticateFromHeader return the middleware function that authenticates the request from the header
+//
+// Parameters:
+//
+//   - token: The type of token to authenticate (access or refresh)
+//
+// Returns:
+//
+//   - func(next http.Handler) http.Handler: The middleware function
 func (m *Middleware) AuthenticateFromHeader(
 	token gojwttoken.Token,
 ) func(next http.Handler) http.Handler {
@@ -134,14 +163,22 @@ func (m *Middleware) AuthenticateFromHeader(
 }
 
 // AuthenticateFromCookie return the middleware function that authenticates the request from the cookie
+//
+// Parameters:
+//
+//   - token: The type of token to authenticate (access or refresh)
+//   - cookieRefreshTokenName: The name of the cookie that contains the refresh token
+//   - cookieAccessTokenName: The name of the cookie that contains the access token
+//   - refreshTokenFn: The function to refresh the access token using the refresh token
+//
+// Returns:
+//
+//   - func(next http.Handler) http.Handler: The middleware function
 func (m *Middleware) AuthenticateFromCookie(
 	token gojwttoken.Token,
 	cookieRefreshTokenName,
 	cookieAccessTokenName string,
-	refreshTokenFn func(
-		w http.ResponseWriter,
-		r *http.Request,
-	) (*map[gojwttoken.Token]string, error),
+	refreshTokenFn RefreshTokenFn,
 ) func(next http.Handler) http.Handler {
 	var cookieName string
 	if token == gojwttoken.AccessToken {
@@ -176,8 +213,8 @@ func (m *Middleware) AuthenticateFromCookie(
 	}
 
 	// Create the authenticate function
-	var authenticateFn func(*map[gojwttoken.Token]string) func(next http.Handler) http.Handler
-	authenticateFn = func(rawTokens *map[gojwttoken.Token]string) func(next http.Handler) http.Handler {
+	var authenticateFn func(map[gojwttoken.Token]string) func(next http.Handler) http.Handler
+	authenticateFn = func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler {
 		return func(next http.Handler) http.Handler {
 			return http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +226,7 @@ func (m *Middleware) AuthenticateFromCookie(
 					// Get the cookie
 					if rawTokens != nil {
 						// Get the raw token from the map
-						rawToken, ok = (*rawTokens)[token]
+						rawToken, ok = rawTokens[token]
 
 						// Return an error if the token is missing
 						if !ok {

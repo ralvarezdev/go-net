@@ -2,9 +2,10 @@ package json
 
 import (
 	"encoding/json"
+	"net/http"
+
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
-	"net/http"
 )
 
 type (
@@ -16,6 +17,16 @@ type (
 )
 
 // NewDefaultStreamDecoder creates a new JSON decoder
+//
+// Parameters:
+//
+//   - mode: The flag mode
+//   - encoder: The JSON encoder
+//
+// Returns:
+//
+//   - *DefaultStreamDecoder: The default decoder
+//   - error: The error if any
 func NewDefaultStreamDecoder(
 	mode *goflagsmode.Flag,
 	encoder Encoder,
@@ -32,7 +43,17 @@ func NewDefaultStreamDecoder(
 }
 
 // Decode decodes the JSON request body and stores it in the destination
-func (d *DefaultStreamDecoder) Decode(
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//   - dest: The destination to store the decoded body
+//
+// Returns:
+//
+//   - error: The error if any
+func (d DefaultStreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},

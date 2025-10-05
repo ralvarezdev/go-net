@@ -3,7 +3,7 @@ package response
 type (
 	// BaseJSendSuccessBody struct
 	BaseJSendSuccessBody struct {
-		Status string `json:"status"`
+		Status Status `json:"status"`
 	}
 
 	// JSendSuccessBody struct
@@ -14,7 +14,7 @@ type (
 
 	// BaseJSendFailBody struct
 	BaseJSendFailBody struct {
-		Status string  `json:"status"`
+		Status Status  `json:"status"`
 		Code   *string `json:"code,omitempty"`
 	}
 
@@ -26,7 +26,7 @@ type (
 
 	// BaseJSendErrorBody struct
 	BaseJSendErrorBody struct {
-		Status  string  `json:"status"`
+		Status  Status  `json:"status"`
 		Message *string `json:"message,omitempty"`
 		Code    *string `json:"code,omitempty"`
 	}
@@ -39,13 +39,25 @@ type (
 )
 
 // NewBaseJSendSuccessBody creates a new base JSend success response body
+//
+// Returns:
+//
+//   - *BaseJSendSuccessBody: The base JSend success body
 func NewBaseJSendSuccessBody() *BaseJSendSuccessBody {
 	return &BaseJSendSuccessBody{
-		Status: "success",
+		Status: StatusSuccess,
 	}
 }
 
 // NewJSendSuccessBody creates a new JSend success response body
+//
+// Parameters:
+//
+//   - data: The data
+//
+// Returns:
+//
+//   - *JSendSuccessBody: The JSend success body
 func NewJSendSuccessBody(
 	data interface{},
 ) *JSendSuccessBody {
@@ -56,6 +68,15 @@ func NewJSendSuccessBody(
 }
 
 // NewJSendSuccessResponse creates a new JSend success response
+//
+// Parameters:
+//
+//   - data: The data
+//   - httpStatus: The HTTP status code
+//
+// Returns:
+//
+//   - Response: The response
 func NewJSendSuccessResponse(
 	data interface{},
 	httpStatus int,
@@ -64,16 +85,33 @@ func NewJSendSuccessResponse(
 }
 
 // NewBaseJSendFailBody creates a new base JSend fail response body
+//
+// Parameters:
+//
+//   - code: The error code
+//
+// Returns:
+//
+//   - *BaseJSendFailBody: The base JSend fail body
 func NewBaseJSendFailBody(
 	code *string,
 ) *BaseJSendFailBody {
 	return &BaseJSendFailBody{
-		Status: "fail",
+		Status: StatusFail,
 		Code:   code,
 	}
 }
 
 // NewJSendFailBody creates a new JSend fail response body
+//
+// Parameters:
+//
+//   - data: The data
+//   - code: The error code
+//
+// Returns:
+//
+//   - *JSendFailBody: The JSend fail body
 func NewJSendFailBody(
 	data interface{},
 	code *string,
@@ -85,6 +123,16 @@ func NewJSendFailBody(
 }
 
 // NewJSendFailResponse creates a new JSend fail response
+//
+// Parameters:
+//
+//   - data: The data
+//   - code: The error code
+//   - httpStatus: The HTTP status code
+//
+// Returns:
+//
+//   - Response: The response
 func NewJSendFailResponse(
 	data interface{},
 	code *string,
@@ -94,18 +142,37 @@ func NewJSendFailResponse(
 }
 
 // NewBaseJSendErrorBody creates a new base JSend error response body
+//
+// Parameters:
+//
+//   - message: The error message
+//   - code: The error code
+//
+// Returns:
+//
+//   - *BaseJSendErrorBody: The base JSend error body
 func NewBaseJSendErrorBody(
 	message string,
 	code *string,
 ) *BaseJSendErrorBody {
 	return &BaseJSendErrorBody{
-		Status:  "error",
+		Status:  StatusError,
 		Message: &message,
 		Code:    code,
 	}
 }
 
 // NewJSendErrorBody creates a new JSend error response body
+//
+// Parameters:
+//
+//   - data: The data
+//   - message: The error message
+//   - code: The error code
+//
+// Returns:
+//
+//   - *JSendErrorBody: The JSend error body
 func NewJSendErrorBody(
 	data interface{},
 	message string,
@@ -118,6 +185,17 @@ func NewJSendErrorBody(
 }
 
 // NewJSendErrorResponse creates a new JSend error response
+//
+// Parameters:
+//
+//   - data: The data
+//   - message: The error message
+//   - code: The error code
+//   - httpStatus: The HTTP status code
+//
+// Returns:
+//
+//   - Response: The response
 func NewJSendErrorResponse(
 	data interface{},
 	message string,
@@ -128,6 +206,18 @@ func NewJSendErrorResponse(
 }
 
 // NewJSendErrorDebugResponse creates a new JSend error response with debug information
+//
+// Parameters:
+//
+//   - data: The data
+//   - message: The error message
+//   - debugMessage: The debug message
+//   - code: The error code
+//   - httpStatus: The HTTP status code
+//
+// Returns:
+//
+//   - Response: The response
 func NewJSendErrorDebugResponse(
 	data interface{},
 	message string,
@@ -135,6 +225,9 @@ func NewJSendErrorDebugResponse(
 	code *string,
 	httpStatus int,
 ) Response {
+	if debugMessage == "" {
+		return NewJSendErrorResponse(data, message, code, httpStatus)
+	}
 	return NewDebugResponse(
 		NewJSendErrorBody(data, message, code),
 		NewJSendErrorBody(data, debugMessage, code),

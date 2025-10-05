@@ -4,8 +4,11 @@ import (
 	"errors"
 )
 
-var (
-	ErrNilRouter     = errors.New("router cannot be nil")
+const (
 	ErrNilMiddleware = "%s: middleware at index %d cannot be nil"
-	ErrEmptyPattern  = errors.New("pattern cannot be empty")
+)
+
+var (
+	ErrNilRouter    = errors.New("router cannot be nil")
+	ErrEmptyPattern = errors.New("pattern cannot be empty")
 )
