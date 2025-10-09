@@ -2,6 +2,7 @@ package port
 
 import (
 	goflags "github.com/ralvarezdev/go-flags"
+	gostringsconvert "github.com/ralvarezdev/go-strings/convert"
 )
 
 type (
@@ -38,6 +39,24 @@ func (f *Flag) Default() string {
 		return ""
 	}
 	return f.Default()
+}
+
+// Port returns the current port value.
+//
+// Returns:
+//
+//	The port number as an integer, or an error if conversion fails.
+func (f *Flag) Port() (int, error) {
+	if f == nil {
+		return 0, nil
+	}
+
+	// Convert the flag value to an integer
+	var port int
+	if err := gostringsconvert.ToInt(f.Value(), &port); err != nil {
+		return 0, err
+	}
+	return port, nil
 }
 
 // SetFlag initializes the port flag.
