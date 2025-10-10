@@ -7,9 +7,14 @@ import (
 type (
 	// Validator interface
 	Validator interface {
+		CreateValidateFn(
+			body interface{},
+			cache bool,
+			auxiliaryValidatorFns ...interface{},
+		) (func(next http.Handler) http.Handler, error)
 		Validate(
-			body,
-			auxiliaryValidatorFn interface{},
+			body interface{},
+			auxiliaryValidatorFns ...interface{},
 		) func(next http.Handler) http.Handler
 	}
 )
