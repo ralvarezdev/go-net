@@ -8,18 +8,18 @@ import (
 	gonethttpctx "github.com/ralvarezdev/go-net/http/context"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
-	govalidatorstructmapper "github.com/ralvarezdev/go-validator/struct/mapper"
-	govalidatorstructmapperparser "github.com/ralvarezdev/go-validator/struct/mapper/parser"
-	govalidatorstructmapperparserjson "github.com/ralvarezdev/go-validator/struct/mapper/parser/json"
-	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
+	govalidatormapper "github.com/ralvarezdev/go-validator/mapper"
+	govalidatormapperparser "github.com/ralvarezdev/go-validator/mapper/parser"
+	govalidatormapperparserjson "github.com/ralvarezdev/go-validator/mapper/parser/json"
+	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
 type (
 	// Middleware struct is the validation middleware
 	Middleware struct {
 		handler          gonethttphandler.Handler
-		validatorService govalidatorstructmappervalidator.Service
-		generator        govalidatorstructmapper.Generator
+		validatorService govalidatormappervalidator.Service
+		generator        govalidatormapper.Generator
 		validateFns      map[string]func(next http.Handler) http.Handler
 		logger           *slog.Logger
 	}
@@ -41,16 +41,16 @@ func NewMiddleware(
 	logger *slog.Logger,
 ) (*Middleware, error) {
 	// Initialize the raw parser
-	rawParser := govalidatorstructmapperparser.NewDefaultRawParser(logger)
+	rawParser := govalidatormapperparser.NewDefaultRawParser(logger)
 
 	// Initialize the end parser
-	endParser := govalidatorstructmapperparserjson.NewDefaultEndParser()
+	endParser := govalidatormapperparserjson.NewDefaultEndParser()
 
 	// Initialize the validator
-	validator := govalidatorstructmappervalidator.NewDefaultValidator(logger)
+	validator := govalidatormappervalidator.NewDefaultValidator(logger)
 
 	// Initialize the validator service
-	validatorService, err := govalidatorstructmappervalidator.NewDefaultService(
+	validatorService, err := govalidatormappervalidator.NewDefaultService(
 		rawParser,
 		endParser,
 		validator,
@@ -61,7 +61,7 @@ func NewMiddleware(
 	}
 
 	// Initialize the generator
-	generator := govalidatorstructmapper.NewJSONGenerator(logger)
+	generator := govalidatormapper.NewJSONGenerator(logger)
 
 	if logger != nil {
 		logger = logger.With(
@@ -89,7 +89,7 @@ func NewMiddleware(
 //   - error: if there was an error creating the mapper
 func (m Middleware) createMapper(
 	structInstance interface{},
-) (*govalidatorstructmapper.Mapper, reflect.Type, error) {
+) (*govalidatormapper.Mapper, reflect.Type, error) {
 	// Get the type of the request
 	structInstanceType := goreflect.GetTypeOf(structInstance)
 

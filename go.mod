@@ -7,7 +7,7 @@ require (
 	github.com/ralvarezdev/go-jwt v0.5.1
 	github.com/ralvarezdev/go-rate-limiter v0.1.9
 	github.com/ralvarezdev/go-reflect v0.2.8
-	github.com/ralvarezdev/go-validator v0.6.10
+	github.com/ralvarezdev/go-validator v0.6.11
 )
 
 require (
