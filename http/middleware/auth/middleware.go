@@ -85,17 +85,10 @@ func (m *Middleware) Authenticate(
 				}
 
 				// Set the token claims to the context
-				if token == gojwttoken.RefreshToken {
-					r, _ = gojwtnethttpctx.SetCtxRefreshTokenClaims(r, claims)
+				r = gojwtnethttpctx.SetCtxTokenClaims(r, claims)
 
-					// Set the raw token to the context
-					r, _ = gojwtnethttpctx.SetCtxRefreshToken(r, rawToken)
-				} else if token == gojwttoken.AccessToken {
-					r, _ = gojwtnethttpctx.SetCtxAccessTokenClaims(r, claims)
-
-					// Set the raw token to the context
-					r, _ = gojwtnethttpctx.SetCtxAccessToken(r, rawToken)
-				}
+				// Set the raw token to the context
+				r, _ = gojwtnethttpctx.SetCtxToken(r, rawToken)
 
 				// Call the next handler
 				next.ServeHTTP(w, r)
