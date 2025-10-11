@@ -23,6 +23,8 @@ github.com/ralvarezdev/go-flags v0.3.8 h1:b/doNRr2HsniEpz8NjbH2vxJH5WMeymIx0LAzD
 github.com/ralvarezdev/go-flags v0.3.8/go.mod h1:R3yVBYvzwqfOp26LidaiJ/zftVAnPC3pKunVpV/vosE=
 github.com/ralvarezdev/go-jwt v0.5.1 h1:Zyx3YPLSu+qTbl0BoGouU61JjiEKUyVBmkDA71TpyU0=
 github.com/ralvarezdev/go-jwt v0.5.1/go.mod h1:7FVJv+0SNmBegRKzLisTpNd/EWAkgQgmkuBP0dcqQk8=
+github.com/ralvarezdev/go-jwt v0.5.3 h1:jEa0Iy/5EE2DyS1kATiidBYiGnF9YbF1p1S7HDjkgoQ=
+github.com/ralvarezdev/go-jwt v0.5.3/go.mod h1:7FVJv+0SNmBegRKzLisTpNd/EWAkgQgmkuBP0dcqQk8=
 github.com/ralvarezdev/go-rate-limiter v0.1.9 h1:Vch/HFIoqDWB8AhY8l/vSBU5g3DsbpfHY8f0X7o9/yc=
 github.com/ralvarezdev/go-rate-limiter v0.1.9/go.mod h1:na9aoJKktmzd55n7BzoyZz9YTcO0M4fcZ3wSXb/0X0M=
 github.com/ralvarezdev/go-reflect v0.2.7 h1:u0+LnqSWLtrecYw530Giq5H0F3ZQtE3t1M7rEKKy96w=
@@ -41,6 +43,7 @@ github.com/ralvarezdev/go-validator v0.6.9 h1:vB1IMbduObTWcponerXSpsMoq/WiAgIykd
 github.com/ralvarezdev/go-validator v0.6.9/go.mod h1:+U8prWUDEUGOxNTWvMp+lpyI3HCooKVyS13M/y14Hl8=
 github.com/ralvarezdev/go-validator v0.6.10 h1:dUO/OTMnAH3EkDGjA4smBDge97P2EwE9vl72I2aZGUQ=
 github.com/ralvarezdev/go-validator v0.6.10/go.mod h1:+U8prWUDEUGOxNTWvMp+lpyI3HCooKVyS13M/y14Hl8=
+github.com/ralvarezdev/go-validator v0.6.11 h1:Ge9eHEg0AxUlf/9KmGWQkX66NHZDozBrD7L1viImqek=
 github.com/ralvarezdev/go-validator v0.6.11/go.mod h1:+U8prWUDEUGOxNTWvMp+lpyI3HCooKVyS13M/y14Hl8=
 golang.org/x/crypto v0.42.0 h1:chiH31gIWm57EkTXpwnqf8qeuMUi0yekh6mT2AvFlqI=
 golang.org/x/crypto v0.42.0/go.mod h1:4+rDnOTJhQCx2q7/j6rAN5XDw8kPjeaXEUR2eL94ix8=
