@@ -9,17 +9,19 @@ import (
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatorstructmapper "github.com/ralvarezdev/go-validator/struct/mapper"
+	govalidatorstructmapperparser "github.com/ralvarezdev/go-validator/struct/mapper/parser"
+	govalidatorstructmapperparserjson "github.com/ralvarezdev/go-validator/struct/mapper/parser/json"
 	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
 )
 
 type (
 	// Middleware struct is the validation middleware
 	Middleware struct {
-		handler     gonethttphandler.Handler
-		validator   govalidatorstructmappervalidator.Service
-		generator   govalidatorstructmapper.Generator
-		validateFns map[string]func(next http.Handler) http.Handler
-		logger      *slog.Logger
+		handler          gonethttphandler.Handler
+		validatorService govalidatorstructmappervalidator.Service
+		generator        govalidatorstructmapper.Generator
+		validateFns      map[string]func(next http.Handler) http.Handler
+		logger           *slog.Logger
 	}
 )
 
@@ -28,8 +30,6 @@ type (
 // Parameters:
 //
 //   - handler: The HTTP handler to parse the request body
-//   - validator: The struct validator service
-//   - generator: The struct mapper generator
 //   - logger: The logger (can be nil)
 //
 // Returns:
@@ -38,20 +38,30 @@ type (
 //   - error: The error if any
 func NewMiddleware(
 	handler gonethttphandler.Handler,
-	validator govalidatorstructmappervalidator.Service,
-	generator govalidatorstructmapper.Generator,
 	logger *slog.Logger,
 ) (*Middleware, error) {
-	// Check if the handler, validator or the generator is nil
-	if handler == nil {
-		return nil, gonethttphandler.ErrNilHandler
+	// Initialize the raw parser
+	rawParser := govalidatorstructmapperparser.NewDefaultRawParser(logger)
+
+	// Initialize the end parser
+	endParser := govalidatorstructmapperparserjson.NewDefaultEndParser()
+
+	// Initialize the validator
+	validator := govalidatorstructmappervalidator.NewDefaultValidator(logger)
+
+	// Initialize the validator service
+	validatorService, err := govalidatorstructmappervalidator.NewDefaultService(
+		rawParser,
+		endParser,
+		validator,
+		logger,
+	)
+	if err != nil {
+		return nil, err
 	}
-	if validator == nil {
-		return nil, govalidatorstructmappervalidator.ErrNilService
-	}
-	if generator == nil {
-		return nil, govalidatorstructmapper.ErrNilGenerator
-	}
+
+	// Initialize the generator
+	generator := govalidatorstructmapper.NewJSONGenerator(logger)
 
 	if logger != nil {
 		logger = logger.With(
@@ -60,10 +70,10 @@ func NewMiddleware(
 	}
 
 	return &Middleware{
-		handler:   handler,
-		validator: validator,
-		generator: generator,
-		logger:    logger,
+		handler:          handler,
+		validatorService: validatorService,
+		generator:        generator,
+		logger:           logger,
 	}, nil
 }
 
@@ -136,7 +146,7 @@ func (m Middleware) CreateValidateFn(
 	}
 
 	// Create the inner validate function
-	innerValidateFn, err := m.validator.CreateValidateFn(
+	innerValidateFn, err := m.validatorService.CreateValidateFn(
 		mapper,
 		cache,
 		auxiliaryValidatorFns...,
