@@ -27,20 +27,17 @@ type (
 //
 // Parameters:
 //
-//   - validator: The JWT validator service
 //   - handler: The HTTP handler to handle errors
+//   - validator: The JWT validator service (if nil, no validation will be done, can be used for gRPC gateways)
 //
 // Returns:
 //
 //   - *Middleware: The authentication middleware
 func NewMiddleware(
-	validator gojwtvalidator.Validator,
 	handler gonethttphandler.Handler,
+	validator gojwtvalidator.Validator,
 ) (*Middleware, error) {
-	// Check if either the validator, response handler or validator handler is nil
-	if validator == nil {
-		return nil, gojwtvalidator.ErrNilValidator
-	}
+	// Check if either the response handler is nil
 	if handler == nil {
 		return nil, gonethttphandler.ErrNilHandler
 	}
@@ -62,7 +59,7 @@ func NewMiddleware(
 // Returns:
 //
 //   - func(next http.Handler) http.Handler: The middleware function
-func (m *Middleware) Authenticate(
+func (m Middleware) Authenticate(
 	token gojwttoken.Token,
 	rawToken string,
 	failHandler FailHandlerFn,
@@ -71,21 +68,26 @@ func (m *Middleware) Authenticate(
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				// Validate the token and get the validated claims
-				claims, err := m.validator.ValidateClaims(
-					rawToken,
-					token,
-				)
-				if err != nil {
-					failHandler(
-						w,
-						err,
-						ErrCodeInvalidTokenClaims,
+				if m.validator == nil {
+					claims, err := m.validator.ValidateClaims(
+						rawToken,
+						token,
 					)
-					return
-				}
+					if err != nil {
+						if failHandler == nil {
+							panic(err)
+						}
+						failHandler(
+							w,
+							err,
+							ErrCodeInvalidTokenClaims,
+						)
+						return
+					}
 
-				// Set the token claims to the context
-				r = gojwtnethttpctx.SetCtxTokenClaims(r, claims)
+					// Set the token claims to the context
+					r = gojwtnethttpctx.SetCtxTokenClaims(r, claims)
+				}
 
 				// Set the raw token to the context
 				r, _ = gojwtnethttpctx.SetCtxToken(r, rawToken)
@@ -97,6 +99,29 @@ func (m *Middleware) Authenticate(
 	}
 }
 
+// authenticateFromHeaderFailHandler is the default fail handler for AuthenticateFromHeader
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - err: The error that occurred
+//   - errorCode: The error code to return
+func (m Middleware) authenticateFromHeaderFailHandler(
+	w http.ResponseWriter,
+	err error,
+	errorCode *string,
+) {
+	m.handler.HandleError(
+		w,
+		gonethttpresponse.NewFailResponseError(
+			gojwtnethttp.AuthorizationHeaderKey,
+			err.Error(),
+			errorCode,
+			http.StatusUnauthorized,
+		),
+	)
+}
+
 // AuthenticateFromHeader return the middleware function that authenticates the request from the header
 //
 // Parameters:
@@ -106,26 +131,9 @@ func (m *Middleware) Authenticate(
 // Returns:
 //
 //   - func(next http.Handler) http.Handler: The middleware function
-func (m *Middleware) AuthenticateFromHeader(
+func (m Middleware) AuthenticateFromHeader(
 	token gojwttoken.Token,
 ) func(next http.Handler) http.Handler {
-	// Create the fail handler function
-	failHandler := func(
-		w http.ResponseWriter,
-		err error,
-		errorCode *string,
-	) {
-		m.handler.HandleError(
-			w,
-			gonethttpresponse.NewFailResponseError(
-				gojwtnethttp.AuthorizationHeaderKey,
-				err.Error(),
-				errorCode,
-				http.StatusUnauthorized,
-			),
-		)
-	}
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +145,7 @@ func (m *Middleware) AuthenticateFromHeader(
 
 				// Return an error if the authorization is missing or invalid
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
-					failHandler(
+					m.authenticateFromHeaderFailHandler(
 						w,
 						ErrInvalidAuthorizationHeader,
 						ErrCodeInvalidAuthorizationHeader,
@@ -152,13 +160,40 @@ func (m *Middleware) AuthenticateFromHeader(
 				m.Authenticate(
 					token,
 					rawToken,
-					failHandler,
+					m.authenticateFromHeaderFailHandler,
 				)(next).ServeHTTP(
 					w,
 					r,
 				)
 			},
 		)
+	}
+}
+
+// authenticateFromCookieFailHandler is the default fail handler for AuthenticateFromCookie
+//
+// Parameters:
+//
+//   - cookieName: The name of the cookie that contains the token
+func (m Middleware) authenticateFromCookieFailHandler(
+	cookieName string,
+) FailHandlerFn {
+	return func(
+		w http.ResponseWriter,
+		err error,
+		errorCode *string,
+	) {
+		{
+			m.handler.HandleError(
+				w,
+				gonethttpresponse.NewFailResponseError(
+					cookieName,
+					err.Error(),
+					errorCode,
+					http.StatusUnauthorized,
+				),
+			)
+		}
 	}
 }
 
@@ -174,7 +209,7 @@ func (m *Middleware) AuthenticateFromHeader(
 // Returns:
 //
 //   - func(next http.Handler) http.Handler: The middleware function
-func (m *Middleware) AuthenticateFromCookie(
+func (m Middleware) AuthenticateFromCookie(
 	token gojwttoken.Token,
 	cookieRefreshTokenName,
 	cookieAccessTokenName string,
@@ -188,40 +223,20 @@ func (m *Middleware) AuthenticateFromCookie(
 	}
 
 	// Create the fail handler function
-	failHandler := func(
-		cookieName string,
-	) func(
-		w http.ResponseWriter,
-		err error,
-		errorCode *string,
-	) {
-		return func(
-			w http.ResponseWriter,
-			err error,
-			errorCode *string,
-		) {
-			m.handler.HandleError(
-				w,
-				gonethttpresponse.NewFailResponseError(
-					cookieName,
-					err.Error(),
-					errorCode,
-					http.StatusUnauthorized,
-				),
-			)
-		}
-	}
+	failHandler := m.authenticateFromCookieFailHandler(cookieName)
 
 	// Create the authenticate function
-	var authenticateFn func(map[gojwttoken.Token]string) func(next http.Handler) http.Handler
+	var authenticateFn func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler
 	authenticateFn = func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler {
 		return func(next http.Handler) http.Handler {
 			return http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
-					var rawToken string
-					var cookie *http.Cookie
-					var err error
-					var ok bool
+					var (
+						rawToken string
+						cookie   *http.Cookie
+						err      error
+						ok       bool
+					)
 
 					// Get the cookie
 					if rawTokens != nil {
@@ -230,7 +245,7 @@ func (m *Middleware) AuthenticateFromCookie(
 
 						// Return an error if the token is missing
 						if !ok {
-							failHandler(cookieName)(
+							failHandler(
 								w,
 								gonethttp.ErrCookieNotFound,
 								gonethttp.ErrCodeCookieNotFound,
@@ -251,7 +266,7 @@ func (m *Middleware) AuthenticateFromCookie(
 								// Refresh the token
 								rawTokens, err = refreshTokenFn(w, r)
 								if err != nil {
-									failHandler(cookieRefreshTokenName)(
+									m.authenticateFromCookieFailHandler(cookieRefreshTokenName)(
 										w,
 										err,
 										ErrCodeFailedToRefreshToken,
@@ -271,7 +286,7 @@ func (m *Middleware) AuthenticateFromCookie(
 
 					// Check if the raw token is empty
 					if rawToken == "" {
-						failHandler(cookieName)(
+						failHandler(
 							w,
 							gonethttp.ErrCookieNotFound,
 							gonethttp.ErrCodeCookieNotFound,
@@ -283,7 +298,7 @@ func (m *Middleware) AuthenticateFromCookie(
 					m.Authenticate(
 						token,
 						rawToken,
-						failHandler(cookieName),
+						failHandler,
 					)(next).ServeHTTP(
 						w,
 						r,
@@ -292,6 +307,5 @@ func (m *Middleware) AuthenticateFromCookie(
 			)
 		}
 	}
-
 	return authenticateFn(nil)
 }
