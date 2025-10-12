@@ -11,8 +11,6 @@ type (
 	// Module is the struct for the route module
 	Module struct {
 		Pattern          string
-		Service          interface{}
-		Controller       interface{}
 		BeforeLoadFn     func(m *Module)
 		RegisterRoutesFn func(m *Module)
 		AfterLoadFn      func(m *Module)

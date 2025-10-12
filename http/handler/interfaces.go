@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
+	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
 type (
@@ -18,13 +18,13 @@ type (
 		Validate(
 			w http.ResponseWriter,
 			body interface{},
-			validatorFn govalidatorstructmappervalidator.ValidateFn,
+			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
 		Parse(
 			w http.ResponseWriter,
 			r *http.Request,
 			dest interface{},
-			validatorFn govalidatorstructmappervalidator.ValidateFn,
+			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
 		GetParameters(
 			r *http.Request,

@@ -8,7 +8,7 @@ import (
 	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
-	govalidatorstructmappervalidator "github.com/ralvarezdev/go-validator/struct/mapper/validator"
+	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
 type (
@@ -88,7 +88,7 @@ func (d DefaultHandler) Decode(
 func (d DefaultHandler) Validate(
 	w http.ResponseWriter,
 	body interface{},
-	validatorFn govalidatorstructmappervalidator.ValidateFn,
+	validatorFn govalidatormappervalidator.ValidateFn,
 ) bool {
 	// Validate the request body
 	validations, err := validatorFn(body)
@@ -137,7 +137,7 @@ func (d DefaultHandler) Parse(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
-	validatorFn govalidatorstructmappervalidator.ValidateFn,
+	validatorFn govalidatormappervalidator.ValidateFn,
 ) bool {
 	// Decode the request body
 	if err := d.Decode(w, r, dest); err != nil {

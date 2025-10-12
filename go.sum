@@ -27,6 +27,8 @@ github.com/ralvarezdev/go-jwt v0.5.3 h1:jEa0Iy/5EE2DyS1kATiidBYiGnF9YbF1p1S7HDjk
 github.com/ralvarezdev/go-jwt v0.5.3/go.mod h1:7FVJv+0SNmBegRKzLisTpNd/EWAkgQgmkuBP0dcqQk8=
 github.com/ralvarezdev/go-jwt v0.5.4 h1:IvLWvQRL6+PJJ0kHetvqV68I0Wowc7gPsVyeVApFJkk=
 github.com/ralvarezdev/go-jwt v0.5.4/go.mod h1:7FVJv+0SNmBegRKzLisTpNd/EWAkgQgmkuBP0dcqQk8=
+github.com/ralvarezdev/go-jwt v0.5.5 h1:Mod+huHLK7m/bgqDXF4dHeuD6LhPFDCtKXEFycELXZE=
+github.com/ralvarezdev/go-jwt v0.5.5/go.mod h1:7FVJv+0SNmBegRKzLisTpNd/EWAkgQgmkuBP0dcqQk8=
 github.com/ralvarezdev/go-rate-limiter v0.1.9 h1:Vch/HFIoqDWB8AhY8l/vSBU5g3DsbpfHY8f0X7o9/yc=
 github.com/ralvarezdev/go-rate-limiter v0.1.9/go.mod h1:na9aoJKktmzd55n7BzoyZz9YTcO0M4fcZ3wSXb/0X0M=
 github.com/ralvarezdev/go-reflect v0.2.7 h1:u0+LnqSWLtrecYw530Giq5H0F3ZQtE3t1M7rEKKy96w=
