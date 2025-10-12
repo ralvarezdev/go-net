@@ -30,6 +30,8 @@ type (
 // Parameters:
 //
 //   - handler: The HTTP handler to parse the request body
+//   - birthdateOptions: The birthdate options (can be nil)
+//   - passwordOptions: The password options (can be nil)
 //   - logger: The logger (can be nil)
 //
 // Returns:
@@ -38,6 +40,8 @@ type (
 //   - error: The error if any
 func NewMiddleware(
 	handler gonethttphandler.Handler,
+	birthdateOptions *govalidatormappervalidator.BirthdateOptions,
+	passwordOptions *govalidatormappervalidator.PasswordOptions,
 	logger *slog.Logger,
 ) (*Middleware, error) {
 	// Initialize the raw parser
@@ -54,6 +58,8 @@ func NewMiddleware(
 		rawParser,
 		endParser,
 		validator,
+		birthdateOptions,
+		passwordOptions,
 		logger,
 	)
 	if err != nil {

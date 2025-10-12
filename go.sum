@@ -35,8 +35,12 @@ github.com/ralvarezdev/go-reflect v0.2.7 h1:u0+LnqSWLtrecYw530Giq5H0F3ZQtE3t1M7r
 github.com/ralvarezdev/go-reflect v0.2.7/go.mod h1:jv3EqQfUixWtNeJd/Rnzf0IDcYZ1z3GApRdAGQHdHZQ=
 github.com/ralvarezdev/go-reflect v0.2.8 h1:6bmnMMxwxKvd2IBWG+BEVYnjUBYQfCNkoCvVos89t1M=
 github.com/ralvarezdev/go-reflect v0.2.8/go.mod h1:jv3EqQfUixWtNeJd/Rnzf0IDcYZ1z3GApRdAGQHdHZQ=
+github.com/ralvarezdev/go-reflect v0.2.10 h1:H6N1dpvxszWrfToBZ6ZVyD87qvtQEOrCV0itix9MmCI=
+github.com/ralvarezdev/go-reflect v0.2.10/go.mod h1:HFctB1EEZdN5+T9luOalTmdRfIQ9SwQd4LtxXDGicbE=
 github.com/ralvarezdev/go-strings v0.1.15 h1:K+YnBiokOPNRvtVo7f2u0SyCjAILDVAqkRd2rgnBj4U=
 github.com/ralvarezdev/go-strings v0.1.15/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=
+github.com/ralvarezdev/go-strings v0.1.16 h1:0yc7yamYEWVrFTK3C95IjSE5IqCs3H1alIIVEmzIolY=
+github.com/ralvarezdev/go-strings v0.1.16/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=
 github.com/ralvarezdev/go-validator v0.6.3 h1:KSnTmM+o3+6Jcqq9cQ7NFEeGTyyiqo+QSUJxheE1HJE=
 github.com/ralvarezdev/go-validator v0.6.3/go.mod h1:AUN2AzU8NRcmYtxIjfvivWaPy62SwJcRVn79Jn+tDlI=
 github.com/ralvarezdev/go-validator v0.6.7 h1:EsZxzalxnc9NVGQoM0WZG4Mj0Mu3LD8znhTPht/TseY=
@@ -49,6 +53,8 @@ github.com/ralvarezdev/go-validator v0.6.10 h1:dUO/OTMnAH3EkDGjA4smBDge97P2EwE9v
 github.com/ralvarezdev/go-validator v0.6.10/go.mod h1:+U8prWUDEUGOxNTWvMp+lpyI3HCooKVyS13M/y14Hl8=
 github.com/ralvarezdev/go-validator v0.6.11 h1:Ge9eHEg0AxUlf/9KmGWQkX66NHZDozBrD7L1viImqek=
 github.com/ralvarezdev/go-validator v0.6.11/go.mod h1:+U8prWUDEUGOxNTWvMp+lpyI3HCooKVyS13M/y14Hl8=
+github.com/ralvarezdev/go-validator v0.6.12 h1:v1Uy1nIew3+w3o/uuzkPyvg8TYRFcgnNj21h6vMiflw=
+github.com/ralvarezdev/go-validator v0.6.12/go.mod h1:+U8prWUDEUGOxNTWvMp+lpyI3HCooKVyS13M/y14Hl8=
 golang.org/x/crypto v0.42.0 h1:chiH31gIWm57EkTXpwnqf8qeuMUi0yekh6mT2AvFlqI=
 golang.org/x/crypto v0.42.0/go.mod h1:4+rDnOTJhQCx2q7/j6rAN5XDw8kPjeaXEUR2eL94ix8=
 golang.org/x/net v0.44.0 h1:evd8IRDyfNBMBTTY5XRF1vaZlD+EmWx6x8PkhR04H/I=

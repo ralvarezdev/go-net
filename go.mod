@@ -6,8 +6,8 @@ require (
 	github.com/ralvarezdev/go-flags v0.3.8
 	github.com/ralvarezdev/go-jwt v0.5.5
 	github.com/ralvarezdev/go-rate-limiter v0.1.9
-	github.com/ralvarezdev/go-reflect v0.2.8
-	github.com/ralvarezdev/go-validator v0.6.11
+	github.com/ralvarezdev/go-reflect v0.2.10
+	github.com/ralvarezdev/go-validator v0.6.12
 )
 
 require (
@@ -16,6 +16,6 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/ralvarezdev/go-databases v0.6.1 // indirect
-	github.com/ralvarezdev/go-strings v0.1.15 // indirect
+	github.com/ralvarezdev/go-strings v0.1.16 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
 )
