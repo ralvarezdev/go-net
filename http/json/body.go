@@ -49,7 +49,6 @@ func NewSyntaxErrorResponse(
 	err := fmt.Errorf(ErrSyntaxError, offset)
 
 	return gonethttpresponse.NewJSendErrorResponse(
-		nil,
 		err.Error(),
 		ErrCodeSyntaxError,
 		http.StatusBadRequest,
@@ -90,7 +89,6 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 	err := fmt.Errorf(ErrMaxBodySizeExceeded, limit)
 
 	return gonethttpresponse.NewJSendErrorResponse(
-		nil,
 		err.Error(),
 		ErrCodeMaxBodySizeExceeded,
 		http.StatusRequestEntityTooLarge,
@@ -151,7 +149,6 @@ func BodyDecodeErrorHandler(
 		return encoder.Encode(
 			w,
 			gonethttpresponse.NewJSendErrorResponse(
-				nil,
 				ErrUnexpectedEOF.Error(),
 				ErrCodeSyntaxError,
 				http.StatusBadRequest,
@@ -175,7 +172,6 @@ func BodyDecodeErrorHandler(
 		return encoder.Encode(
 			w,
 			gonethttpresponse.NewJSendErrorResponse(
-				nil,
 				ErrEmptyBody.Error(),
 				ErrCodeEmptyBody,
 				http.StatusBadRequest,
@@ -194,7 +190,6 @@ func BodyDecodeErrorHandler(
 	return encoder.Encode(
 		w,
 		gonethttpresponse.NewJSendErrorDebugResponse(
-			nil,
 			ErrUnmarshalBodyFailed.Error(),
 			err.Error(),
 			ErrCodeUnmarshalRequestBodyFailed,
