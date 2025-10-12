@@ -3,8 +3,7 @@ package response
 import (
 	"net/http"
 
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatuserrors "github.com/ralvarezdev/go-net/http/status/errors"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 )
 
 // NewJSendDebugInternalServerError creates a new internal server error JSend response with debug information
@@ -16,17 +15,17 @@ import (
 //
 // Returns:
 //
-//   - gonethttpresponse.Response: The response
+//   - Response: The response
 func NewJSendDebugInternalServerError(
 	debugErr error,
 	errorCode *string,
-) gonethttpresponse.Response {
+) Response {
 	if debugErr == nil {
 		return NewJSendInternalServerError(errorCode)
 	}
 
-	return gonethttpresponse.NewJSendErrorDebugResponse(
-		gonethttpstatuserrors.InternalServerError.Error(),
+	return NewJSendErrorDebugResponse(
+		gonethttp.ErrInternalServerError.Error(),
 		debugErr.Error(),
 		errorCode,
 		http.StatusInternalServerError,
@@ -41,12 +40,12 @@ func NewJSendDebugInternalServerError(
 //
 // Returns:
 //
-//   - gonethttpresponse.Response: The response
+//   - Response: The response
 func NewJSendInternalServerError(
 	errorCode *string,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewJSendErrorResponse(
-		gonethttpstatuserrors.InternalServerError.Error(),
+) Response {
+	return NewJSendErrorResponse(
+		gonethttp.ErrInternalServerError.Error(),
 		errorCode,
 		http.StatusInternalServerError,
 	)
@@ -61,17 +60,17 @@ func NewJSendInternalServerError(
 //
 // Returns:
 //
-//   - gonethttpresponse.Response: The response
+//   - Response: The response
 func NewJSendDebugNotImplemented(
 	debugErr error,
 	errorCode *string,
-) gonethttpresponse.Response {
+) Response {
 	if debugErr == nil {
 		return NewJSendNotImplemented(errorCode)
 	}
 
-	return gonethttpresponse.NewJSendErrorDebugResponse(
-		gonethttpstatuserrors.NotImplemented.Error(),
+	return NewJSendErrorDebugResponse(
+		gonethttp.ErrNotImplemented.Error(),
 		debugErr.Error(),
 		errorCode,
 		http.StatusNotImplemented,
@@ -86,12 +85,12 @@ func NewJSendDebugNotImplemented(
 //
 // Returns:
 //
-//   - gonethttpresponse.Response: The response
+//   - Response: The response
 func NewJSendNotImplemented(
 	errorCode *string,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewJSendErrorResponse(
-		gonethttpstatuserrors.NotImplemented.Error(),
+) Response {
+	return NewJSendErrorResponse(
+		gonethttp.ErrNotImplemented.Error(),
 		errorCode,
 		http.StatusNotImplemented,
 	)
@@ -106,17 +105,17 @@ func NewJSendNotImplemented(
 //
 // Returns:
 //
-//   - gonethttpresponse.Response: The response
+//   - Response: The response
 func NewJSendDebugBadRequest(
 	debugErr error,
 	errorCode *string,
-) gonethttpresponse.Response {
+) Response {
 	if debugErr == nil {
 		return NewJSendBadRequest(errorCode)
 	}
 
-	return gonethttpresponse.NewJSendErrorDebugResponse(
-		gonethttpstatuserrors.BadRequest.Error(),
+	return NewJSendErrorDebugResponse(
+		gonethttp.ErrBadRequest.Error(),
 		debugErr.Error(),
 		errorCode,
 		http.StatusBadRequest,
@@ -131,12 +130,12 @@ func NewJSendDebugBadRequest(
 //
 // Returns:
 //
-//   - gonethttpresponse.Response: The response
+//   - Response: The response
 func NewJSendBadRequest(
 	errorCode *string,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewJSendErrorResponse(
-		gonethttpstatuserrors.BadRequest.Error(),
+) Response {
+	return NewJSendErrorResponse(
+		gonethttp.ErrBadRequest.Error(),
 		errorCode,
 		http.StatusBadRequest,
 	)

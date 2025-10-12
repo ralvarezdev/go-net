@@ -5,18 +5,17 @@ import (
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttpjson "github.com/ralvarezdev/go-net/http/json"
+	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
 type (
 	// DefaultHandler struct
 	DefaultHandler struct {
-		mode        *goflagsmode.Flag
-		jsonEncoder gonethttpjson.Encoder
-		jsonDecoder gonethttpjson.Decoder
+		mode    *goflagsmode.Flag
+		encoder gonethttpresponse.Encoder
+		decoder gonethttprequest.Decoder
 	}
 )
 
@@ -25,8 +24,8 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - jsonEncoder: The JSON encoder
-//   - jsonDecoder: The JSON decoder
+//   - encoder: The encoder
+//   - decoder: The decoder
 //
 // Returns:
 //
@@ -34,24 +33,24 @@ type (
 //   - error: The error if any
 func NewDefaultHandler(
 	mode *goflagsmode.Flag,
-	jsonEncoder gonethttpjson.Encoder,
-	jsonDecoder gonethttpjson.Decoder,
+	encoder gonethttpresponse.Encoder,
+	decoder gonethttprequest.Decoder,
 ) (*DefaultHandler, error) {
 	// Check if the flag mode, the JSON encoder or the JSON decoder is nil
 	if mode == nil {
 		return nil, goflagsmode.ErrNilModeFlag
 	}
-	if jsonEncoder == nil {
-		return nil, gonethttpjson.ErrNilEncoder
+	if encoder == nil {
+		return nil, gonethttpresponse.ErrNilEncoder
 	}
-	if jsonDecoder == nil {
-		return nil, gonethttpjson.ErrNilDecoder
+	if decoder == nil {
+		return nil, gonethttprequest.ErrNilDecoder
 	}
 
 	return &DefaultHandler{
 		mode,
-		jsonEncoder,
-		jsonDecoder,
+		encoder,
+		decoder,
 	}, nil
 }
 
@@ -71,7 +70,7 @@ func (d DefaultHandler) Decode(
 	r *http.Request,
 	dest interface{},
 ) error {
-	return d.jsonDecoder.Decode(w, r, dest)
+	return d.decoder.Decode(w, r, dest)
 }
 
 // Validate validates the request body
@@ -102,7 +101,7 @@ func (d DefaultHandler) Validate(
 	if err != nil {
 		d.HandleResponse(
 			w,
-			gonethttpstatusresponse.NewJSendDebugInternalServerError(
+			gonethttpresponse.NewJSendDebugInternalServerError(
 				err,
 				ErrCodeValidationFailed,
 			),
@@ -217,7 +216,7 @@ func (d DefaultHandler) ParseWildcard(
 		// Handle the error
 		d.HandleResponse(
 			w,
-			gonethttpstatusresponse.NewJSendDebugBadRequest(
+			gonethttpresponse.NewJSendDebugBadRequest(
 				err,
 				ErrCodeWildcardParsingFailed,
 			),
@@ -241,7 +240,7 @@ func (d DefaultHandler) HandleResponse(
 	if response == nil {
 		d.HandleResponse(
 			w,
-			gonethttpstatusresponse.NewJSendDebugInternalServerError(
+			gonethttpresponse.NewJSendDebugInternalServerError(
 				gonethttpresponse.ErrNilResponse,
 				ErrCodeNilResponse,
 			),
@@ -249,8 +248,8 @@ func (d DefaultHandler) HandleResponse(
 		return
 	}
 
-	// Call the JSON encoder
-	_ = d.jsonEncoder.Encode(w, response)
+	// Call the encoder
+	_ = d.encoder.Encode(w, response)
 }
 
 // HandleError handles the error response
@@ -275,7 +274,7 @@ func (d DefaultHandler) HandleError(
 
 	d.HandleResponse(
 		w,
-		gonethttpstatusresponse.NewJSendDebugInternalServerError(
+		gonethttpresponse.NewJSendDebugInternalServerError(
 			err,
 			ErrCodeRequestFatalError,
 		),

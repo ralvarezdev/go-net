@@ -109,11 +109,11 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 func BodyDecodeErrorHandler(
 	w http.ResponseWriter,
 	err error,
-	encoder Encoder,
+	encoder gonethttpresponse.Encoder,
 ) error {
 	// Check if the encoder is nil
 	if encoder == nil {
-		return ErrNilEncoder
+		return gonethttpresponse.ErrNilEncoder
 	}
 
 	// Check is there is an UnmarshalTypeError

@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ralvarezdev/go-flags/mode"
+	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
 )
 
 type (
-	// DefaultEncoder struct
-	DefaultEncoder struct {
-		mode *mode.Flag
+	// DefaultStreamEncoder is the JSON encoder struct
+	DefaultStreamEncoder struct {
+		mode *goflagsmode.Flag
 	}
 )
 
-// NewDefaultEncoder creates a new default JSON encoder
+// NewDefaultStreamEncoder creates a new JSON encoder
 //
 // Parameters:
 //
@@ -24,9 +23,11 @@ type (
 //
 // Returns:
 //
-//   - *DefaultEncoder: The default encoder
-func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
-	return &DefaultEncoder{mode}
+//   - *DefaultStreamEncoder: The default encoder
+func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
+	return &DefaultStreamEncoder{
+		mode,
+	}
 }
 
 // Encode encodes the body into JSON and writes it to the response
@@ -39,25 +40,13 @@ func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
 // Returns:
 //
 //   - error: The error if any
-func (d DefaultEncoder) Encode(
+func (d DefaultStreamEncoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {
-	// Get the response body and HTTP status
+	// Get the body and HTTP status from the response
 	body := response.Body(d.mode)
 	httpStatus := response.HTTPStatus()
-
-	// Encode the JSON body
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		return d.Encode(
-			w,
-			gonethttpstatusresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeMarshalResponseBodyFailed,
-			),
-		)
-	}
 
 	// Set the Content-Type header if it hasn't been set already
 	if w.Header().Get("Content-Type") == "" {
@@ -70,7 +59,20 @@ func (d DefaultEncoder) Encode(
 		w.WriteHeader(httpStatus)
 	}
 
-	// Write the JSON body to the response
-	_, err = w.Write(jsonBody)
-	return err
+	// Encode the JSON body
+	if err = json.NewEncoder(w).Encode(body); err != nil {
+		// Overwrite the status on error
+		w.Header().Set("X-Status-Written", "true")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		_ = d.Encode(
+			w,
+			gonethttpresponse.NewJSendDebugInternalServerError(
+				err,
+				ErrCodeMarshalResponseBodyFailed,
+			),
+		)
+		return err
+	}
+	return nil
 }

@@ -2,22 +2,21 @@ package json
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttpstatusresponse "github.com/ralvarezdev/go-net/http/status/response"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
-	// DefaultDecoder struct
-	DefaultDecoder struct {
+	// DefaultStreamDecoder is the JSON decoder struct
+	DefaultStreamDecoder struct {
 		mode    *goflagsmode.Flag
-		encoder Encoder
+		encoder gonethttpresponse.Encoder
 	}
 )
 
-// NewDefaultDecoder creates a new JSON decoder
+// NewDefaultStreamDecoder creates a new JSON decoder
 //
 // Parameters:
 //
@@ -26,18 +25,18 @@ type (
 //
 // Returns:
 //
-//   - *DefaultDecoder: The default decoder
+//   - *DefaultStreamDecoder: The default decoder
 //   - error: The error if any
-func NewDefaultDecoder(
+func NewDefaultStreamDecoder(
 	mode *goflagsmode.Flag,
-	encoder Encoder,
-) (*DefaultDecoder, error) {
-	// Check if the encoder is nil
+	encoder gonethttpresponse.Encoder,
+) (*DefaultStreamDecoder, error) {
+	// Check if the stream encoder is nil
 	if encoder == nil {
-		return nil, ErrNilEncoder
+		return nil, gonethttpresponse.ErrNilEncoder
 	}
 
-	return &DefaultDecoder{
+	return &DefaultStreamDecoder{
 		mode,
 		encoder,
 	}, nil
@@ -54,7 +53,7 @@ func NewDefaultDecoder(
 // Returns:
 //
 //   - error: The error if any
-func (d DefaultDecoder) Decode(
+func (d DefaultStreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
@@ -71,25 +70,19 @@ func (d DefaultDecoder) Decode(
 	if dest == nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpstatusresponse.NewJSendInternalServerError(ErrCodeNilDestination),
-		)
-	}
-
-	// Get the body of the request
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		_ = d.encoder.Encode(
-			w,
-			gonethttpstatusresponse.NewJSendDebugInternalServerError(
+			gonethttpresponse.NewJSendDebugInternalServerError(
 				err,
-				ErrCodeFailedToReadBody,
+				ErrCodeNilDestination,
 			),
 		)
-		return err
 	}
 
+	// Create a new reader from the body
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
 	// Decode JSON body into destination
-	if err = json.Unmarshal(body, dest); err != nil {
+	if err = decoder.Decode(dest); err != nil {
 		_ = BodyDecodeErrorHandler(w, err, d.encoder)
 	}
 	return err
