@@ -9,14 +9,14 @@ import (
 )
 
 type (
-	// DefaultStreamDecoder is the JSON decoder struct
-	DefaultStreamDecoder struct {
+	// StreamDecoder is the JSON decoder struct
+	StreamDecoder struct {
 		mode    *goflagsmode.Flag
 		encoder gonethttpresponse.Encoder
 	}
 )
 
-// NewDefaultStreamDecoder creates a new JSON decoder
+// NewStreamDecoder creates a new JSON decoder
 //
 // Parameters:
 //
@@ -25,18 +25,18 @@ type (
 //
 // Returns:
 //
-//   - *DefaultStreamDecoder: The default decoder
+//   - *StreamDecoder: The default decoder
 //   - error: The error if any
-func NewDefaultStreamDecoder(
+func NewStreamDecoder(
 	mode *goflagsmode.Flag,
 	encoder gonethttpresponse.Encoder,
-) (*DefaultStreamDecoder, error) {
+) (*StreamDecoder, error) {
 	// Check if the stream encoder is nil
 	if encoder == nil {
 		return nil, gonethttpresponse.ErrNilEncoder
 	}
 
-	return &DefaultStreamDecoder{
+	return &StreamDecoder{
 		mode,
 		encoder,
 	}, nil
@@ -53,7 +53,7 @@ func NewDefaultStreamDecoder(
 // Returns:
 //
 //   - error: The error if any
-func (d DefaultStreamDecoder) Decode(
+func (d StreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},

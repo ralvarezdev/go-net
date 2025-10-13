@@ -1,4 +1,4 @@
-package validator
+package json
 
 import (
 	"log/slog"

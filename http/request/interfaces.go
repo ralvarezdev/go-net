@@ -11,6 +11,6 @@ type (
 			w http.ResponseWriter,
 			r *http.Request,
 			dest interface{},
-		) (err error)
+		) error
 	}
 )

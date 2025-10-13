@@ -9,13 +9,13 @@ import (
 )
 
 type (
-	// DefaultEncoder struct
-	DefaultEncoder struct {
+	// Encoder struct
+	Encoder struct {
 		mode *mode.Flag
 	}
 )
 
-// NewDefaultEncoder creates a new default JSON encoder
+// NewEncoder creates a new default JSON encoder
 //
 // Parameters:
 //
@@ -23,9 +23,9 @@ type (
 //
 // Returns:
 //
-//   - *DefaultEncoder: The default encoder
-func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
-	return &DefaultEncoder{mode}
+//   - *Encoder: The default encoder
+func NewEncoder(mode *mode.Flag) *Encoder {
+	return &Encoder{mode}
 }
 
 // Encode encodes the body into JSON and writes it to the response
@@ -38,7 +38,7 @@ func NewDefaultEncoder(mode *mode.Flag) *DefaultEncoder {
 // Returns:
 //
 //   - error: The error if any
-func (d DefaultEncoder) Encode(
+func (d Encoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {

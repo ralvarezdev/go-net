@@ -10,14 +10,14 @@ import (
 )
 
 type (
-	// DefaultDecoder struct
-	DefaultDecoder struct {
+	// Decoder struct
+	Decoder struct {
 		mode    *goflagsmode.Flag
 		encoder gonethttpresponse.Encoder
 	}
 )
 
-// NewDefaultDecoder creates a new JSON decoder
+// NewDecoder creates a new JSON decoder
 //
 // Parameters:
 //
@@ -26,18 +26,18 @@ type (
 //
 // Returns:
 //
-//   - *DefaultDecoder: The default decoder
+//   - *Decoder: The default decoder
 //   - error: The error if any
-func NewDefaultDecoder(
+func NewDecoder(
 	mode *goflagsmode.Flag,
 	encoder gonethttpresponse.Encoder,
-) (*DefaultDecoder, error) {
+) (*Decoder, error) {
 	// Check if the encoder is nil
 	if encoder == nil {
 		return nil, gonethttpresponse.ErrNilEncoder
 	}
 
-	return &DefaultDecoder{
+	return &Decoder{
 		mode,
 		encoder,
 	}, nil
@@ -54,7 +54,7 @@ func NewDefaultDecoder(
 // Returns:
 //
 //   - error: The error if any
-func (d DefaultDecoder) Decode(
+func (d Decoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
@@ -71,7 +71,10 @@ func (d DefaultDecoder) Decode(
 	if dest == nil {
 		_ = d.encoder.Encode(
 			w,
-			gonethttpresponse.NewJSendInternalServerError(ErrCodeNilDestination),
+			gonethttpresponse.NewJSendDebugInternalServerError(
+				ErrNilDestination,
+				ErrCodeNilDestination,
+			),
 		)
 	}
 

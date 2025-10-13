@@ -26,17 +26,6 @@ type (
 			dest interface{},
 			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
-		GetParameters(
-			r *http.Request,
-			keys ...string,
-		) map[string]string
-		ParseWildcard(
-			w http.ResponseWriter,
-			r *http.Request,
-			wildcardKey string,
-			dest interface{},
-			toTypeFn ToTypeFn,
-		) bool
 		HandleResponse(
 			w http.ResponseWriter,
 			response gonethttpresponse.Response,

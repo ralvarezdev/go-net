@@ -9,13 +9,13 @@ import (
 )
 
 type (
-	// DefaultStreamEncoder is the JSON encoder struct
-	DefaultStreamEncoder struct {
+	// StreamEncoder is the JSON encoder struct
+	StreamEncoder struct {
 		mode *goflagsmode.Flag
 	}
 )
 
-// NewDefaultStreamEncoder creates a new JSON encoder
+// NewStreamEncoder creates a new JSON encoder
 //
 // Parameters:
 //
@@ -23,9 +23,9 @@ type (
 //
 // Returns:
 //
-//   - *DefaultStreamEncoder: The default encoder
-func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
-	return &DefaultStreamEncoder{
+//   - *StreamEncoder: The default encoder
+func NewStreamEncoder(mode *goflagsmode.Flag) *StreamEncoder {
+	return &StreamEncoder{
 		mode,
 	}
 }
@@ -40,7 +40,7 @@ func NewDefaultStreamEncoder(mode *goflagsmode.Flag) *DefaultStreamEncoder {
 // Returns:
 //
 //   - error: The error if any
-func (d DefaultStreamEncoder) Encode(
+func (d StreamEncoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {

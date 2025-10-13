@@ -32,6 +32,7 @@ var (
 )
 
 var (
+	ErrNilDestination     = errors.New("json destination is nil")
 	ErrInvalidContentType = gonethttpresponse.NewFailResponseError(
 		"Content-Type",
 		"invalid content type, expected application/json",
