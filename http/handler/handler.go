@@ -120,7 +120,7 @@ func (d DefaultHandler) Validate(
 	return false
 }
 
-// Parse decodes and validates the request body
+// DecodeAndValidate decodes and validates the request body
 //
 // Parameters:
 //
@@ -132,7 +132,7 @@ func (d DefaultHandler) Validate(
 // Returns:
 //
 //   - bool: True if the request body is valid, false otherwise
-func (d DefaultHandler) Parse(
+func (d DefaultHandler) DecodeAndValidate(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},

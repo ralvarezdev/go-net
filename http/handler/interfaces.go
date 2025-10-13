@@ -20,7 +20,7 @@ type (
 			body interface{},
 			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
-		Parse(
+		DecodeAndValidate(
 			w http.ResponseWriter,
 			r *http.Request,
 			dest interface{},

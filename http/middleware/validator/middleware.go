@@ -1,4 +1,4 @@
-package json
+package validator
 
 import (
 	"log/slog"
@@ -126,6 +126,7 @@ func (m Middleware) createMapper(
 // Parameters:
 //
 //   - bodyExample: An example of the body to validate
+//   - decode: Whether to decode the body or not
 //   - cache: Whether to cache the validation function or not
 //   - auxiliaryValidatorFns: Optional auxiliary validator functions
 //
@@ -135,6 +136,7 @@ func (m Middleware) createMapper(
 //   - error: if there was an error creating the validation function
 func (m Middleware) CreateValidateFn(
 	bodyExample interface{},
+	decode bool,
 	cache bool,
 	auxiliaryValidatorFns ...interface{},
 ) (func(next http.Handler) http.Handler, error) {
@@ -168,10 +170,18 @@ func (m Middleware) CreateValidateFn(
 				// Get a new instance of the body
 				dest := goreflect.NewInstanceFromType(bodyType)
 
-				// Decode the request body
-				if !m.handler.Parse(
+				// Decode the request body if needed, and validate it
+				if decode {
+					if !m.handler.DecodeAndValidate(
+						w,
+						r,
+						dest,
+						innerValidateFn,
+					) {
+						return
+					}
+				} else if !m.handler.Validate(
 					w,
-					r,
 					dest,
 					innerValidateFn,
 				) {
@@ -214,6 +224,7 @@ func (m Middleware) Validate(
 ) func(next http.Handler) http.Handler {
 	validateFn, err := m.CreateValidateFn(
 		body,
+		false,
 		true,
 		auxiliaryValidatorFns...,
 	)
@@ -222,6 +233,39 @@ func (m Middleware) Validate(
 		if m.logger != nil {
 			m.logger.Error(
 				"Failed to create validate function",
+				slog.Any("error", err),
+			)
+		}
+		panic(err)
+	}
+	return validateFn
+}
+
+// DecodeAndValidate decodes and validates the request body and stores it in the context
+//
+// Parameters:
+//
+//   - body: The body to decode and validate
+//   - auxiliaryValidatorFns: Optional auxiliary validator functions
+//
+// Returns:
+//
+//   - func(next http.Handler) http.Handler: the validation middleware
+func (m Middleware) DecodeAndValidate(
+	body interface{},
+	auxiliaryValidatorFns ...interface{},
+) func(next http.Handler) http.Handler {
+	validateFn, err := m.CreateValidateFn(
+		body,
+		true,
+		true,
+		auxiliaryValidatorFns...,
+	)
+	if err != nil {
+		// Log the error and panic
+		if m.logger != nil {
+			m.logger.Error(
+				"Failed to create decode and validate function",
 				slog.Any("error", err),
 			)
 		}
