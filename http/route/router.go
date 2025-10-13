@@ -262,8 +262,27 @@ func (r *Router) HandleFunc(
 		return
 	}
 
+	// Split the method and path from the pattern
+	method, path, err := SplitPattern(pattern)
+	if err != nil {
+		panic(err)
+	}
+
+	// Get the wildcards from the path
+	parsedPath, wildcards := GetWildcards(path)
+
+	// Add the SetCtxWildcardsMiddleware to the beginning of the middlewares
+	AddHandlersToStart(
+		&middlewares,
+		SetCtxWildcardsMiddleware(wildcards),
+		SetCtxQueryParametersMiddleware,
+	)
+
 	// Chain the handlers
 	firstHandler := ChainHandlers(handler, middlewares...)
+
+	// Create the final pattern
+	pattern = method + " " + parsedPath
 
 	// Register the route
 	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
@@ -295,16 +314,29 @@ func (r *Router) ExactHandleFunc(
 		panic(err)
 	}
 
+	// Get the wildcards from the path
+	parsedPath, wildcards := GetWildcards(path)
+
+	// Add the SetCtxWildcardsMiddleware to the beginning of the middlewares
+	AddHandlersToStart(
+		&middlewares,
+		SetCtxWildcardsMiddleware(wildcards),
+		SetCtxQueryParametersMiddleware,
+	)
+
 	// Chain the handlers
 	firstHandler := ChainHandlers(handler, middlewares...)
 
 	// Add the '$' wildcard to the end of the path to match the exact path
-	if path[len(path)-1] == '/' {
-		path += "{$}"
+	if parsedPath[len(parsedPath)-1] == '/' {
+		parsedPath += "{$}"
 	}
 
+	// Create the final pattern
+	pattern = method + " " + parsedPath
+
 	// Register the route
-	r.mux.HandleFunc(method+" "+path, firstHandler.ServeHTTP)
+	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
 
 	if r.mode != nil && r.mode.IsDebug() {
 		RegisterRoute(r.fullPath, pattern, r.logger)
