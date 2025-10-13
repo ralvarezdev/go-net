@@ -1,19 +1,17 @@
-package auth
+package grpc
 
 import (
 	"net/http"
-
-	gojwttoken "github.com/ralvarezdev/go-jwt/token"
 )
 
 type (
 	// Authenticator interface
 	Authenticator interface {
 		AuthenticateFromHeader(
-			token gojwttoken.Token,
+			rpcMethod string,
 		) func(next http.Handler) http.Handler
 		AuthenticateFromCookie(
-			token gojwttoken.Token,
+			rpcMethod string,
 		) func(next http.Handler) http.Handler
 	}
 )
