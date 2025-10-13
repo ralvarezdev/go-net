@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
+	gonethttpparser "github.com/ralvarezdev/go-net/http/parser"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
@@ -13,9 +13,8 @@ import (
 type (
 	// DefaultHandler struct
 	DefaultHandler struct {
-		mode    *goflagsmode.Flag
-		encoder gonethttpresponse.Encoder
-		decoder gonethttprequest.Decoder
+		mode *goflagsmode.Flag
+		gonethttpparser.Parser
 	}
 )
 
@@ -24,8 +23,7 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - encoder: The encoder
-//   - decoder: The decoder
+//   - parser: The HTTP request parser
 //
 // Returns:
 //
@@ -33,44 +31,20 @@ type (
 //   - error: The error if any
 func NewDefaultHandler(
 	mode *goflagsmode.Flag,
-	encoder gonethttpresponse.Encoder,
-	decoder gonethttprequest.Decoder,
+	parser gonethttpparser.Parser,
 ) (*DefaultHandler, error) {
-	// Check if the flag mode, the JSON encoder or the JSON decoder is nil
+	// Check if the flag mode or the parser is nil
 	if mode == nil {
 		return nil, goflagsmode.ErrNilModeFlag
 	}
-	if encoder == nil {
-		return nil, gonethttpresponse.ErrNilEncoder
-	}
-	if decoder == nil {
-		return nil, gonethttprequest.ErrNilDecoder
+	if parser == nil {
+		return nil, gonethttpparser.ErrNilParser
 	}
 
 	return &DefaultHandler{
 		mode,
-		encoder,
-		decoder,
+		parser,
 	}, nil
-}
-
-// Decode decodes the request body into the destination
-//
-// Parameters:
-//
-//   - w: The HTTP response writer
-//   - r: The HTTP request
-//   - dest: The destination to decode the request body into
-//
-// Returns:
-//
-//   - error: The error if any
-func (d DefaultHandler) Decode(
-	w http.ResponseWriter,
-	r *http.Request,
-	dest interface{},
-) error {
-	return d.decoder.Decode(w, r, dest)
 }
 
 // Validate validates the request body
@@ -170,7 +144,7 @@ func (d DefaultHandler) HandleResponse(
 	}
 
 	// Call the encoder
-	_ = d.encoder.Encode(w, response)
+	_ = d.Encode(w, response)
 }
 
 // HandleError handles the error response

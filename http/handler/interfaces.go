@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	gonethttpparser "github.com/ralvarezdev/go-net/http/parser"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
@@ -10,11 +11,7 @@ import (
 type (
 	// Handler interface for handling the requests
 	Handler interface {
-		Decode(
-			w http.ResponseWriter,
-			r *http.Request,
-			dest interface{},
-		) error
+		gonethttpparser.Parser
 		Validate(
 			w http.ResponseWriter,
 			body interface{},
