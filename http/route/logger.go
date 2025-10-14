@@ -14,7 +14,7 @@ import (
 func RegisterRoute(fullPath, pattern string, logger *slog.Logger) {
 	if logger != nil {
 		logger.Debug(
-			"registering route",
+			"Registering route",
 			slog.String("full_path", fullPath),
 			slog.String("pattern", pattern),
 		)

@@ -402,7 +402,7 @@ func (r *Router) RegisterHandler(pattern string, handler http.Handler) {
 
 	if r.logger != nil && r.mode != nil && r.mode.IsDebug() {
 		r.logger.Debug(
-			"registering route group",
+			"Registering route group",
 			slog.String("full_path", r.fullPath),
 			slog.String("relative_path", r.relativePath),
 			slog.String("pattern", pattern),

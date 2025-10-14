@@ -80,7 +80,7 @@ func (s StreamEncoder) Encode(
 
 		if s.logger != nil {
 			s.logger.Error(
-				"failed to marshal response body",
+				"Failed to marshal response body",
 				slog.String("error", err.Error()),
 			)
 		}

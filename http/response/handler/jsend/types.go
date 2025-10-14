@@ -83,12 +83,22 @@ func (r ResponsesHandler) HandleError(
 	w http.ResponseWriter,
 	err error,
 ) {
-	// Check if the errors is a fail body error or a fail request error
-	var failResponseErrorTarget *gonethttpresponsejsend.FailError
-	if errors.As(err, &failResponseErrorTarget) {
+	// Check if the errors is a JSend fail error
+	var failErrorTarget *gonethttpresponsejsend.FailError
+	if errors.As(err, &failErrorTarget) {
 		r.HandleResponse(
 			w,
-			failResponseErrorTarget.Response(),
+			failErrorTarget.Response(),
+		)
+		return
+	}
+
+	// Check if the errors is a JSend internal error
+	var errorTarget *gonethttpresponsejsend.Error
+	if errors.As(err, &errorTarget) {
+		r.HandleResponse(
+			w,
+			errorTarget.Response(),
 		)
 		return
 	}
@@ -215,7 +225,7 @@ func (r ResponsesHandler) HandleFieldFailResponse(
 		w,
 		gonethttpresponsejsend.NewFailError(
 			field,
-			err.Error(),
+			err,
 			httpStatus,
 		),
 	)
@@ -241,7 +251,7 @@ func (r ResponsesHandler) HandleFieldFailResponseWithCode(
 		w,
 		gonethttpresponsejsend.NewFailErrorWithCode(
 			field,
-			err.Error(),
+			err,
 			errCode,
 			httpStatus,
 		),

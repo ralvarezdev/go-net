@@ -11,14 +11,6 @@ type (
 		Code   string      `json:"code,omitempty"`
 		Data   interface{} `json:"data,omitempty"`
 	}
-
-	// FailError struct
-	FailError struct {
-		httpStatus int
-		field      string
-		err        string
-		errorCode  string
-	}
 )
 
 // NewFailBodyWithCode creates a new JSend fail response body with error code
@@ -42,6 +34,72 @@ func NewFailBodyWithCode(
 	}
 }
 
+/*
+// NewFailBodyFromErrorDetails creates a new JSend fail response body from error details
+//
+// Parameters:
+//
+//   - errorDetails: The error details
+//
+// Returns:
+//
+//   - *FailBody: The JSend fail body
+func NewFailBodyFromErrorDetails(
+	errorDetails *errdetails.BadRequest,
+) *FailBody {
+	// Initialize the data map
+	data := make(map[string]interface{})
+
+	// Loop through the field violations and add them to the data map
+	for _, violation := range errorDetails.GetFieldViolations() {
+		// Split the field by dot notation
+		parts := strings.Split(violation.GetField(), ".")
+		if len(parts) > 1 {
+			// If the field has dot notation, create a nested map
+			nestedMap := data
+			for i, part := range parts {
+				if i == len(parts)-1 {
+					// If the part is the last part, create a new slice if it doesn't exist
+					if _, ok := nestedMap[part]; !ok {
+						nestedMap[part] = []string{}
+					}
+
+					// If it's the last part, add the violation description
+					nestedMap[part] = append(
+						nestedMap[part].([]string),
+						violation.GetDescription(),
+					)
+				} else {
+					// If the part doesn't exist, create a new map
+					if _, ok := nestedMap[part]; !ok {
+						nestedMap[part] = make(map[string]interface{})
+					}
+
+					// Move to the next nested map
+					parsedNestedMap, ok := nestedMap[part].(map[string]interface{})
+					if !ok {
+						panic(
+							NewFailError()
+							)
+					}
+				}
+			}
+			continue
+		}
+
+		// If the field doesn't exist, create a new slice
+		if _, ok := data[violation.GetField()]; !ok {
+			data[violation.GetField()] = []string{}
+		}
+
+		// Add the violation description to the slice
+		data[violation.GetField()] = append(
+			data[violation.GetField()].([]string),
+			violation.GetDescription(),
+		)
+	}
+}
+
 // NewFailBody creates a new JSend fail response body
 //
 // Parameters:
@@ -54,6 +112,7 @@ func NewFailBody(
 ) *FailBody {
 	return NewFailBodyWithCode(data, "")
 }
+*/
 
 // NewFailResponseWithCode creates a new JSend fail response with error code
 //
@@ -92,120 +151,4 @@ func NewFailResponse(
 	httpStatus int,
 ) gonethttpresponse.Response {
 	return NewFailResponseWithCode(data, "", httpStatus)
-}
-
-// NewFailErrorWithCode creates a new fail response error with error code
-//
-// Parameters:
-//
-//   - field: The field
-//   - err: The error
-//   - errorCode: The error code
-//   - httpStatus: The HTTP status
-//
-// Returns:
-//
-//   - *FailError: The fail response error
-func NewFailErrorWithCode(
-	field, err string, errorCode string, httpStatus int,
-) *FailError {
-	return &FailError{
-		field:      field,
-		err:        err,
-		errorCode:  errorCode,
-		httpStatus: httpStatus,
-	}
-}
-
-// NewFailError creates a new fail response error
-//
-// Parameters:
-//
-//   - field: The field
-//   - err: The error
-//   - httpStatus: The HTTP status
-//
-// Returns:
-//
-//   - *FailError: The fail response error
-//   - string: The error code
-func NewFailError(
-	field, err string, httpStatus int,
-) *FailError {
-	return NewFailErrorWithCode(field, err, "", httpStatus)
-}
-
-// Field returns the field of the fail response error
-//
-// Returns:
-//
-//   - string: The field
-func (f FailError) Field() string {
-	return f.field
-}
-
-// Error returns the error of the fail response error
-//
-// Returns:
-//
-//   - string: The error
-func (f FailError) Error() string {
-	return f.err
-}
-
-// ErrorCode returns the error code of the fail response error
-//
-// Returns:
-//
-//   - string: The error code
-func (f FailError) ErrorCode() string {
-	return f.errorCode
-}
-
-// HTTPStatus returns the http status of the fail response error
-//
-// Returns:
-//
-//   - int: The http status
-func (f FailError) HTTPStatus() int {
-	return f.httpStatus
-}
-
-// Data returns a response data map from the fail body error
-//
-// Returns:
-//
-//   - map[string][]string: The response data map
-func (f FailError) Data() map[string][]string {
-	// Initialize the data map
-	data := make(map[string][]string)
-
-	// Add the fail body error to the data map
-	data[f.Field()] = []string{f.Error()}
-
-	return data
-}
-
-// Body returns a response body from the fail body error
-//
-// Returns:
-//
-//   - *JSendFailBody: The response body
-func (f FailError) Body() *FailBody {
-	return NewFailBodyWithCode(
-		f.Data(),
-		f.ErrorCode(),
-	)
-}
-
-// Response creates a new response from a fail response error
-//
-// Returns:
-//
-//   - Response: The response
-func (f FailError) Response() gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		f.Body(),
-		f.HTTPStatus(),
-	)
 }
