@@ -7,8 +7,8 @@ import (
 )
 
 type (
-	// Handler interface for handling the requests
-	Handler interface {
+	// RequestsHandler interface for handling the requests
+	RequestsHandler interface {
 		Validate(
 			w http.ResponseWriter,
 			body interface{},

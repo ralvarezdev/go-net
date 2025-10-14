@@ -17,7 +17,7 @@ import (
 type (
 	// Middleware struct is the validation middleware
 	Middleware struct {
-		handler          gonethttprequesthandler.Handler
+		requestsHandler  gonethttprequesthandler.RequestsHandler
 		validatorService govalidatormappervalidator.Service
 		generator        govalidatormapper.Generator
 		validateFns      map[string]func(next http.Handler) http.Handler
@@ -29,7 +29,7 @@ type (
 //
 // Parameters:
 //
-//   - handler: The HTTP handler to parse the request body
+//   - requestsHandler: The HTTP handler to parse the request body
 //   - birthdateOptions: The birthdate options (can be nil)
 //   - passwordOptions: The password options (can be nil)
 //   - logger: The logger (can be nil)
@@ -39,13 +39,13 @@ type (
 //   - *Middleware: The middleware instance
 //   - error: The error if any
 func NewMiddleware(
-	handler gonethttprequesthandler.Handler,
+	requestsHandler gonethttprequesthandler.RequestsHandler,
 	birthdateOptions *govalidatormappervalidator.BirthdateOptions,
 	passwordOptions *govalidatormappervalidator.PasswordOptions,
 	logger *slog.Logger,
 ) (*Middleware, error) {
 	// Check if the handler is nil
-	if handler == nil {
+	if requestsHandler == nil {
 		return nil, gonethttprequesthandler.ErrNilHandler
 	}
 
@@ -81,7 +81,7 @@ func NewMiddleware(
 	}
 
 	return &Middleware{
-		handler:          handler,
+		requestsHandler:  requestsHandler,
 		validatorService: validatorService,
 		generator:        generator,
 		logger:           logger,
@@ -177,7 +177,7 @@ func (m Middleware) CreateValidateFn(
 
 				// Decode the request body if needed, and validate it
 				if decode {
-					if !m.handler.DecodeAndValidate(
+					if !m.requestsHandler.DecodeAndValidate(
 						w,
 						r,
 						dest,
@@ -185,7 +185,7 @@ func (m Middleware) CreateValidateFn(
 					) {
 						return
 					}
-				} else if !m.handler.Validate(
+				} else if !m.requestsHandler.Validate(
 					w,
 					dest,
 					innerValidateFn,

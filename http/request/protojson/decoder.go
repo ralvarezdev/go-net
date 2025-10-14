@@ -14,7 +14,7 @@ import (
 type (
 	Decoder struct {
 		unmarshalOptions protojson.UnmarshalOptions
-		handler          gonethttpresponsehandler.Handler
+		responsesHandler gonethttpresponsehandler.ResponsesHandler
 	}
 )
 
@@ -22,18 +22,17 @@ type (
 //
 // Parameters:
 //
-//   - handler: The HTTP response handler (optional, can be nil)
-//   - logger: The logger (optional, can be nil)
+//   - responsesHandler: The HTTP response handler (optional, can be nil)
 //
 // Returns:
 //
 //   - *Decoder: The decoder instance
 //   - error: The error if any
 func NewDecoder(
-	handler gonethttpresponsehandler.Handler,
+	responsesHandler gonethttpresponsehandler.ResponsesHandler,
 ) (*Decoder, error) {
 	// Check if the handler is nil
-	if handler == nil {
+	if responsesHandler == nil {
 		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
@@ -45,7 +44,7 @@ func NewDecoder(
 
 	return &Decoder{
 		unmarshalOptions: unmarshalOptions,
-		handler:          handler,
+		responsesHandler: responsesHandler,
 	}, nil
 }
 
@@ -68,7 +67,7 @@ func (d Decoder) Decode(
 	// Assert that dest is a proto.Message
 	msg, ok := dest.(proto.Message)
 	if !ok {
-		d.handler.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			ErrInvalidProtoMessage,
 			gonethttp.ErrInternalServerError,
@@ -81,7 +80,7 @@ func (d Decoder) Decode(
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		d.handler.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			fmt.Errorf(ErrReadBodyFailed, err.Error()),
 			gonethttp.ErrInternalServerError,
@@ -93,7 +92,7 @@ func (d Decoder) Decode(
 
 	// Decode the request body into the proto message
 	if err = protojson.Unmarshal(body, msg); err != nil {
-		d.handler.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			fmt.Errorf(ErrUnmarshalProtoJSONFailed, err.Error()),
 			gonethttp.ErrInternalServerError,

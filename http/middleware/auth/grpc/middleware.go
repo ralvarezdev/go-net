@@ -13,10 +13,10 @@ import (
 type (
 	// Middleware struct is the authentication middleware for a REST API that is a gateway to a gRPC service.
 	Middleware struct {
-		handler       gonethttpresponsehandler.Handler
-		interceptions map[string]*gojwttoken.Token
-		authenticator gonethttpmiddlewareauth.Authenticator
-		logger        *slog.Logger
+		responsesHandler gonethttpresponsehandler.ResponsesHandler
+		interceptions    map[string]*gojwttoken.Token
+		authenticator    gonethttpmiddlewareauth.Authenticator
+		logger           *slog.Logger
 	}
 )
 
@@ -25,7 +25,7 @@ type (
 // Parameters:
 //
 //   - interceptions: A map of string keys to JWT tokens for interception purposes.
-//   - handler: An instance of a Handler to manage HTTP responses.
+//   - responsesHandler: An instance of a ResponsesHandler to manage HTTP responses.
 //   - authenticator: An instance of an Authenticator to handle authentication logic.
 //   - logger: A pointer to a slog.Logger for logging purposes.
 //
@@ -35,7 +35,7 @@ type (
 //   - error: An error if the middleware could not be created.
 func NewMiddleware(
 	interceptions map[string]*gojwttoken.Token,
-	handler gonethttpresponsehandler.Handler,
+	responsesHandler gonethttpresponsehandler.ResponsesHandler,
 	authenticator gonethttpmiddlewareauth.Authenticator,
 	logger *slog.Logger,
 ) (*Middleware, error) {
@@ -45,7 +45,7 @@ func NewMiddleware(
 	}
 
 	// Check if the handler is nil
-	if handler == nil {
+	if responsesHandler == nil {
 		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
@@ -61,10 +61,10 @@ func NewMiddleware(
 	}
 
 	return &Middleware{
-		interceptions: interceptions,
-		handler:       handler,
-		authenticator: authenticator,
-		logger:        logger,
+		interceptions:    interceptions,
+		responsesHandler: responsesHandler,
+		authenticator:    authenticator,
+		logger:           logger,
 	}, nil
 }
 
@@ -92,7 +92,7 @@ func (m Middleware) interceptionNotFoundHandler(
 				}
 
 				// Handle the response with an internal server error
-				m.handler.HandleDebugErrorResponseWithCode(
+				m.responsesHandler.HandleDebugErrorResponseWithCode(
 					w,
 					ErrInterceptionNotFound,
 					gonethttp.ErrInternalServerError,

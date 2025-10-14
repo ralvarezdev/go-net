@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 )
 
 // Inspired by:
@@ -21,7 +21,7 @@ import (
 //
 //   - w: The HTTP response writer
 //   - err: The error that occurred during decoding
-//   - handler: The handler to use for the response
+//   - responsesHandler: The handler to use for the response
 //
 // Returns:
 //
@@ -29,11 +29,11 @@ import (
 func BodyDecodeErrorHandler(
 	w http.ResponseWriter,
 	err error,
-	handler gonethttphandler.Handler,
+	responsesHandler gonethttpresponsehandler.ResponsesHandler,
 ) error {
 	// Check if the handler is nil
-	if handler == nil {
-		return gonethttphandler.ErrNilHandler
+	if responsesHandler == nil {
+		return gonethttpresponsehandler.ErrNilHandler
 	}
 
 	// Check is there is an UnmarshalTypeError
@@ -55,7 +55,7 @@ func BodyDecodeErrorHandler(
 				gonethttpresponse.ErrInvalidFieldValueType,
 				fieldTypeName,
 			)
-			handler.HandleFieldFailResponseWithCode(
+			responsesHandler.HandleFieldFailResponseWithCode(
 				w,
 				fieldName,
 				err,
@@ -69,7 +69,7 @@ func BodyDecodeErrorHandler(
 	// Check if the error is a SyntaxError
 	if errors.As(err, &syntaxError) {
 		err = fmt.Errorf(ErrSyntaxError, syntaxError.Offset)
-		handler.HandleErrorResponseWithCode(
+		responsesHandler.HandleErrorResponseWithCode(
 			w,
 			err,
 			ErrCodeSyntaxError,
@@ -80,7 +80,7 @@ func BodyDecodeErrorHandler(
 
 	// Check if the error is an ErrUnexpectedEOF
 	if errors.Is(err, io.ErrUnexpectedEOF) {
-		handler.HandleErrorResponseWithCode(
+		responsesHandler.HandleErrorResponseWithCode(
 			w,
 			ErrUnexpectedEOF,
 			ErrCodeSyntaxError,
@@ -95,7 +95,7 @@ func BodyDecodeErrorHandler(
 		fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 
 		err = fmt.Errorf(ErrUnknownField, fieldName)
-		handler.HandleFieldFailResponseWithCode(
+		responsesHandler.HandleFieldFailResponseWithCode(
 			w,
 			fieldName,
 			err,
@@ -107,7 +107,7 @@ func BodyDecodeErrorHandler(
 
 	// Check if the error is caused by an empty request body
 	if errors.Is(err, io.EOF) {
-		handler.HandleErrorResponseWithCode(
+		responsesHandler.HandleErrorResponseWithCode(
 			w,
 			ErrEmptyBody,
 			ErrCodeEmptyBody,
@@ -119,7 +119,7 @@ func BodyDecodeErrorHandler(
 	// Catch the error caused by the request body being too large
 	if errors.As(err, &maxBytesError) {
 		err = fmt.Errorf(ErrMaxBodySizeExceeded, maxBytesError.Limit)
-		handler.HandleErrorResponseWithCode(
+		responsesHandler.HandleErrorResponseWithCode(
 			w,
 			err,
 			ErrCodeMaxBodySizeExceeded,
@@ -127,7 +127,7 @@ func BodyDecodeErrorHandler(
 		)
 	}
 
-	handler.HandleDebugErrorResponseWithCode(
+	responsesHandler.HandleDebugErrorResponseWithCode(
 		w,
 		err,
 		ErrUnmarshalBodyFailed,

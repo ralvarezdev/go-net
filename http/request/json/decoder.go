@@ -13,8 +13,8 @@ import (
 type (
 	// Decoder struct
 	Decoder struct {
-		mode    *goflagsmode.Flag
-		handler gonethttpresponsehandler.Handler
+		mode             *goflagsmode.Flag
+		responsesHandler gonethttpresponsehandler.ResponsesHandler
 	}
 )
 
@@ -23,7 +23,7 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - handler: The HTTP handler
+//   - responsesHandler: The HTTP handler
 //
 // Returns:
 //
@@ -31,16 +31,16 @@ type (
 //   - error: The error if any
 func NewDecoder(
 	mode *goflagsmode.Flag,
-	handler gonethttpresponsehandler.Handler,
+	responsesHandler gonethttpresponsehandler.ResponsesHandler,
 ) (*Decoder, error) {
 	// Check if the handler is nil
-	if handler == nil {
+	if responsesHandler == nil {
 		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
 	return &Decoder{
 		mode,
-		handler,
+		responsesHandler,
 	}, nil
 }
 
@@ -62,7 +62,7 @@ func (d Decoder) Decode(
 ) (err error) {
 	// Check the content type
 	if !CheckContentType(r) {
-		d.handler.HandleFieldFailResponseWithCode(
+		d.responsesHandler.HandleFieldFailResponseWithCode(
 			w,
 			ErrInvalidContentTypeField,
 			ErrInvalidContentType,
@@ -74,7 +74,7 @@ func (d Decoder) Decode(
 
 	// Check the decoder destination
 	if dest == nil {
-		d.handler.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			ErrNilDestination,
 			gonethttp.ErrInternalServerError,
@@ -87,7 +87,7 @@ func (d Decoder) Decode(
 	// Get the body of the request
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		d.handler.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			err,
 			gonethttp.ErrInternalServerError,
@@ -99,7 +99,7 @@ func (d Decoder) Decode(
 
 	// Decode JSON body into destination
 	if err = json.Unmarshal(body, dest); err != nil {
-		_ = BodyDecodeErrorHandler(w, err, d.handler)
+		_ = BodyDecodeErrorHandler(w, err, d.responsesHandler)
 	}
 	return err
 }

@@ -27,7 +27,6 @@ type (
 // Parameters:
 //
 //   - mode: the flag mode
-//   - marshalOptions: options for marshaling protobuf messages to JSON
 //   - logger: the logger (optional, can be nil)
 //
 // Returns:
@@ -35,11 +34,15 @@ type (
 // - *Encoder: the new Encoder instance
 func NewEncoder(
 	mode *goflagsmode.Flag,
-	marshalOptions protojson.MarshalOptions,
 	logger *slog.Logger,
 ) *Encoder {
 	// Initialize the JSON encoder
 	jsonEncoder := gonethttpresponsejson.NewEncoder(mode, logger)
+
+	// Initialize unmarshal options
+	marshalOptions := protojson.MarshalOptions{
+		AllowPartial: true,
+	}
 
 	if logger != nil {
 		logger = logger.With(

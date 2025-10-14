@@ -11,14 +11,14 @@ import (
 )
 
 type (
-	// Handler struct
-	Handler struct {
+	// ResponsesHandler struct
+	ResponsesHandler struct {
 		mode *goflagsmode.Flag
 		gonethttpresponse.Encoder
 	}
 )
 
-// NewHandler creates a new default response handler
+// NewResponsesHandler creates a new default response handler
 //
 // Parameters:
 //
@@ -27,12 +27,12 @@ type (
 //
 // Returns:
 //
-//   - *Handler: The default handler
+//   - *ResponsesHandler: The default handler
 //   - error: The error if any
-func NewHandler(
+func NewResponsesHandler(
 	mode *goflagsmode.Flag,
 	encoder gonethttpresponse.Encoder,
-) (*Handler, error) {
+) (*ResponsesHandler, error) {
 	// Check if the flag mode or the encoder is nil
 	if mode == nil {
 		return nil, goflagsmode.ErrNilModeFlag
@@ -41,7 +41,7 @@ func NewHandler(
 		return nil, gonethttpresponse.ErrNilEncoder
 	}
 
-	return &Handler{
+	return &ResponsesHandler{
 		mode,
 		encoder,
 	}, nil
@@ -53,13 +53,13 @@ func NewHandler(
 //
 //   - w: The HTTP response writer
 //   - response: The response to handle
-func (d Handler) HandleResponse(
+func (r ResponsesHandler) HandleResponse(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) {
 	// Check if the response is nil
 	if response == nil {
-		d.HandleDebugErrorResponseWithCode(
+		r.HandleDebugErrorResponseWithCode(
 			w,
 			gonethttpresponse.ErrNilResponse,
 			gonethttp.ErrInternalServerError,
@@ -70,7 +70,7 @@ func (d Handler) HandleResponse(
 	}
 
 	// Call the encoder
-	_ = d.Encode(w, response)
+	_ = r.Encode(w, response)
 }
 
 // HandleError handles the error response
@@ -79,21 +79,21 @@ func (d Handler) HandleResponse(
 //
 //   - w: The HTTP response writer
 //   - err: The error to handle
-func (d Handler) HandleError(
+func (r ResponsesHandler) HandleError(
 	w http.ResponseWriter,
 	err error,
 ) {
 	// Check if the errors is a fail body error or a fail request error
 	var failResponseErrorTarget *gonethttpresponsejsend.FailError
 	if errors.As(err, &failResponseErrorTarget) {
-		d.HandleResponse(
+		r.HandleResponse(
 			w,
 			failResponseErrorTarget.Response(),
 		)
 		return
 	}
 
-	d.HandleDebugErrorResponseWithCode(
+	r.HandleDebugErrorResponseWithCode(
 		w,
 		err,
 		gonethttp.ErrInternalServerError,
@@ -109,12 +109,12 @@ func (d Handler) HandleError(
 //   - w: The HTTP response writer
 //   - err: The error to handle
 //   - httpStatus: The HTTP status code to return
-func (d Handler) HandleErrorResponse(
+func (r ResponsesHandler) HandleErrorResponse(
 	w http.ResponseWriter,
 	err error,
 	httpStatus int,
 ) {
-	d.HandleResponse(
+	r.HandleResponse(
 		w,
 		gonethttpresponsejsend.NewErrorResponse(
 			err.Error(),
@@ -131,13 +131,13 @@ func (d Handler) HandleErrorResponse(
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
-func (d Handler) HandleErrorResponseWithCode(
+func (r ResponsesHandler) HandleErrorResponseWithCode(
 	w http.ResponseWriter,
 	err error,
 	errCode string,
 	httpStatus int,
 ) {
-	d.HandleResponse(
+	r.HandleResponse(
 		w,
 		gonethttpresponsejsend.NewErrorResponseWithCode(
 			err.Error(),
@@ -154,13 +154,13 @@ func (d Handler) HandleErrorResponseWithCode(
 //   - w: The HTTP response writer
 //   - debugErr: The debug error to handle
 //   - err: The error to handle
-func (d Handler) HandleDebugErrorResponse(
+func (r ResponsesHandler) HandleDebugErrorResponse(
 	w http.ResponseWriter,
 	debugErr error,
 	err error,
 	httpStatus int,
 ) {
-	d.HandleResponse(
+	r.HandleResponse(
 		w,
 		gonethttpresponsejsend.NewDebugErrorResponse(
 			err.Error(),
@@ -179,14 +179,14 @@ func (d Handler) HandleDebugErrorResponse(
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
-func (d Handler) HandleDebugErrorResponseWithCode(
+func (r ResponsesHandler) HandleDebugErrorResponseWithCode(
 	w http.ResponseWriter,
 	debugErr error,
 	err error,
 	errCode string,
 	httpStatus int,
 ) {
-	d.HandleResponse(
+	r.HandleResponse(
 		w,
 		gonethttpresponsejsend.NewDebugErrorResponseWithCode(
 			err.Error(),
@@ -205,13 +205,13 @@ func (d Handler) HandleDebugErrorResponseWithCode(
 //   - field: The field that failed
 //   - err: The error to handle
 //   - httpStatus: The HTTP status code to return
-func (d Handler) HandleFieldFailResponse(
+func (r ResponsesHandler) HandleFieldFailResponse(
 	w http.ResponseWriter,
 	field string,
 	err error,
 	httpStatus int,
 ) {
-	d.HandleError(
+	r.HandleError(
 		w,
 		gonethttpresponsejsend.NewFailError(
 			field,
@@ -230,18 +230,63 @@ func (d Handler) HandleFieldFailResponse(
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
-func (d Handler) HandleFieldFailResponseWithCode(
+func (r ResponsesHandler) HandleFieldFailResponseWithCode(
 	w http.ResponseWriter,
 	field string,
 	err error,
 	errCode string,
 	httpStatus int,
 ) {
-	d.HandleError(
+	r.HandleError(
 		w,
 		gonethttpresponsejsend.NewFailErrorWithCode(
 			field,
 			err.Error(),
+			errCode,
+			httpStatus,
+		),
+	)
+}
+
+// HandleFailResponse handles the fail response
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - data: The fail data to handle
+//   - httpStatus: The HTTP status code to return
+func (r ResponsesHandler) HandleFailResponse(
+	w http.ResponseWriter,
+	data interface{},
+	httpStatus int,
+) {
+	r.HandleResponse(
+		w,
+		gonethttpresponsejsend.NewFailResponse(
+			data,
+			httpStatus,
+		),
+	)
+}
+
+// HandleFailResponseWithCode handles the fail response with an error code
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - data: The fail data to handle
+//   - errCode: The error code to return
+//   - httpStatus: The HTTP status code to return
+func (r ResponsesHandler) HandleFailResponseWithCode(
+	w http.ResponseWriter,
+	data interface{},
+	errCode string,
+	httpStatus int,
+) {
+	r.HandleResponse(
+		w,
+		gonethttpresponsejsend.NewFailResponseWithCode(
+			data,
 			errCode,
 			httpStatus,
 		),

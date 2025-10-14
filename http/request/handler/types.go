@@ -5,46 +5,52 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpparser "github.com/ralvarezdev/go-net/http/parser"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpresponsejsend "github.com/ralvarezdev/go-net/http/response/jsend"
+	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
 type (
-	// DefaultHandler struct
-	DefaultHandler struct {
+	// DefaultRequestsHandler struct
+	DefaultRequestsHandler struct {
 		mode *goflagsmode.Flag
-		gonethttpresponse.Decoder
+		gonethttpresponsehandler.ResponsesHandler
+		gonethttprequest.Decoder
 	}
 )
 
-// NewHandler creates a new default request handler
+// NewDefaultRequestsHandler creates a new default request handler
 //
 // Parameters:
 //
 //   - mode: The flag mode
-//   - parser: The HTTP request parser
+//   - decoder: The HTTP request decoder
+//   - handler: The HTTP response handler
 //
 // Returns:
 //
-//   - *Handler: The default handler
+//   - *DefaultRequestsHandler: The default handler
 //   - error: The error if any
-func NewHandler(
+func NewDefaultRequestsHandler(
 	mode *goflagsmode.Flag,
-	parser gonethttpparser.Parser,
-) (*Handler, error) {
-	// Check if the flag mode or the parser is nil
+	decoder gonethttprequest.Decoder,
+	handler gonethttpresponsehandler.ResponsesHandler,
+) (*DefaultRequestsHandler, error) {
+	// Check if the flag mode, the decoder or the handler is nil
 	if mode == nil {
 		return nil, goflagsmode.ErrNilModeFlag
 	}
-	if parser == nil {
-		return nil, gonethttpparser.ErrNilParser
+	if decoder == nil {
+		return nil, gonethttprequest.ErrNilDecoder
+	}
+	if handler == nil {
+		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
-	return &Handler{
+	return &DefaultRequestsHandler{
 		mode,
-		parser,
+		handler,
+		decoder,
 	}, nil
 }
 
@@ -59,7 +65,7 @@ func NewHandler(
 // Returns:
 //
 //   - bool: True if the request body is valid, false otherwise
-func (d Handler) Validate(
+func (d DefaultRequestsHandler) Validate(
 	w http.ResponseWriter,
 	body interface{},
 	validatorFn govalidatormappervalidator.ValidateFn,
@@ -84,13 +90,11 @@ func (d Handler) Validate(
 		return false
 	}
 
-	d.HandleResponse(
+	d.HandleFailResponseWithCode(
 		w,
-		gonethttpresponsejsend.NewFailResponseWithCode(
-			validations,
-			ErrCodeValidationFailed,
-			http.StatusBadRequest,
-		),
+		validations,
+		ErrCodeValidationFailed,
+		http.StatusBadRequest,
 	)
 	return false
 }
@@ -107,7 +111,7 @@ func (d Handler) Validate(
 // Returns:
 //
 //   - bool: True if the request body is valid, false otherwise
-func (d Handler) DecodeAndValidate(
+func (d DefaultRequestsHandler) DecodeAndValidate(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},

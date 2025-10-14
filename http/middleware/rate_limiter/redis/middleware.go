@@ -13,9 +13,9 @@ import (
 type (
 	// Middleware struct
 	Middleware struct {
-		handler     gonethttpresponsehandler.Handler
-		rateLimiter goratelimiterredis.RateLimiter
-		logger      *slog.Logger
+		responsesHandler gonethttpresponsehandler.ResponsesHandler
+		rateLimiter      goratelimiterredis.RateLimiter
+		logger           *slog.Logger
 	}
 )
 
@@ -23,7 +23,7 @@ type (
 //
 // Parameters:
 //
-// handler gonethttphandler.Handler: the HTTP handler to handle errors
+// responsesHandler gonethttphandler.ResponsesHandler: the HTTP handler to handle errors
 // rateLimiter goratelimiterredis.RateLimiter: the rate limiter
 // logger *slog.Logger: the logger (optional)
 //
@@ -32,7 +32,7 @@ type (
 // *Middleware: the middleware instance
 // error: if the rate limiter is nil
 func NewMiddleware(
-	handler gonethttpresponsehandler.Handler,
+	responsesHandler gonethttpresponsehandler.ResponsesHandler,
 	rateLimiter goratelimiterredis.RateLimiter,
 	logger *slog.Logger,
 ) (
@@ -40,7 +40,7 @@ func NewMiddleware(
 	error,
 ) {
 	// Check if the handler is nil
-	if handler == nil {
+	if responsesHandler == nil {
 		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
@@ -56,7 +56,7 @@ func NewMiddleware(
 	}
 
 	return &Middleware{
-		handler,
+		responsesHandler,
 		rateLimiter,
 		logger,
 	}, nil
@@ -66,7 +66,7 @@ func NewMiddleware(
 //
 // Returns:
 //
-//	func(next http.Handler) http.Handler: the middleware function
+//	func(next http.ResponsesHandler) http.ResponsesHandler: the middleware function
 func (m Middleware) Limit() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
@@ -96,7 +96,7 @@ func (m Middleware) Limit() func(next http.Handler) http.Handler {
 					}
 
 					// Handle other errors
-					m.handler.HandleError(w, err)
+					m.responsesHandler.HandleError(w, err)
 					return
 				}
 

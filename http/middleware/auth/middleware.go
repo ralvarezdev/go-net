@@ -18,7 +18,7 @@ type (
 	// Middleware struct is the authentication middleware
 	Middleware struct {
 		validator gojwtvalidator.Validator
-		handler   gonethttpresponsehandler.Handler
+		handler   gonethttpresponsehandler.ResponsesHandler
 		options   *Options
 	}
 
@@ -57,7 +57,7 @@ func NewOptions(
 //
 // Parameters:
 //
-//   - handler: The HTTP handler to handle errors
+//   - responsesHandler: The HTTP handler to handle errors
 //   - validator: The JWT validator service (if nil, no validation will be done, can be used for gRPC gateways)
 //   - options: The options for the authentication middleware (can be nil)
 //
@@ -65,7 +65,7 @@ func NewOptions(
 //
 //   - *Middleware: The authentication middleware
 func NewMiddleware(
-	handler gonethttpresponsehandler.Handler,
+	handler gonethttpresponsehandler.ResponsesHandler,
 	validator gojwtvalidator.Validator,
 	options *Options,
 ) (*Middleware, error) {

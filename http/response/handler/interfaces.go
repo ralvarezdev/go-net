@@ -7,8 +7,8 @@ import (
 )
 
 type (
-	// Handler interface for handling the responses
-	Handler interface {
+	// ResponsesHandler interface for handling the responses
+	ResponsesHandler interface {
 		gonethttpresponse.Encoder
 		HandleResponse(
 			w http.ResponseWriter,
@@ -52,6 +52,17 @@ type (
 			w http.ResponseWriter,
 			field string,
 			err error,
+			errCode string,
+			httpStatus int,
+		)
+		HandleFailResponse(
+			w http.ResponseWriter,
+			data interface{},
+			httpStatus int,
+		)
+		HandleFailResponseWithCode(
+			w http.ResponseWriter,
+			data interface{},
 			errCode string,
 			httpStatus int,
 		)

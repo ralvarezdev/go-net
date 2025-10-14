@@ -12,8 +12,8 @@ import (
 type (
 	// StreamDecoder is the JSON decoder struct
 	StreamDecoder struct {
-		mode    *goflagsmode.Flag
-		handler gonethttpresponsehandler.Handler
+		mode             *goflagsmode.Flag
+		responsesHandler gonethttpresponsehandler.ResponsesHandler
 	}
 )
 
@@ -22,7 +22,7 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - handler: The HTTP handler to handle errors
+//   - responsesHandler: The HTTP handler to handle errors
 //
 // Returns:
 //
@@ -30,16 +30,16 @@ type (
 //   - error: The error if any
 func NewStreamDecoder(
 	mode *goflagsmode.Flag,
-	handler gonethttpresponsehandler.Handler,
+	responsesHandler gonethttpresponsehandler.ResponsesHandler,
 ) (*StreamDecoder, error) {
 	// Check if the response handler is nil
-	if handler == nil {
+	if responsesHandler == nil {
 		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
 	return &StreamDecoder{
 		mode,
-		handler,
+		responsesHandler,
 	}, nil
 }
 
@@ -61,7 +61,7 @@ func (s StreamDecoder) Decode(
 ) (err error) {
 	// Check the content type
 	if !CheckContentType(r) {
-		s.handler.HandleFieldFailResponseWithCode(
+		s.responsesHandler.HandleFieldFailResponseWithCode(
 			w,
 			ErrInvalidContentTypeField,
 			ErrInvalidContentType,
@@ -73,7 +73,7 @@ func (s StreamDecoder) Decode(
 
 	// Check the decoder destination
 	if dest == nil {
-		s.handler.HandleDebugErrorResponseWithCode(
+		s.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			ErrNilDestination,
 			gonethttp.ErrInternalServerError,
@@ -89,7 +89,7 @@ func (s StreamDecoder) Decode(
 
 	// Decode JSON body into destination
 	if err = decoder.Decode(dest); err != nil {
-		_ = BodyDecodeErrorHandler(w, err, s.handler)
+		_ = BodyDecodeErrorHandler(w, err, s.responsesHandler)
 	}
 	return err
 }

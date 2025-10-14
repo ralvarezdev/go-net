@@ -30,7 +30,7 @@ type (
 //
 // Returns:
 //
-//   - []func(next http.Handler) http.Handler: Slice of middleware functions
+//   - []func(next http.ResponsesHandler) http.ResponsesHandler: Slice of middleware functions
 func NewMiddlewares(middlewares ...func(next http.Handler) http.Handler) []func(next http.Handler) http.Handler {
 	return middlewares
 }
