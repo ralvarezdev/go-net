@@ -13,6 +13,12 @@ type (
 		HTTPStatus() int
 	}
 
+	// FailResponseError is the error for fail responses
+	FailResponseError interface {
+		Error() string
+		Response() Response
+	}
+
 	// Encoder interface
 	Encoder interface {
 		Encode(

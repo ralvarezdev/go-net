@@ -1,4 +1,4 @@
-package response
+package jsend
 
 type (
 	// Status is the response body status

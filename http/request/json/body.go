@@ -8,92 +8,12 @@ import (
 	"net/http"
 	"strings"
 
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 // Inspired by:
 // https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
-
-// NewUnmarshalTypeErrorResponse creates a new response for an UnmarshalTypeError
-//
-// Parameters:
-//
-//   - fieldName: The name of the field that caused the error
-//   - fieldTypeName: The type name of the field that caused the error
-func NewUnmarshalTypeErrorResponse(
-	fieldName string,
-	fieldTypeName string,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewFailBodyError(
-			fieldName,
-			fmt.Sprintf(
-				gonethttpresponse.ErrInvalidFieldValueType,
-				fieldTypeName,
-			),
-			ErrCodeUnmarshalTypeError,
-		).Body(),
-		http.StatusBadRequest,
-	)
-}
-
-// NewSyntaxErrorResponse creates a new response for a SyntaxError
-//
-// Parameters:
-//
-//   - offset: The offset where the error occurred
-func NewSyntaxErrorResponse(
-	offset int64,
-) gonethttpresponse.Response {
-	// Create the error
-	err := fmt.Errorf(ErrSyntaxError, offset)
-
-	return gonethttpresponse.NewJSendErrorResponse(
-		err.Error(),
-		ErrCodeSyntaxError,
-		http.StatusBadRequest,
-	)
-}
-
-// NewUnknownFieldErrorResponse creates a new response for an unknown field error
-//
-// Parameters:
-//
-//   - fieldName: The name of the unknown field
-//
-// Returns:
-//
-//   - gonethttpresponse.Response: The response
-func NewUnknownFieldErrorResponse(fieldName string) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		gonethttpresponse.NewFailBodyError(
-			fieldName,
-			fmt.Sprintf(ErrUnknownField, fieldName),
-			ErrCodeUnknownField,
-		).Body(),
-		http.StatusBadRequest,
-	)
-}
-
-// NewMaxBodySizeExceededErrorResponse creates a new response for a body size exceeded error
-//
-// Parameters:
-//
-//   - limit: The maximum allowed body size
-//
-// Returns:
-//
-//   - gonethttpresponse.Response: The response
-func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response {
-	// Create the error
-	err := fmt.Errorf(ErrMaxBodySizeExceeded, limit)
-
-	return gonethttpresponse.NewJSendErrorResponse(
-		err.Error(),
-		ErrCodeMaxBodySizeExceeded,
-		http.StatusRequestEntityTooLarge,
-	)
-}
 
 // BodyDecodeErrorHandler handles the error on JSON body decoding
 //
@@ -101,7 +21,7 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 //
 //   - w: The HTTP response writer
 //   - err: The error that occurred during decoding
-//   - encoder: The encoder to use for the response
+//   - handler: The handler to use for the response
 //
 // Returns:
 //
@@ -109,17 +29,19 @@ func NewMaxBodySizeExceededErrorResponse(limit int64) gonethttpresponse.Response
 func BodyDecodeErrorHandler(
 	w http.ResponseWriter,
 	err error,
-	encoder gonethttpresponse.Encoder,
+	handler gonethttphandler.Handler,
 ) error {
-	// Check if the encoder is nil
-	if encoder == nil {
-		return gonethttpresponse.ErrNilEncoder
+	// Check if the handler is nil
+	if handler == nil {
+		return gonethttphandler.ErrNilHandler
 	}
 
 	// Check is there is an UnmarshalTypeError
-	var syntaxError *json.SyntaxError
-	var maxBytesError *http.MaxBytesError
-	var unmarshalTypeError *json.UnmarshalTypeError
+	var (
+		syntaxError        *json.SyntaxError
+		maxBytesError      *http.MaxBytesError
+		unmarshalTypeError *json.UnmarshalTypeError
+	)
 
 	// Check if the error is an UnmarshalTypeError
 	if errors.As(err, &unmarshalTypeError) {
@@ -129,31 +51,42 @@ func BodyDecodeErrorHandler(
 
 		// Check if the field name is empty
 		if fieldName != "" {
-			return encoder.Encode(
-				w,
-				NewUnmarshalTypeErrorResponse(fieldName, fieldTypeName),
+			err = fmt.Errorf(
+				gonethttpresponse.ErrInvalidFieldValueType,
+				fieldTypeName,
 			)
+			handler.HandleFieldFailResponseWithCode(
+				w,
+				fieldName,
+				err,
+				ErrCodeUnmarshalTypeError,
+				http.StatusBadRequest,
+			)
+			return err
 		}
 	}
 
 	// Check if the error is a SyntaxError
 	if errors.As(err, &syntaxError) {
-		return encoder.Encode(
+		err = fmt.Errorf(ErrSyntaxError, syntaxError.Offset)
+		handler.HandleErrorResponseWithCode(
 			w,
-			NewSyntaxErrorResponse(syntaxError.Offset),
+			err,
+			ErrCodeSyntaxError,
+			http.StatusBadRequest,
 		)
+		return err
 	}
 
 	// Check if the error is an ErrUnexpectedEOF
 	if errors.Is(err, io.ErrUnexpectedEOF) {
-		return encoder.Encode(
+		handler.HandleErrorResponseWithCode(
 			w,
-			gonethttpresponse.NewJSendErrorResponse(
-				ErrUnexpectedEOF.Error(),
-				ErrCodeSyntaxError,
-				http.StatusBadRequest,
-			),
+			ErrUnexpectedEOF,
+			ErrCodeSyntaxError,
+			http.StatusBadRequest,
 		)
+		return ErrUnexpectedEOF
 	}
 
 	// Check if the error is an unknown field error
@@ -161,39 +94,45 @@ func BodyDecodeErrorHandler(
 		// Get the field name
 		fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 
-		return encoder.Encode(
+		err = fmt.Errorf(ErrUnknownField, fieldName)
+		handler.HandleFieldFailResponseWithCode(
 			w,
-			NewUnknownFieldErrorResponse(fieldName),
+			fieldName,
+			err,
+			ErrCodeUnknownField,
+			http.StatusBadRequest,
 		)
+		return err
 	}
 
 	// Check if the error is caused by an empty request body
 	if errors.Is(err, io.EOF) {
-		return encoder.Encode(
+		handler.HandleErrorResponseWithCode(
 			w,
-			gonethttpresponse.NewJSendErrorResponse(
-				ErrEmptyBody.Error(),
-				ErrCodeEmptyBody,
-				http.StatusBadRequest,
-			),
+			ErrEmptyBody,
+			ErrCodeEmptyBody,
+			http.StatusBadRequest,
 		)
+		return ErrEmptyBody
 	}
 
 	// Catch the error caused by the request body being too large
 	if errors.As(err, &maxBytesError) {
-		return encoder.Encode(
+		err = fmt.Errorf(ErrMaxBodySizeExceeded, maxBytesError.Limit)
+		handler.HandleErrorResponseWithCode(
 			w,
-			NewMaxBodySizeExceededErrorResponse(maxBytesError.Limit),
+			err,
+			ErrCodeMaxBodySizeExceeded,
+			http.StatusRequestEntityTooLarge,
 		)
 	}
 
-	return encoder.Encode(
+	handler.HandleDebugErrorResponseWithCode(
 		w,
-		gonethttpresponse.NewJSendErrorDebugResponse(
-			ErrUnmarshalBodyFailed.Error(),
-			err.Error(),
-			ErrCodeUnmarshalRequestBodyFailed,
-			http.StatusBadRequest,
-		),
+		err,
+		ErrUnmarshalBodyFailed,
+		ErrCodeUnmarshalRequestBodyFailed,
+		http.StatusBadRequest,
 	)
+	return err
 }

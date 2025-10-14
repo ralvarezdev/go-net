@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	ErrCodeInterceptionNotFound *string
+	ErrCodeInterceptionNotFound string
 )
 
 var (

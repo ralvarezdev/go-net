@@ -2,16 +2,19 @@ package json
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"github.com/ralvarezdev/go-flags/mode"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
 	// Encoder struct
 	Encoder struct {
-		mode *mode.Flag
+		mode   *mode.Flag
+		logger *slog.Logger
 	}
 )
 
@@ -20,12 +23,21 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
+//   - logger: The logger
 //
 // Returns:
 //
 //   - *Encoder: The default encoder
-func NewEncoder(mode *mode.Flag) *Encoder {
-	return &Encoder{mode}
+func NewEncoder(
+	mode *mode.Flag,
+	logger *slog.Logger,
+) *Encoder {
+	if logger != nil {
+		logger = logger.With(
+			slog.String("component", "http_response_json_encoder"),
+		)
+	}
+	return &Encoder{mode, logger}
 }
 
 // Encode encodes the body into JSON and writes it to the response
@@ -38,23 +50,27 @@ func NewEncoder(mode *mode.Flag) *Encoder {
 // Returns:
 //
 //   - error: The error if any
-func (d Encoder) Encode(
+func (e Encoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {
 	// Get the response body and HTTP status
-	body := response.Body(d.mode)
+	body := response.Body(e.mode)
 	httpStatus := response.HTTPStatus()
 
 	// Encode the JSON body
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
-		return d.Encode(
+		if e.logger != nil {
+			e.logger.Error(
+				"failed to marshal response body",
+				slog.String("error", err.Error()),
+			)
+		}
+		http.Error(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeMarshalResponseBodyFailed,
-			),
+			gonethttp.InternalServerError,
+			http.StatusInternalServerError,
 		)
 	}
 

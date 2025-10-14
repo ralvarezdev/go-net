@@ -6,14 +6,15 @@ import (
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 )
 
 type (
 	// Decoder struct
 	Decoder struct {
 		mode    *goflagsmode.Flag
-		encoder gonethttpresponse.Encoder
+		handler gonethttpresponsehandler.Handler
 	}
 )
 
@@ -22,7 +23,7 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - encoder: The JSON encoder
+//   - handler: The HTTP handler
 //
 // Returns:
 //
@@ -30,16 +31,16 @@ type (
 //   - error: The error if any
 func NewDecoder(
 	mode *goflagsmode.Flag,
-	encoder gonethttpresponse.Encoder,
+	handler gonethttpresponsehandler.Handler,
 ) (*Decoder, error) {
-	// Check if the encoder is nil
-	if encoder == nil {
-		return nil, gonethttpresponse.ErrNilEncoder
+	// Check if the handler is nil
+	if handler == nil {
+		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
 	return &Decoder{
 		mode,
-		encoder,
+		handler,
 	}, nil
 }
 
@@ -61,39 +62,44 @@ func (d Decoder) Decode(
 ) (err error) {
 	// Check the content type
 	if !CheckContentType(r) {
-		_ = d.encoder.Encode(
+		d.handler.HandleFieldFailResponseWithCode(
 			w,
-			ErrInvalidContentType.Response(),
+			ErrInvalidContentTypeField,
+			ErrInvalidContentType,
+			ErrCodeInvalidContentType,
+			http.StatusUnsupportedMediaType,
 		)
+		return ErrInvalidContentType
 	}
 
 	// Check the decoder destination
 	if dest == nil {
-		_ = d.encoder.Encode(
+		d.handler.HandleDebugErrorResponseWithCode(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				ErrNilDestination,
-				ErrCodeNilDestination,
-			),
+			ErrNilDestination,
+			gonethttp.ErrInternalServerError,
+			ErrCodeNilDestination,
+			http.StatusInternalServerError,
 		)
+		return ErrNilDestination
 	}
 
 	// Get the body of the request
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		_ = d.encoder.Encode(
+		d.handler.HandleDebugErrorResponseWithCode(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeFailedToReadBody,
-			),
+			err,
+			gonethttp.ErrInternalServerError,
+			ErrCodeFailedToReadBody,
+			http.StatusInternalServerError,
 		)
 		return err
 	}
 
 	// Decode JSON body into destination
 	if err = json.Unmarshal(body, dest); err != nil {
-		_ = BodyDecodeErrorHandler(w, err, d.encoder)
+		_ = BodyDecodeErrorHandler(w, err, d.handler)
 	}
 	return err
 }

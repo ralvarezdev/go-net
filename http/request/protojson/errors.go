@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	ErrCodeReadBodyFailed           *string
-	ErrCodeInvalidProtoMessage      *string
-	ErrCodeUnmarshalProtoJSONFailed *string
+	ErrCodeReadBodyFailed           string
+	ErrCodeInvalidProtoMessage      string
+	ErrCodeUnmarshalProtoJSONFailed string
 )
 
 const (

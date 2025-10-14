@@ -1,10 +1,12 @@
 package protojson
 
 import (
+	"log/slog"
 	"net/http"
 	"reflect"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpresponsejson "github.com/ralvarezdev/go-net/http/response/json"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -16,6 +18,7 @@ type (
 		jsonEncoder    *gonethttpresponsejson.Encoder
 		mode           *goflagsmode.Flag
 		marshalOptions protojson.MarshalOptions
+		logger         *slog.Logger
 	}
 )
 
@@ -25,6 +28,7 @@ type (
 //
 //   - mode: the flag mode
 //   - marshalOptions: options for marshaling protobuf messages to JSON
+//   - logger: the logger (optional, can be nil)
 //
 // Returns:
 //
@@ -32,14 +36,22 @@ type (
 func NewEncoder(
 	mode *goflagsmode.Flag,
 	marshalOptions protojson.MarshalOptions,
+	logger *slog.Logger,
 ) *Encoder {
 	// Initialize the JSON encoder
-	jsonEncoder := gonethttpresponsejson.NewEncoder(mode)
+	jsonEncoder := gonethttpresponsejson.NewEncoder(mode, logger)
+
+	if logger != nil {
+		logger = logger.With(
+			slog.String("component", "http_response_protojson_encoder"),
+		)
+	}
 
 	return &Encoder{
 		mode:           mode,
 		jsonEncoder:    jsonEncoder,
 		marshalOptions: marshalOptions,
+		logger:         logger,
 	}
 }
 
@@ -63,12 +75,16 @@ func (e Encoder) Encode(
 	// Precompute the marshaled body
 	precomputedBody, err := PrecomputeMarshalByReflection(v, &e.marshalOptions)
 	if err != nil {
-		return e.Encode(
+		if e.logger != nil {
+			e.logger.Error(
+				"failed to marshal response body",
+				slog.String("error", err.Error()),
+			)
+		}
+		http.Error(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeMarshalResponseBodyFailed,
-			),
+			gonethttp.InternalServerError,
+			http.StatusInternalServerError,
 		)
 	}
 

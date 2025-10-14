@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	ErrCodeInvalidAuthorizationHeader *string
-	ErrCodeInvalidTokenClaims         *string
-	ErrCodeFailedToRefreshToken       *string
+	ErrCodeInvalidAuthorizationHeader string
+	ErrCodeInvalidTokenClaims         string
+	ErrCodeFailedToRefreshToken       string
 )
 
 var (

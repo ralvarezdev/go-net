@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpparser "github.com/ralvarezdev/go-net/http/parser"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttpresponsejsend "github.com/ralvarezdev/go-net/http/response/jsend"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
@@ -14,11 +15,11 @@ type (
 	// DefaultHandler struct
 	DefaultHandler struct {
 		mode *goflagsmode.Flag
-		gonethttpparser.Parser
+		gonethttpresponse.Decoder
 	}
 )
 
-// NewDefaultHandler creates a new default request handler
+// NewHandler creates a new default request handler
 //
 // Parameters:
 //
@@ -27,12 +28,12 @@ type (
 //
 // Returns:
 //
-//   - *DefaultHandler: The default handler
+//   - *Handler: The default handler
 //   - error: The error if any
-func NewDefaultHandler(
+func NewHandler(
 	mode *goflagsmode.Flag,
 	parser gonethttpparser.Parser,
-) (*DefaultHandler, error) {
+) (*Handler, error) {
 	// Check if the flag mode or the parser is nil
 	if mode == nil {
 		return nil, goflagsmode.ErrNilModeFlag
@@ -41,7 +42,7 @@ func NewDefaultHandler(
 		return nil, gonethttpparser.ErrNilParser
 	}
 
-	return &DefaultHandler{
+	return &Handler{
 		mode,
 		parser,
 	}, nil
@@ -58,7 +59,7 @@ func NewDefaultHandler(
 // Returns:
 //
 //   - bool: True if the request body is valid, false otherwise
-func (d DefaultHandler) Validate(
+func (d Handler) Validate(
 	w http.ResponseWriter,
 	body interface{},
 	validatorFn govalidatormappervalidator.ValidateFn,
@@ -73,19 +74,19 @@ func (d DefaultHandler) Validate(
 
 	// Check if the error is not nil
 	if err != nil {
-		d.HandleResponse(
+		d.HandleDebugErrorResponseWithCode(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeValidationFailed,
-			),
+			err,
+			gonethttp.ErrInternalServerError,
+			ErrCodeValidationFailed,
+			http.StatusInternalServerError,
 		)
 		return false
 	}
 
 	d.HandleResponse(
 		w,
-		gonethttpresponse.NewJSendFailResponse(
+		gonethttpresponsejsend.NewFailResponseWithCode(
 			validations,
 			ErrCodeValidationFailed,
 			http.StatusBadRequest,
@@ -106,7 +107,7 @@ func (d DefaultHandler) Validate(
 // Returns:
 //
 //   - bool: True if the request body is valid, false otherwise
-func (d DefaultHandler) DecodeAndValidate(
+func (d Handler) DecodeAndValidate(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
@@ -119,59 +120,4 @@ func (d DefaultHandler) DecodeAndValidate(
 
 	// Validate the request body
 	return d.Validate(w, dest, validatorFn)
-}
-
-// HandleResponse handles the response
-//
-// Parameters:
-//
-//   - w: The HTTP response writer
-//   - response: The response to handle
-func (d DefaultHandler) HandleResponse(
-	w http.ResponseWriter,
-	response gonethttpresponse.Response,
-) {
-	// Check if the response is nil
-	if response == nil {
-		d.HandleResponse(
-			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				gonethttpresponse.ErrNilResponse,
-				ErrCodeNilResponse,
-			),
-		)
-		return
-	}
-
-	// Call the encoder
-	_ = d.Encode(w, response)
-}
-
-// HandleError handles the error response
-//
-// Parameters:
-//
-//   - w: The HTTP response writer
-//   - err: The error to handle
-func (d DefaultHandler) HandleError(
-	w http.ResponseWriter,
-	err error,
-) {
-	// Check if the errors is a fail body error or a fail request error
-	var failResponseErrorTarget *gonethttpresponse.FailResponseError
-	if errors.As(err, &failResponseErrorTarget) {
-		d.HandleResponse(
-			w,
-			failResponseErrorTarget.Response(),
-		)
-		return
-	}
-
-	d.HandleResponse(
-		w,
-		gonethttpresponse.NewJSendDebugInternalServerError(
-			err,
-			ErrCodeRequestFatalError,
-		),
-	)
 }

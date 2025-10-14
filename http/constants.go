@@ -15,4 +15,5 @@ var (
 	ServiceUnavailable  = http.StatusText(http.StatusServiceUnavailable)
 	Unauthorized        = http.StatusText(http.StatusUnauthorized)
 	NotImplemented      = http.StatusText(http.StatusNotImplemented)
+	TooManyRequests     = http.StatusText(http.StatusTooManyRequests)
 )

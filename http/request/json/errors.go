@@ -2,27 +2,28 @@ package json
 
 import (
 	"errors"
-	"net/http"
-
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 var (
-	ErrCodeInvalidContentType         *string
-	ErrCodeNilDestination             *string
-	ErrCodeFailedToReadBody           *string
-	ErrCodeUnmarshalRequestBodyFailed *string
-	ErrCodeSyntaxError                *string
-	ErrCodeUnmarshalTypeError         *string
-	ErrCodeUnknownField               *string
-	ErrCodeEmptyBody                  *string
-	ErrCodeMaxBodySizeExceeded        *string
+	ErrCodeInvalidContentType         string
+	ErrCodeNilDestination             string
+	ErrCodeFailedToReadBody           string
+	ErrCodeUnmarshalRequestBodyFailed string
+	ErrCodeSyntaxError                string
+	ErrCodeUnmarshalTypeError         string
+	ErrCodeUnknownField               string
+	ErrCodeEmptyBody                  string
+	ErrCodeMaxBodySizeExceeded        string
 )
 
 const (
 	ErrMaxBodySizeExceeded = "json body size exceeds the maximum allowed size, limit is %d bytes"
 	ErrSyntaxError         = "json body contains badly-formed JSON at position %d"
 	ErrUnknownField        = "json body contains an unknown field %s"
+)
+
+const (
+	ErrInvalidContentTypeField = "Content-Type"
 )
 
 var (
@@ -33,10 +34,5 @@ var (
 
 var (
 	ErrNilDestination     = errors.New("json destination is nil")
-	ErrInvalidContentType = gonethttpresponse.NewFailResponseError(
-		"Content-Type",
-		"invalid content type, expected application/json",
-		ErrCodeInvalidContentType,
-		http.StatusUnsupportedMediaType,
-	)
+	ErrInvalidContentType = errors.New("invalid content type, expected application/json")
 )

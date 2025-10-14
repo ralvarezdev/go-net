@@ -11,15 +11,14 @@ import (
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 )
 
 type (
 	// Middleware struct is the authentication middleware
 	Middleware struct {
 		validator gojwtvalidator.Validator
-		handler   gonethttphandler.Handler
+		handler   gonethttpresponsehandler.Handler
 		options   *Options
 	}
 
@@ -66,13 +65,13 @@ func NewOptions(
 //
 //   - *Middleware: The authentication middleware
 func NewMiddleware(
-	handler gonethttphandler.Handler,
+	handler gonethttpresponsehandler.Handler,
 	validator gojwtvalidator.Validator,
 	options *Options,
 ) (*Middleware, error) {
 	// Check if either the response handler is nil
 	if handler == nil {
-		return nil, gonethttphandler.ErrNilHandler
+		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
 	return &Middleware{
@@ -143,16 +142,14 @@ func (m Middleware) authenticate(
 func (m Middleware) authenticateFromHeaderFailHandler(
 	w http.ResponseWriter,
 	err error,
-	errorCode *string,
+	errorCode string,
 ) {
-	m.handler.HandleError(
+	m.handler.HandleFieldFailResponseWithCode(
 		w,
-		gonethttpresponse.NewFailResponseError(
-			gojwtnethttp.AuthorizationHeaderKey,
-			err.Error(),
-			errorCode,
-			http.StatusUnauthorized,
-		),
+		gojwtnethttp.AuthorizationHeaderKey,
+		err,
+		errorCode,
+		http.StatusUnauthorized,
 	)
 }
 
@@ -219,17 +216,15 @@ func (m Middleware) authenticateFromCookieFailHandler(
 	return func(
 		w http.ResponseWriter,
 		err error,
-		errorCode *string,
+		errorCode string,
 	) {
 		{
-			m.handler.HandleError(
+			m.handler.HandleFieldFailResponseWithCode(
 				w,
-				gonethttpresponse.NewFailResponseError(
-					cookieName,
-					err.Error(),
-					errorCode,
-					http.StatusUnauthorized,
-				),
+				cookieName,
+				err,
+				errorCode,
+				http.StatusUnauthorized,
 			)
 		}
 	}

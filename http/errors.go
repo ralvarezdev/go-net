@@ -4,13 +4,13 @@ import (
 	"errors"
 )
 
+var (
+	ErrCodeCookieNotFound string
+)
+
 const (
 	ErrInvalidRequestBody = "invalid request body type, expected: %v"
 	ErrNilSubmodule       = "%s: submodule at index %d is nil"
-)
-
-var (
-	ErrCodeCookieNotFound *string
 )
 
 var (
@@ -26,5 +26,6 @@ var (
 	ErrServiceUnavailable  = errors.New(ServiceUnavailable)
 	ErrUnauthorized        = errors.New(Unauthorized)
 	ErrNotImplemented      = errors.New(NotImplemented)
+	ErrTooManyRequests     = errors.New(TooManyRequests)
 	ErrUnauthenticated     = errors.New("missing or invalid bearer token on authentication header")
 )

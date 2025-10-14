@@ -5,14 +5,15 @@ import (
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 )
 
 type (
 	// StreamDecoder is the JSON decoder struct
 	StreamDecoder struct {
 		mode    *goflagsmode.Flag
-		encoder gonethttpresponse.Encoder
+		handler gonethttpresponsehandler.Handler
 	}
 )
 
@@ -21,7 +22,7 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - encoder: The JSON encoder
+//   - handler: The HTTP handler to handle errors
 //
 // Returns:
 //
@@ -29,16 +30,16 @@ type (
 //   - error: The error if any
 func NewStreamDecoder(
 	mode *goflagsmode.Flag,
-	encoder gonethttpresponse.Encoder,
+	handler gonethttpresponsehandler.Handler,
 ) (*StreamDecoder, error) {
-	// Check if the stream encoder is nil
-	if encoder == nil {
-		return nil, gonethttpresponse.ErrNilEncoder
+	// Check if the response handler is nil
+	if handler == nil {
+		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
 	return &StreamDecoder{
 		mode,
-		encoder,
+		handler,
 	}, nil
 }
 
@@ -53,28 +54,33 @@ func NewStreamDecoder(
 // Returns:
 //
 //   - error: The error if any
-func (d StreamDecoder) Decode(
+func (s StreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
 ) (err error) {
 	// Check the content type
 	if !CheckContentType(r) {
-		_ = d.encoder.Encode(
+		s.handler.HandleFieldFailResponseWithCode(
 			w,
-			ErrInvalidContentType.Response(),
+			ErrInvalidContentTypeField,
+			ErrInvalidContentType,
+			ErrCodeInvalidContentType,
+			http.StatusUnsupportedMediaType,
 		)
+		return ErrInvalidContentType
 	}
 
 	// Check the decoder destination
 	if dest == nil {
-		_ = d.encoder.Encode(
+		s.handler.HandleDebugErrorResponseWithCode(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeNilDestination,
-			),
+			ErrNilDestination,
+			gonethttp.ErrInternalServerError,
+			ErrCodeNilDestination,
+			http.StatusInternalServerError,
 		)
+		return ErrNilDestination
 	}
 
 	// Create a new reader from the body
@@ -83,7 +89,7 @@ func (d StreamDecoder) Decode(
 
 	// Decode JSON body into destination
 	if err = decoder.Decode(dest); err != nil {
-		_ = BodyDecodeErrorHandler(w, err, d.encoder)
+		_ = BodyDecodeErrorHandler(w, err, s.handler)
 	}
 	return err
 }

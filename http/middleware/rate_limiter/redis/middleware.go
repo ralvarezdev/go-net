@@ -2,16 +2,20 @@ package redis
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 	goratelimiterredis "github.com/ralvarezdev/go-rate-limiter/redis"
 )
 
 type (
 	// Middleware struct
 	Middleware struct {
+		handler     gonethttpresponsehandler.Handler
 		rateLimiter goratelimiterredis.RateLimiter
+		logger      *slog.Logger
 	}
 )
 
@@ -19,23 +23,42 @@ type (
 //
 // Parameters:
 //
+// handler gonethttphandler.Handler: the HTTP handler to handle errors
 // rateLimiter goratelimiterredis.RateLimiter: the rate limiter
+// logger *slog.Logger: the logger (optional)
 //
 // Returns:
 //
 // *Middleware: the middleware instance
 // error: if the rate limiter is nil
-func NewMiddleware(rateLimiter goratelimiterredis.RateLimiter) (
+func NewMiddleware(
+	handler gonethttpresponsehandler.Handler,
+	rateLimiter goratelimiterredis.RateLimiter,
+	logger *slog.Logger,
+) (
 	*Middleware,
 	error,
 ) {
+	// Check if the handler is nil
+	if handler == nil {
+		return nil, gonethttpresponsehandler.ErrNilHandler
+	}
+
 	// Check if the rate limiter is nil
 	if rateLimiter == nil {
 		return nil, goratelimiterredis.ErrNilRateLimiter
 	}
 
+	if logger != nil {
+		logger = logger.With(
+			slog.String("component", "http_middleware_rate_limiter_redis"),
+		)
+	}
+
 	return &Middleware{
+		handler,
 		rateLimiter,
+		logger,
 	}, nil
 }
 
@@ -57,18 +80,23 @@ func (m Middleware) Limit() func(next http.Handler) http.Handler {
 					if errors.Is(err, goratelimiterredis.ErrTooManyRequests) {
 						http.Error(
 							w,
-							http.StatusText(http.StatusTooManyRequests),
+							gonethttp.TooManyRequests,
 							http.StatusTooManyRequests,
 						)
 						return
 					}
 
+					// Log the error
+					if m.logger != nil {
+						m.logger.Error(
+							"Error limiting requests",
+							slog.String("ip", ip),
+							slog.String("error", err.Error()),
+						)
+					}
+
 					// Handle other errors
-					http.Error(
-						w,
-						http.StatusText(http.StatusInternalServerError),
-						http.StatusInternalServerError,
-					)
+					m.handler.HandleError(w, err)
 					return
 				}
 

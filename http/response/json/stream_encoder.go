@@ -2,16 +2,19 @@ package json
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
 	// StreamEncoder is the JSON encoder struct
 	StreamEncoder struct {
-		mode *goflagsmode.Flag
+		mode   *goflagsmode.Flag
+		logger *slog.Logger
 	}
 )
 
@@ -20,13 +23,23 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
+//   - logger: The logger
 //
 // Returns:
 //
 //   - *StreamEncoder: The default encoder
-func NewStreamEncoder(mode *goflagsmode.Flag) *StreamEncoder {
+func NewStreamEncoder(
+	mode *goflagsmode.Flag,
+	logger *slog.Logger,
+) *StreamEncoder {
+	if logger != nil {
+		logger = logger.With(
+			slog.String("component", "http_response_json_stream_encoder"),
+		)
+	}
+
 	return &StreamEncoder{
-		mode,
+		mode, logger,
 	}
 }
 
@@ -40,12 +53,12 @@ func NewStreamEncoder(mode *goflagsmode.Flag) *StreamEncoder {
 // Returns:
 //
 //   - error: The error if any
-func (d StreamEncoder) Encode(
+func (s StreamEncoder) Encode(
 	w http.ResponseWriter,
 	response gonethttpresponse.Response,
 ) (err error) {
 	// Get the body and HTTP status from the response
-	body := response.Body(d.mode)
+	body := response.Body(s.mode)
 	httpStatus := response.HTTPStatus()
 
 	// Set the Content-Type header if it hasn't been set already
@@ -65,12 +78,16 @@ func (d StreamEncoder) Encode(
 		w.Header().Set("X-Status-Written", "true")
 		w.WriteHeader(http.StatusInternalServerError)
 
-		_ = d.Encode(
+		if s.logger != nil {
+			s.logger.Error(
+				"failed to marshal response body",
+				slog.String("error", err.Error()),
+			)
+		}
+		http.Error(
 			w,
-			gonethttpresponse.NewJSendDebugInternalServerError(
-				err,
-				ErrCodeMarshalResponseBodyFailed,
-			),
+			gonethttp.InternalServerError,
+			http.StatusInternalServerError,
 		)
 		return err
 	}

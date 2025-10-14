@@ -11,7 +11,7 @@ type (
 	FailHandlerFn func(
 		w http.ResponseWriter,
 		err error,
-		errorCode *string,
+		errorCode string,
 	)
 
 	// RefreshTokenFn defines the function signature for refreshing tokens

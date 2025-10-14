@@ -5,15 +5,15 @@ import (
 	"net/http"
 
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
-	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpmiddlewareauth "github.com/ralvarezdev/go-net/http/middleware/auth"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
+	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 )
 
 type (
 	// Middleware struct is the authentication middleware for a REST API that is a gateway to a gRPC service.
 	Middleware struct {
-		handler       gonethttphandler.Handler
+		handler       gonethttpresponsehandler.Handler
 		interceptions map[string]*gojwttoken.Token
 		authenticator gonethttpmiddlewareauth.Authenticator
 		logger        *slog.Logger
@@ -35,7 +35,7 @@ type (
 //   - error: An error if the middleware could not be created.
 func NewMiddleware(
 	interceptions map[string]*gojwttoken.Token,
-	handler gonethttphandler.Handler,
+	handler gonethttpresponsehandler.Handler,
 	authenticator gonethttpmiddlewareauth.Authenticator,
 	logger *slog.Logger,
 ) (*Middleware, error) {
@@ -46,7 +46,7 @@ func NewMiddleware(
 
 	// Check if the handler is nil
 	if handler == nil {
-		return nil, gonethttphandler.ErrNilHandler
+		return nil, gonethttpresponsehandler.ErrNilHandler
 	}
 
 	// Check if the authenticator is nil
@@ -92,12 +92,12 @@ func (m Middleware) interceptionNotFoundHandler(
 				}
 
 				// Handle the response with an internal server error
-				m.handler.HandleResponse(
+				m.handler.HandleDebugErrorResponseWithCode(
 					w,
-					gonethttpresponse.NewJSendDebugInternalServerError(
-						ErrInterceptionNotFound,
-						ErrCodeInterceptionNotFound,
-					),
+					ErrInterceptionNotFound,
+					gonethttp.ErrInternalServerError,
+					ErrCodeInterceptionNotFound,
+					http.StatusInternalServerError,
 				)
 			},
 		)
