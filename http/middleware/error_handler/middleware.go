@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
 
 type (
 	// Middleware struct is the error handler middleware
 	Middleware struct {
-		responsesHandler gonethttpresponsehandler.ResponsesHandler
+		responsesHandler gonethttphandler.ResponsesHandler
 	}
 )
 
@@ -24,13 +24,13 @@ type (
 //
 //   - *Middleware: The error handler middleware
 //   - error: The error if any
-func NewMiddleware(responsesHandler gonethttpresponsehandler.ResponsesHandler) (
+func NewMiddleware(responsesHandler gonethttphandler.ResponsesHandler) (
 	*Middleware,
 	error,
 ) {
 	// Check if the handler is nil
 	if responsesHandler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
+		return nil, gonethttphandler.ErrNilHandler
 	}
 	return &Middleware{
 		responsesHandler,

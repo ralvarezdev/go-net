@@ -6,14 +6,14 @@ import (
 
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpmiddlewareauth "github.com/ralvarezdev/go-net/http/middleware/auth"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 )
 
 type (
 	// Middleware struct is the authentication middleware for a REST API that is a gateway to a gRPC service.
 	Middleware struct {
-		responsesHandler gonethttpresponsehandler.ResponsesHandler
+		responsesHandler gonethttphandler.ResponsesHandler
 		interceptions    map[string]*gojwttoken.Token
 		authenticator    gonethttpmiddlewareauth.Authenticator
 		logger           *slog.Logger
@@ -35,7 +35,7 @@ type (
 //   - error: An error if the middleware could not be created.
 func NewMiddleware(
 	interceptions map[string]*gojwttoken.Token,
-	responsesHandler gonethttpresponsehandler.ResponsesHandler,
+	responsesHandler gonethttphandler.ResponsesHandler,
 	authenticator gonethttpmiddlewareauth.Authenticator,
 	logger *slog.Logger,
 ) (*Middleware, error) {
@@ -46,7 +46,7 @@ func NewMiddleware(
 
 	// Check if the handler is nil
 	if responsesHandler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
+		return nil, gonethttphandler.ErrNilHandler
 	}
 
 	// Check if the authenticator is nil

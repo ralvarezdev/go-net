@@ -1,7 +1,6 @@
 package protojson
 
 import (
-	"log/slog"
 	"net/http"
 	"reflect"
 
@@ -18,7 +17,6 @@ type (
 		jsonEncoder    *gonethttpresponsejson.Encoder
 		mode           *goflagsmode.Flag
 		marshalOptions protojson.MarshalOptions
-		logger         *slog.Logger
 	}
 )
 
@@ -34,27 +32,19 @@ type (
 // - *Encoder: the new Encoder instance
 func NewEncoder(
 	mode *goflagsmode.Flag,
-	logger *slog.Logger,
 ) *Encoder {
 	// Initialize the JSON encoder
-	jsonEncoder := gonethttpresponsejson.NewEncoder(mode, logger)
+	jsonEncoder := gonethttpresponsejson.NewEncoder(mode)
 
 	// Initialize unmarshal options
 	marshalOptions := protojson.MarshalOptions{
 		AllowPartial: true,
 	}
 
-	if logger != nil {
-		logger = logger.With(
-			slog.String("component", "http_response_protojson_encoder"),
-		)
-	}
-
 	return &Encoder{
 		mode:           mode,
 		jsonEncoder:    jsonEncoder,
 		marshalOptions: marshalOptions,
-		logger:         logger,
 	}
 }
 
@@ -78,15 +68,10 @@ func (e Encoder) Encode(
 	// Precompute the marshaled body
 	precomputedBody, err := PrecomputeMarshalByReflection(v, &e.marshalOptions)
 	if err != nil {
-		if e.logger != nil {
-			e.logger.Error(
-				"Failed to marshal response body",
-				slog.String("error", err.Error()),
-			)
-		}
-		http.Error(
-			w,
-			gonethttp.InternalServerError,
+		return gonethttpresponse.NewDebugErrorWithCode(
+			err,
+			gonethttp.ErrInternalServerError,
+			ErrCodeProtoJSONMarshalFailed,
 			http.StatusInternalServerError,
 		)
 	}

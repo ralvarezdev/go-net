@@ -13,8 +13,8 @@ import (
 type (
 	// DefaultRequestsHandler struct
 	DefaultRequestsHandler struct {
-		mode *goflagsmode.Flag
-		gonethttphandler.ResponsesHandler
+		mode             *goflagsmode.Flag
+		responsesHandler gonethttphandler.ResponsesHandler
 		gonethttprequest.Decoder
 	}
 )
@@ -25,7 +25,7 @@ type (
 //
 //   - mode: The flag mode
 //   - decoder: The HTTP request decoder
-//   - handler: The HTTP response handler
+//   - responsesHandler: The HTTP response handler
 //
 // Returns:
 //
@@ -34,7 +34,7 @@ type (
 func NewDefaultRequestsHandler(
 	mode *goflagsmode.Flag,
 	decoder gonethttprequest.Decoder,
-	handler gonethttphandler.ResponsesHandler,
+	responsesHandler gonethttphandler.ResponsesHandler,
 ) (*DefaultRequestsHandler, error) {
 	// Check if the flag mode, the decoder or the handler is nil
 	if mode == nil {
@@ -43,13 +43,13 @@ func NewDefaultRequestsHandler(
 	if decoder == nil {
 		return nil, gonethttprequest.ErrNilDecoder
 	}
-	if handler == nil {
+	if responsesHandler == nil {
 		return nil, gonethttphandler.ErrNilResponsesHandler
 	}
 
 	return &DefaultRequestsHandler{
 		mode,
-		handler,
+		responsesHandler,
 		decoder,
 	}, nil
 }
@@ -80,7 +80,7 @@ func (d DefaultRequestsHandler) Validate(
 
 	// Check if the error is not nil
 	if err != nil {
-		d.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorResponseWithCode(
 			w,
 			err,
 			gonethttp.ErrInternalServerError,
@@ -90,7 +90,7 @@ func (d DefaultRequestsHandler) Validate(
 		return false
 	}
 
-	d.HandleFailResponseWithCode(
+	d.responsesHandler.HandleFailResponseWithCode(
 		w,
 		validations,
 		ErrCodeValidationFailed,
@@ -119,6 +119,11 @@ func (d DefaultRequestsHandler) DecodeAndValidate(
 ) bool {
 	// Decode the request body
 	if err := d.Decode(w, r, dest); err != nil {
+		// Handle the error
+		d.responsesHandler.HandleError(
+			w,
+			err,
+		)
 		return false
 	}
 

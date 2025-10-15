@@ -70,7 +70,7 @@ func NewFailBodyFromErrorDetails(
 			parsedSlice, ok := data[violation.GetField()].([]string)
 			if !ok {
 				panic(
-					NewDebugErrorWithCode(
+					gonethttpresponse.NewDebugErrorWithCode(
 						ErrExpectedStringSliceOnDataMap,
 						gonethttp.ErrInternalServerError,
 						ErrCodeExpectedStringSliceOnDataMap,
@@ -100,7 +100,7 @@ func NewFailBodyFromErrorDetails(
 				parsedSlice, ok := nestedMap[part].([]string)
 				if !ok {
 					panic(
-						NewDebugErrorWithCode(
+						gonethttpresponse.NewDebugErrorWithCode(
 							ErrExpectedStringSliceOnNestedDataMap,
 							gonethttp.ErrInternalServerError,
 							ErrCodeExpectedStringSliceOnNestedDataMap,
@@ -126,7 +126,7 @@ func NewFailBodyFromErrorDetails(
 			parsedNestedMap, ok := nestedMap[part].(map[string]interface{})
 			if !ok {
 				panic(
-					NewDebugErrorWithCode(
+					gonethttpresponse.NewDebugErrorWithCode(
 						ErrExpectedMapOnNestedDataMap,
 						gonethttp.ErrInternalServerError,
 						ErrCodeExpectedMapOnNestedDataMap,

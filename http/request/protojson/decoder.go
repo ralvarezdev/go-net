@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -14,28 +14,15 @@ import (
 type (
 	Decoder struct {
 		unmarshalOptions protojson.UnmarshalOptions
-		responsesHandler gonethttpresponsehandler.ResponsesHandler
 	}
 )
 
 // NewDecoder creates a new Decoder instance
 //
-// Parameters:
-//
-//   - responsesHandler: The HTTP response handler (optional, can be nil)
-//
 // Returns:
 //
 //   - *Decoder: The decoder instance
-//   - error: The error if any
-func NewDecoder(
-	responsesHandler gonethttpresponsehandler.ResponsesHandler,
-) (*Decoder, error) {
-	// Check if the handler is nil
-	if responsesHandler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
-	}
-
+func NewDecoder() *Decoder {
 	// Initialize unmarshal options
 	unmarshalOptions := protojson.UnmarshalOptions{
 		DiscardUnknown: true,
@@ -44,8 +31,7 @@ func NewDecoder(
 
 	return &Decoder{
 		unmarshalOptions: unmarshalOptions,
-		responsesHandler: responsesHandler,
-	}, nil
+	}
 }
 
 // Decode decodes the request body into the destination
@@ -67,39 +53,33 @@ func (d Decoder) Decode(
 	// Assert that dest is a proto.Message
 	msg, ok := dest.(proto.Message)
 	if !ok {
-		d.responsesHandler.HandleDebugErrorResponseWithCode(
-			w,
+		return gonethttpresponse.NewDebugErrorWithCode(
 			ErrInvalidProtoMessage,
 			gonethttp.ErrInternalServerError,
 			ErrCodeInvalidProtoMessage,
 			http.StatusInternalServerError,
 		)
-		return ErrInvalidProtoMessage
 	}
 
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		d.responsesHandler.HandleDebugErrorResponseWithCode(
-			w,
-			fmt.Errorf(ErrReadBodyFailed, err.Error()),
+		return gonethttpresponse.NewDebugErrorWithCode(
+			fmt.Errorf(ErrReadBodyFailed, err),
 			gonethttp.ErrInternalServerError,
 			ErrCodeReadBodyFailed,
 			http.StatusInternalServerError,
 		)
-		return err
 	}
 
 	// Decode the request body into the proto message
 	if err = protojson.Unmarshal(body, msg); err != nil {
-		d.responsesHandler.HandleDebugErrorResponseWithCode(
-			w,
-			fmt.Errorf(ErrUnmarshalProtoJSONFailed, err.Error()),
+		return gonethttpresponse.NewDebugErrorWithCode(
+			fmt.Errorf(ErrUnmarshalProtoJSONFailed, err),
 			gonethttp.ErrInternalServerError,
 			ErrCodeUnmarshalProtoJSONFailed,
 			http.StatusInternalServerError,
 		)
-		return err
 	}
 	return nil
 }

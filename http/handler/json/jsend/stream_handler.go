@@ -1,8 +1,6 @@
 package jsend
 
 import (
-	"log/slog"
-
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
@@ -24,18 +22,17 @@ type (
 // Parameters:
 //
 //   - mode: the flag mode
-//   - logger: the logger
 //
 // Returns:
 //
 //   - *StreamHandler: the created JSON handler
 //   - error: the error if any
-func NewStreamHandler(mode *goflagsmode.Flag, logger *slog.Logger) (
+func NewStreamHandler(mode *goflagsmode.Flag) (
 	*Handler,
 	error,
 ) {
 	// Create the JSON stream encoder
-	streamEncoder := gonethttpresponsejson.NewStreamEncoder(mode, logger)
+	streamEncoder := gonethttpresponsejson.NewStreamEncoder(mode)
 
 	// Create the responses handler
 	responsesHandler, err := gonethttpresponsehandlerjsend.NewResponsesHandler(
@@ -47,13 +44,9 @@ func NewStreamHandler(mode *goflagsmode.Flag, logger *slog.Logger) (
 	}
 
 	// Create the JSON stream decoder
-	streamDecoder, err := gonethttprequestjson.NewDecoder(
+	streamDecoder := gonethttprequestjson.NewStreamDecoder(
 		mode,
-		responsesHandler,
 	)
-	if err != nil {
-		return nil, err
-	}
 
 	// Create the requests handler
 	requestsHandler, err := gonethttprequesthandler.NewDefaultRequestsHandler(

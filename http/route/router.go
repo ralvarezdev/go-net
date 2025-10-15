@@ -198,6 +198,45 @@ func (r *Router) chainMiddlewares(
 	return method + " " + parsedPath, firstHandler
 }
 
+// addHandleFunc registers a new route with a path, the handler function and the middlewares
+//
+// Parameters:
+//
+//   - pattern: The pattern of the route
+//   - handler: The handler function
+//   - exact: Whether the route should match the exact path
+//   - middlewares: The middlewares to apply to the route
+func (r *Router) addHandleFunc(
+	pattern string,
+	handler http.HandlerFunc,
+	exact bool,
+	middlewares ...func(http.Handler) http.Handler,
+) {
+	if r == nil {
+		return
+	}
+
+	// Check if the handler is nil
+	if handler == nil {
+		panic(fmt.Sprintf(ErrNilHandlerFunc, pattern))
+	}
+
+	// Chain the middlewares
+	pattern, firstHandler := r.chainMiddlewares(
+		pattern,
+		exact,
+		handler,
+		middlewares...,
+	)
+
+	// Register the route
+	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
+
+	if r.mode != nil && r.mode.IsDebug() {
+		AddRouter(r.fullPath, pattern, r.logger)
+	}
+}
+
 // AddHandleFunc registers a new route with a path, the handler function and the middlewares
 //
 // Parameters:
@@ -214,25 +253,8 @@ func (r *Router) AddHandleFunc(
 		return
 	}
 
-	// Check if the handler is nil
-	if handler == nil {
-		panic(fmt.Sprintf(ErrNilHandlerFunc, pattern))
-	}
-
-	// Chain the middlewares
-	pattern, firstHandler := r.chainMiddlewares(
-		pattern,
-		false,
-		handler,
-		middlewares...,
-	)
-
-	// Register the route
-	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
-
-	if r.mode != nil && r.mode.IsDebug() {
-		AddRouter(r.fullPath, pattern, r.logger)
-	}
+	// Add the route
+	r.addHandleFunc(pattern, handler, false, middlewares...)
 }
 
 // AddExactHandleFunc registers a new route with a path, the handler function and the middlewares
@@ -251,25 +273,8 @@ func (r *Router) AddExactHandleFunc(
 		return
 	}
 
-	// Check if the handler is nil
-	if handler == nil {
-		panic(fmt.Sprintf(ErrNilHandlerFunc, pattern))
-	}
-
-	// Chain the middlewares
-	pattern, firstHandler := r.chainMiddlewares(
-		pattern,
-		true,
-		handler,
-		middlewares...,
-	)
-
-	// Register the route
-	r.mux.HandleFunc(pattern, firstHandler.ServeHTTP)
-
-	if r.mode != nil && r.mode.IsDebug() {
-		AddRouter(r.fullPath, pattern, r.logger)
-	}
+	// Add the route
+	r.addHandleFunc(pattern, handler, true, middlewares...)
 }
 
 // AddEndpointHandler adds a new endpoint with a path, the handler function and the middlewares
@@ -281,7 +286,7 @@ func (r *Router) AddExactHandleFunc(
 //   - middlewares: The middlewares to apply to the endpoint
 func (r *Router) AddEndpointHandler(
 	pattern string,
-	handler EndpointHandler,
+	handler func(w http.ResponseWriter, r *http.Request) error,
 	middlewares ...func(http.Handler) http.Handler,
 ) {
 	if r == nil {
@@ -316,7 +321,7 @@ func (r *Router) AddEndpointHandler(
 //   - middlewares: The middlewares to apply to the endpoint
 func (r *Router) AddExactEndpointHandler(
 	pattern string,
-	handler EndpointHandler,
+	handler func(w http.ResponseWriter, r *http.Request) error,
 	middlewares ...func(next http.Handler) http.Handler,
 ) {
 	if r == nil {

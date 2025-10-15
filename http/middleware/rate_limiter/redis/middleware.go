@@ -6,14 +6,14 @@ import (
 	"net/http"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goratelimiterredis "github.com/ralvarezdev/go-rate-limiter/redis"
 )
 
 type (
 	// Middleware struct
 	Middleware struct {
-		responsesHandler gonethttpresponsehandler.ResponsesHandler
+		responsesHandler gonethttphandler.ResponsesHandler
 		rateLimiter      goratelimiterredis.RateLimiter
 		logger           *slog.Logger
 	}
@@ -32,7 +32,7 @@ type (
 // *Middleware: the middleware instance
 // error: if the rate limiter is nil
 func NewMiddleware(
-	responsesHandler gonethttpresponsehandler.ResponsesHandler,
+	responsesHandler gonethttphandler.ResponsesHandler,
 	rateLimiter goratelimiterredis.RateLimiter,
 	logger *slog.Logger,
 ) (
@@ -41,7 +41,7 @@ func NewMiddleware(
 ) {
 	// Check if the handler is nil
 	if responsesHandler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
+		return nil, gonethttphandler.ErrNilHandler
 	}
 
 	// Check if the rate limiter is nil

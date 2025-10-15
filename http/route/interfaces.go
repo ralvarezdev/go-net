@@ -25,12 +25,12 @@ type (
 		)
 		AddEndpointHandler(
 			pattern string,
-			endpointHandler EndpointHandler,
+			endpointHandler func(w http.ResponseWriter, r *http.Request) error,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
 		AddExactEndpointHandler(
 			pattern string,
-			endpointHandler EndpointHandler,
+			endpointHandler func(w http.ResponseWriter, r *http.Request) error,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
 		RegisterHandler(pattern string, handler http.Handler)

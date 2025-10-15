@@ -2,7 +2,6 @@ package json
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
@@ -13,8 +12,7 @@ import (
 type (
 	// StreamEncoder is the JSON encoder struct
 	StreamEncoder struct {
-		mode   *goflagsmode.Flag
-		logger *slog.Logger
+		mode *goflagsmode.Flag
 	}
 )
 
@@ -23,23 +21,15 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - logger: The logger
 //
 // Returns:
 //
 //   - *StreamEncoder: The default encoder
 func NewStreamEncoder(
 	mode *goflagsmode.Flag,
-	logger *slog.Logger,
 ) *StreamEncoder {
-	if logger != nil {
-		logger = logger.With(
-			slog.String("component", "http_response_json_stream_encoder"),
-		)
-	}
-
 	return &StreamEncoder{
-		mode, logger,
+		mode,
 	}
 }
 
@@ -78,18 +68,12 @@ func (s StreamEncoder) Encode(
 		w.Header().Set("X-Status-Written", "true")
 		w.WriteHeader(http.StatusInternalServerError)
 
-		if s.logger != nil {
-			s.logger.Error(
-				"Failed to marshal response body",
-				slog.String("error", err.Error()),
-			)
-		}
-		http.Error(
-			w,
-			gonethttp.InternalServerError,
+		return gonethttpresponse.NewDebugErrorWithCode(
+			err,
+			gonethttp.ErrInternalServerError,
+			ErrCodeJSONMarshalFailed,
 			http.StatusInternalServerError,
 		)
-		return err
 	}
 	return nil
 }

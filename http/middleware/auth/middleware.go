@@ -11,15 +11,15 @@ import (
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
 
 type (
 	// Middleware struct is the authentication middleware
 	Middleware struct {
-		validator gojwtvalidator.Validator
-		handler   gonethttpresponsehandler.ResponsesHandler
-		options   *Options
+		validator        gojwtvalidator.Validator
+		responsesHandler gonethttphandler.ResponsesHandler
+		options          *Options
 	}
 
 	// Options is the options for the authentication middleware
@@ -65,18 +65,18 @@ func NewOptions(
 //
 //   - *Middleware: The authentication middleware
 func NewMiddleware(
-	handler gonethttpresponsehandler.ResponsesHandler,
+	responsesHandler gonethttphandler.ResponsesHandler,
 	validator gojwtvalidator.Validator,
 	options *Options,
 ) (*Middleware, error) {
 	// Check if either the response handler is nil
-	if handler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
+	if responsesHandler == nil {
+		return nil, gonethttphandler.ErrNilHandler
 	}
 
 	return &Middleware{
 		validator,
-		handler,
+		responsesHandler,
 		options,
 	}, nil
 }
@@ -144,7 +144,7 @@ func (m Middleware) authenticateFromHeaderFailHandler(
 	err error,
 	errorCode string,
 ) {
-	m.handler.HandleFieldFailResponseWithCode(
+	m.responsesHandler.HandleFailErrorResponseWithCode(
 		w,
 		gojwtnethttp.AuthorizationHeaderKey,
 		err,
@@ -219,7 +219,7 @@ func (m Middleware) authenticateFromCookieFailHandler(
 		errorCode string,
 	) {
 		{
-			m.handler.HandleFieldFailResponseWithCode(
+			m.responsesHandler.HandleFailErrorResponseWithCode(
 				w,
 				cookieName,
 				err,

@@ -8,7 +8,7 @@ import (
 	gogrpcmd "github.com/ralvarezdev/go-grpc/metadata"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpcookie "github.com/ralvarezdev/go-net/http/cookie"
-	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
@@ -33,7 +33,6 @@ type (
 //
 // Parameters:
 //
-// - handler: the HTTP handler to handle errors
 // - options: the options for the DefaultAuthenticationParser
 //
 // Returns:
@@ -41,17 +40,11 @@ type (
 // - ParseAuthorizationMetadataAsHeader: parses the authorization metadata as a header
 // - error: error if something goes wrong
 func NewDefaultAuthenticationParser(
-	handler gonethttphandler.Handler,
 	options *Options,
 ) (
 	*DefaultAuthenticationParser,
 	error,
 ) {
-	// Check if the handler is nil
-	if handler == nil {
-		return nil, gonethttphandler.ErrNilHandler
-	}
-
 	// Check if the options are nil
 	if options == nil {
 		return nil, ErrNilOptions
@@ -68,19 +61,22 @@ func NewDefaultAuthenticationParser(
 //
 // - w: http.ResponseWriter
 // - ctx: context.Context
+//
+// Returns:
+//
+// - error: error if something goes wrong
 func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 	w http.ResponseWriter,
 	ctx context.Context,
-) {
+) error {
 	// Get the metadata from the context
 	md, err := gogrpcmd.GetCtxMetadata(ctx)
 	if err != nil {
-		d.handler.HandleErrorResponse(
-			w,
+		return gonethttpresponse.NewDebugError(
 			err,
+			gonethttp.ErrInternalServerError,
 			http.StatusInternalServerError,
 		)
-		return
 	}
 
 	// Get the authorization metadata from the context
@@ -108,6 +104,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 			w.Header().Set(headerName, metadataValue)
 		}
 	}
+	return nil
 }
 
 // ParseAuthorizationMetadataAsCookie parses the authorization metadata as a cookie
@@ -116,6 +113,10 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 //
 // - w: http.ResponseWriter
 // - ctx: context.Context
+//
+// Returns:
+//
+// - error: error if something goes wrong
 func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 	w http.ResponseWriter,
 	ctx context.Context,

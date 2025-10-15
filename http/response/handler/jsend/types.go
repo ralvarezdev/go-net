@@ -70,7 +70,10 @@ func (r ResponsesHandler) HandleResponse(
 	}
 
 	// Call the encoder
-	_ = r.Encode(w, response)
+	if err := r.Encode(w, response); err != nil {
+		r.HandleError(w, err)
+		return
+	}
 }
 
 // HandleError handles the error response
@@ -84,21 +87,21 @@ func (r ResponsesHandler) HandleError(
 	err error,
 ) {
 	// Check if the errors is a JSend fail error
-	var failErrorTarget *gonethttpresponsejsend.FailError
+	var failErrorTarget *gonethttpresponse.FailError
 	if errors.As(err, &failErrorTarget) {
 		r.HandleResponse(
 			w,
-			failErrorTarget.Response(),
+			gonethttpresponsejsend.NewResponseFromFailError(failErrorTarget),
 		)
 		return
 	}
 
 	// Check if the errors is a JSend internal error
-	var errorTarget *gonethttpresponsejsend.Error
+	var errorTarget *gonethttpresponse.Error
 	if errors.As(err, &errorTarget) {
 		r.HandleResponse(
 			w,
-			errorTarget.Response(),
+			gonethttpresponsejsend.NewResponseFromError(errorTarget),
 		)
 		return
 	}
@@ -207,7 +210,7 @@ func (r ResponsesHandler) HandleDebugErrorResponseWithCode(
 	)
 }
 
-// HandleFieldFailResponse handles the field fail response
+// HandleFailErrorResponse handles the fail error response
 //
 // Parameters:
 //
@@ -215,7 +218,7 @@ func (r ResponsesHandler) HandleDebugErrorResponseWithCode(
 //   - field: The field that failed
 //   - err: The error to handle
 //   - httpStatus: The HTTP status code to return
-func (r ResponsesHandler) HandleFieldFailResponse(
+func (r ResponsesHandler) HandleFailErrorResponse(
 	w http.ResponseWriter,
 	field string,
 	err error,
@@ -223,7 +226,7 @@ func (r ResponsesHandler) HandleFieldFailResponse(
 ) {
 	r.HandleError(
 		w,
-		gonethttpresponsejsend.NewFailError(
+		gonethttpresponse.NewFailError(
 			field,
 			err,
 			httpStatus,
@@ -231,7 +234,7 @@ func (r ResponsesHandler) HandleFieldFailResponse(
 	)
 }
 
-// HandleFieldFailResponseWithCode handles the field fail response with an error code
+// HandleFailErrorResponseWithCode handles the fail error response with an error code
 //
 // Parameters:
 //
@@ -240,7 +243,7 @@ func (r ResponsesHandler) HandleFieldFailResponse(
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
-func (r ResponsesHandler) HandleFieldFailResponseWithCode(
+func (r ResponsesHandler) HandleFailErrorResponseWithCode(
 	w http.ResponseWriter,
 	field string,
 	err error,
@@ -249,7 +252,7 @@ func (r ResponsesHandler) HandleFieldFailResponseWithCode(
 ) {
 	r.HandleError(
 		w,
-		gonethttpresponsejsend.NewFailErrorWithCode(
+		gonethttpresponse.NewFailErrorWithCode(
 			field,
 			err,
 			errCode,

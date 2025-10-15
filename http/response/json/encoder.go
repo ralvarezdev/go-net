@@ -2,7 +2,6 @@ package json
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 
 	"github.com/ralvarezdev/go-flags/mode"
@@ -13,8 +12,7 @@ import (
 type (
 	// Encoder struct
 	Encoder struct {
-		mode   *mode.Flag
-		logger *slog.Logger
+		mode *mode.Flag
 	}
 )
 
@@ -23,21 +21,14 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
-//   - logger: The logger
 //
 // Returns:
 //
 //   - *Encoder: The default encoder
 func NewEncoder(
 	mode *mode.Flag,
-	logger *slog.Logger,
 ) *Encoder {
-	if logger != nil {
-		logger = logger.With(
-			slog.String("component", "http_response_json_encoder"),
-		)
-	}
-	return &Encoder{mode, logger}
+	return &Encoder{mode}
 }
 
 // Encode encodes the body into JSON and writes it to the response
@@ -61,15 +52,10 @@ func (e Encoder) Encode(
 	// Encode the JSON body
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
-		if e.logger != nil {
-			e.logger.Error(
-				"Failed to marshal response body",
-				slog.String("error", err.Error()),
-			)
-		}
-		http.Error(
-			w,
-			gonethttp.InternalServerError,
+		return gonethttpresponse.NewDebugErrorWithCode(
+			err,
+			gonethttp.ErrInternalServerError,
+			ErrCodeJSONMarshalFailed,
 			http.StatusInternalServerError,
 		)
 	}

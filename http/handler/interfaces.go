@@ -58,13 +58,13 @@ type (
 			errCode string,
 			httpStatus int,
 		)
-		HandleFieldFailResponse(
+		HandleFailErrorResponse(
 			w http.ResponseWriter,
 			field string,
 			err error,
 			httpStatus int,
 		)
-		HandleFieldFailResponseWithCode(
+		HandleFailErrorResponseWithCode(
 			w http.ResponseWriter,
 			field string,
 			err error,

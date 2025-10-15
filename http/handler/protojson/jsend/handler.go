@@ -1,8 +1,6 @@
 package jsend
 
 import (
-	"log/slog"
-
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
@@ -24,15 +22,14 @@ type (
 // Parameters:
 //
 //   - mode: the flag mode
-//   - logger: the logger
 //
 // Returns:
 //
 //   - *Handler: the created protoJSON handler
 //   - error: the error if any
-func NewHandler(mode *goflagsmode.Flag, logger *slog.Logger) (*Handler, error) {
+func NewHandler(mode *goflagsmode.Flag) (*Handler, error) {
 	// Create the protoJSON encoder
-	encoder := gonethttpresponseprotojson.NewEncoder(mode, logger)
+	encoder := gonethttpresponseprotojson.NewEncoder(mode)
 
 	// Create the responses handler
 	responsesHandler, err := gonethttpresponsehandlerjsend.NewResponsesHandler(
@@ -44,10 +41,7 @@ func NewHandler(mode *goflagsmode.Flag, logger *slog.Logger) (*Handler, error) {
 	}
 
 	// Create the protoJSON decoder
-	decoder, err := gonethttprequestprotojson.NewDecoder(responsesHandler)
-	if err != nil {
-		return nil, err
-	}
+	decoder := gonethttprequestprotojson.NewDecoder()
 
 	// Create the requests handler
 	requestsHandler, err := gonethttprequesthandler.NewDefaultRequestsHandler(

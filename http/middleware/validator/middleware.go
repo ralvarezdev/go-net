@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	gonethttpctx "github.com/ralvarezdev/go-net/http/context"
-	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatormapper "github.com/ralvarezdev/go-validator/mapper"
 	govalidatormapperparser "github.com/ralvarezdev/go-validator/mapper/parser"
@@ -17,7 +17,7 @@ import (
 type (
 	// Middleware struct is the validation middleware
 	Middleware struct {
-		requestsHandler  gonethttprequesthandler.RequestsHandler
+		requestsHandler  gonethttphandler.RequestsHandler
 		validatorService govalidatormappervalidator.Service
 		generator        govalidatormapper.Generator
 		validateFns      map[string]func(next http.Handler) http.Handler
@@ -39,14 +39,14 @@ type (
 //   - *Middleware: The middleware instance
 //   - error: The error if any
 func NewMiddleware(
-	requestsHandler gonethttprequesthandler.RequestsHandler,
+	requestsHandler gonethttphandler.RequestsHandler,
 	birthdateOptions *govalidatormappervalidator.BirthdateOptions,
 	passwordOptions *govalidatormappervalidator.PasswordOptions,
 	logger *slog.Logger,
 ) (*Middleware, error) {
 	// Check if the handler is nil
 	if requestsHandler == nil {
-		return nil, gonethttprequesthandler.ErrNilHandler
+		return nil, gonethttphandler.ErrNilHandler
 	}
 
 	// Initialize the raw parser

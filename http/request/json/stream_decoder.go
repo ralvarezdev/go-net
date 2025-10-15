@@ -6,14 +6,13 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
 	// StreamDecoder is the JSON decoder struct
 	StreamDecoder struct {
-		mode             *goflagsmode.Flag
-		responsesHandler gonethttpresponsehandler.ResponsesHandler
+		mode *goflagsmode.Flag
 	}
 )
 
@@ -27,20 +26,12 @@ type (
 // Returns:
 //
 //   - *StreamDecoder: The default decoder
-//   - error: The error if any
 func NewStreamDecoder(
 	mode *goflagsmode.Flag,
-	responsesHandler gonethttpresponsehandler.ResponsesHandler,
-) (*StreamDecoder, error) {
-	// Check if the response handler is nil
-	if responsesHandler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
-	}
-
+) *StreamDecoder {
 	return &StreamDecoder{
 		mode,
-		responsesHandler,
-	}, nil
+	}
 }
 
 // Decode decodes the JSON request body and stores it in the destination
@@ -58,29 +49,25 @@ func (s StreamDecoder) Decode(
 	w http.ResponseWriter,
 	r *http.Request,
 	dest interface{},
-) (err error) {
+) error {
 	// Check the content type
 	if !CheckContentType(r) {
-		s.responsesHandler.HandleFieldFailResponseWithCode(
-			w,
+		return gonethttpresponse.NewFailErrorWithCode(
 			ErrInvalidContentTypeField,
 			ErrInvalidContentType,
 			ErrCodeInvalidContentType,
 			http.StatusUnsupportedMediaType,
 		)
-		return ErrInvalidContentType
 	}
 
 	// Check the decoder destination
 	if dest == nil {
-		s.responsesHandler.HandleDebugErrorResponseWithCode(
-			w,
+		return gonethttpresponse.NewDebugErrorWithCode(
 			ErrNilDestination,
 			gonethttp.ErrInternalServerError,
 			ErrCodeNilDestination,
 			http.StatusInternalServerError,
 		)
-		return ErrNilDestination
 	}
 
 	// Create a new reader from the body
@@ -88,8 +75,8 @@ func (s StreamDecoder) Decode(
 	decoder.DisallowUnknownFields()
 
 	// Decode JSON body into destination
-	if err = decoder.Decode(dest); err != nil {
-		_ = BodyDecodeErrorHandler(w, err, s.responsesHandler)
+	if err := decoder.Decode(dest); err != nil {
+		return BodyDecodeErrorHandler(w, err)
 	}
-	return err
+	return nil
 }
