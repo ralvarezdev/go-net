@@ -24,9 +24,9 @@ type (
 
 	// Options is the options for the authentication middleware
 	Options struct {
-		cookieRefreshTokenName *string
-		cookieAccessTokenName  *string
-		refreshTokenFn         RefreshTokenFn
+		CookieRefreshTokenName *string
+		CookieAccessTokenName  *string
+		RefreshTokenFn         RefreshTokenFn
 	}
 )
 
@@ -246,21 +246,21 @@ func (m Middleware) AuthenticateFromCookie(
 	if m.options == nil {
 		panic(ErrNilOptions)
 	}
-	if m.options.cookieAccessTokenName == nil {
+	if m.options.CookieAccessTokenName == nil {
 		panic(ErrNilCookieAccessTokenName)
 	}
-	if m.options.cookieRefreshTokenName == nil {
+	if m.options.CookieRefreshTokenName == nil {
 		panic(ErrNilCookieRefreshTokenName)
 	}
-	if m.options.refreshTokenFn == nil {
+	if m.options.RefreshTokenFn == nil {
 		panic(ErrNilRefreshTokenFn)
 	}
 
 	var cookieName string
 	if token == gojwttoken.AccessToken {
-		cookieName = *m.options.cookieAccessTokenName
+		cookieName = *m.options.CookieAccessTokenName
 	} else if token == gojwttoken.RefreshToken {
-		cookieName = *m.options.cookieRefreshTokenName
+		cookieName = *m.options.CookieRefreshTokenName
 	}
 
 	// Create the fail handler function
@@ -303,11 +303,11 @@ func (m Middleware) AuthenticateFromCookie(
 							rawToken = cookie.Value
 						} else if errors.Is(err, http.ErrNoCookie) {
 							// Check if the token can be refreshed
-							if token == gojwttoken.AccessToken && m.options.refreshTokenFn != nil {
+							if token == gojwttoken.AccessToken && m.options.RefreshTokenFn != nil {
 								// Refresh the token
-								rawTokens, err = m.options.refreshTokenFn(w, r)
+								rawTokens, err = m.options.RefreshTokenFn(w, r)
 								if err != nil {
-									m.authenticateFromCookieFailHandler(*m.options.cookieRefreshTokenName)(
+									m.authenticateFromCookieFailHandler(*m.options.CookieRefreshTokenName)(
 										w,
 										err,
 										ErrCodeFailedToRefreshToken,

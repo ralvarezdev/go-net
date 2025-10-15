@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	ErrNilMiddleware = "%s: middleware at index %d cannot be nil"
+	ErrNilMiddleware      = "%s: middleware at index %d cannot be nil"
+	ErrNilEndpointHandler = "endpoint handler cannot be nil, pattern: %s"
+	ErrNilHandlerFunc     = "handler function cannot be nil, pattern: %s"
 )
 
 var (

@@ -7,6 +7,9 @@ import (
 const (
 	// XForwardedFor is the header key for the X-Forwarded-For header
 	XForwardedFor = "X-Forwarded-For"
+
+	// Authorization is the header key for the Authorization header
+	Authorization = "Authorization"
 )
 
 var (
@@ -16,4 +19,6 @@ var (
 	Unauthorized        = http.StatusText(http.StatusUnauthorized)
 	NotImplemented      = http.StatusText(http.StatusNotImplemented)
 	TooManyRequests     = http.StatusText(http.StatusTooManyRequests)
+	RequestTimeout      = http.StatusText(http.StatusRequestTimeout)
+	NotFound            = http.StatusText(http.StatusNotFound)
 )

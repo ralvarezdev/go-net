@@ -4,9 +4,9 @@ import (
 	"log/slog"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
 	gonethttprequestjson "github.com/ralvarezdev/go-net/http/request/json"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 	gonethttpresponsehandlerjsend "github.com/ralvarezdev/go-net/http/response/handler/jsend"
 	gonethttpresponsejson "github.com/ralvarezdev/go-net/http/response/json"
 )
@@ -14,8 +14,8 @@ import (
 type (
 	// StreamHandler is the handler implementation for handling JSON stream requests and responses in JSend format
 	StreamHandler struct {
-		gonethttprequesthandler.RequestsHandler
-		gonethttpresponsehandler.ResponsesHandler
+		gonethttphandler.RequestsHandler
+		gonethttphandler.ResponsesHandler
 	}
 )
 

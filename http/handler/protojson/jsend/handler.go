@@ -4,9 +4,9 @@ import (
 	"log/slog"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
 	gonethttprequestprotojson "github.com/ralvarezdev/go-net/http/request/protojson"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 	gonethttpresponsehandlerjsend "github.com/ralvarezdev/go-net/http/response/handler/jsend"
 	gonethttpresponseprotojson "github.com/ralvarezdev/go-net/http/response/protojson"
 )
@@ -14,8 +14,8 @@ import (
 type (
 	// Handler is the handler implementation for handling protoJSON requests and responses in JSend format
 	Handler struct {
-		gonethttprequesthandler.RequestsHandler
-		gonethttpresponsehandler.ResponsesHandler
+		gonethttphandler.RequestsHandler
+		gonethttphandler.ResponsesHandler
 	}
 )
 

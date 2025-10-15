@@ -33,3 +33,42 @@ func GetWildcards(pattern string) (string, []string) {
 	}
 	return pattern, wildcards
 }
+
+// SplitPattern returns the method and the path from the pattern
+//
+// Parameters:
+//
+//   - pattern: The pattern to split
+//
+// Returns:
+//
+//   - string: The method
+//   - string: The path
+//   - error: The error if any
+func SplitPattern(pattern string) (string, string, error) {
+	// Trim the pattern
+	strings.Trim(pattern, " ")
+
+	// Check if the pattern is empty
+	if pattern == "" {
+		return "", "", ErrEmptyPattern
+	}
+
+	// Iterate over the pattern
+	var method string
+	path := pattern
+	for i, char := range pattern {
+		// Split the pattern by the first space
+		if char == ' ' {
+			// Get the method and the path
+			method = pattern[:i]
+			path = pattern[i+1:]
+			break
+		}
+	}
+
+	// Trim the path
+	strings.Trim(path, " ")
+
+	return method, path, nil
+}

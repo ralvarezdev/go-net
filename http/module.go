@@ -77,10 +77,14 @@ func (m *Module) Create(
 	}
 
 	// Set the base route
+	var err error
 	if m.Middlewares != nil {
-		m.RouterWrapper = baseRouter.NewGroup(m.Pattern, m.Middlewares...)
+		m.RouterWrapper, err = baseRouter.NewRouter(m.Pattern, m.Middlewares...)
 	} else {
-		m.RouterWrapper = baseRouter.NewGroup(m.Pattern)
+		m.RouterWrapper, err = baseRouter.NewRouter(m.Pattern)
+	}
+	if err != nil {
+		return err
 	}
 
 	// Create the submodules controllers router
@@ -91,7 +95,7 @@ func (m *Module) Create(
 				return fmt.Errorf(ErrNilSubmodule, m.Pattern, i)
 			}
 
-			if err := submodule.Create(router); err != nil {
+			if err = submodule.Create(router); err != nil {
 				return err
 			}
 		}

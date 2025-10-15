@@ -1,6 +1,9 @@
 package jsend
 
 import (
+	"net/http"
+
+	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
@@ -10,22 +13,6 @@ type (
 		Status  Status `json:"status"`
 		Message string `json:"message,omitempty"`
 		Code    string `json:"code,omitempty"`
-	}
-
-	// FailError struct
-	FailError struct {
-		Field      string
-		Err        error
-		ErrorCode  string
-		HTTPStatus int
-	}
-
-	// Error struct (would be an error for Error body responses, but to avoid repetition, it's named Error)
-	Error struct {
-		DebugErr   error
-		Err        error
-		ErrorCode  string
-		HTTPStatus int
 	}
 )
 
@@ -154,199 +141,66 @@ func NewDebugErrorResponse(
 	return NewDebugErrorResponseWithCode(message, debugMessage, "", httpStatus)
 }
 
-// NewFailErrorWithCode creates a new JSend fail error with error code
+// NewResponseFromFailError creates a new JSend response from a fail error
 //
 // Parameters:
 //
-//   - field: The field
-//   - err: The field error
-//   - errorCode: The error code
-//   - httpStatus: The HTTP status
-//
-// Returns:
-//
-//   - *FailError: The JSend fail error
-func NewFailErrorWithCode(
-	field string, err error, errorCode string, httpStatus int,
-) *FailError {
-	return &FailError{
-		Field:      field,
-		Err:        err,
-		ErrorCode:  errorCode,
-		HTTPStatus: httpStatus,
-	}
-}
-
-// NewFailError creates a new JSend fail error
-//
-// Parameters:
-//
-//   - field: The field
-//   - err: The field error
-//   - httpStatus: The HTTP status
-//
-// Returns:
-//
-//   - *FailError: The JSend fail error
-//   - string: The error code
-func NewFailError(
-	field string, err error, httpStatus int,
-) *FailError {
-	return NewFailErrorWithCode(field, err, "", httpStatus)
-}
-
-// Error returns the error message from the fail body error
-//
-// Returns:
-//
-//   - string: The error message
-func (f FailError) Error() string {
-	return f.Err.Error()
-}
-
-// Data returns a response data map from the fail body error
-//
-// Returns:
-//
-//   - map[string][]string: The response data map
-func (f FailError) Data() map[string][]string {
-	// Initialize the data map
-	data := make(map[string][]string)
-
-	// Add the fail body error to the data map
-	data[f.Field] = []string{f.Err.Error()}
-
-	return data
-}
-
-// Response creates a new response from a JSend fail error
+//   - failErr: The fail error to convert to a response
 //
 // Returns:
 //
 //   - Response: The response
-func (f FailError) Response() gonethttpresponse.Response {
+func NewResponseFromFailError(failErr *gonethttpresponse.FailError) gonethttpresponse.Response {
+	// Check if the fail error data is nil
+	if failErr == nil {
+		return NewDebugErrorResponseWithCode(
+			gonethttpresponse.ErrNilFailError.Error(),
+			gonethttp.ErrInternalServerError.Error(),
+			gonethttpresponse.ErrCodeNilFailError,
+			http.StatusInternalServerError,
+		)
+	}
+
 	return gonethttpresponse.NewResponse(
 		NewFailBodyWithCode(
-			f.Data(),
-			f.ErrorCode,
+			failErr.Data(),
+			failErr.ErrorCode,
 		),
-		f.HTTPStatus,
+		failErr.HTTPStatus,
 	)
 }
 
-// NewErrorWithCode creates a new JSend error with error code
+// NewResponseFromError creates a new JSend response from an error
 //
 // Parameters:
 //
-//   - err: The error
-//   - errCode: The error code
-//   - httpStatus: The HTTP status code
-//
-// Returns:
-//
-//   - *Error: The JSend error
-func NewErrorWithCode(
-	err error,
-	errCode string,
-	httpStatus int,
-) *Error {
-	return &Error{
-		DebugErr:   nil,
-		Err:        err,
-		ErrorCode:  errCode,
-		HTTPStatus: httpStatus,
-	}
-}
-
-// NewError creates a new JSend error
-//
-// Parameters:
-//
-//   - err: The error
-//   - httpStatus: The HTTP status code
-//
-// Returns:
-//
-//   - *Error: The JSend error
-func NewError(
-	err error,
-	httpStatus int,
-) *Error {
-	return NewErrorWithCode(err, "", httpStatus)
-}
-
-// NewDebugErrorWithCode creates a new JSend error with debug information and error code
-//
-// Parameters:
-//
-//   - debugErr: The debug error
-//   - err: The error
-//   - errCode: The error code
-//   - httpStatus: The HTTP status code
-//
-// Returns:
-func NewDebugErrorWithCode(
-	debugErr error,
-	err error,
-	errCode string,
-	httpStatus int,
-) *Error {
-	if debugErr == nil {
-		return NewErrorWithCode(err, errCode, httpStatus)
-	}
-	return &Error{
-		DebugErr:   debugErr,
-		Err:        err,
-		ErrorCode:  errCode,
-		HTTPStatus: httpStatus,
-	}
-}
-
-// NewDebugError creates a new JSend error with debug information
-//
-// Parameters:
-//
-//   - debugErr: The debug error
-//   - err: The error
-//   - httpStatus: The HTTP status code
-//
-// Returns:
-//
-//   - *Error: The JSend error
-func NewDebugError(
-	debugErr error,
-	err error,
-	httpStatus int,
-) *Error {
-	return NewDebugErrorWithCode(debugErr, err, "", httpStatus)
-}
-
-// Error returns the error message from the error
-//
-// Returns:
-//
-//   - string: The error message
-func (e Error) Error() string {
-	return e.Err.Error()
-}
-
-// Response creates a new response from a JSend error
+//   - err: The error to convert to a response
 //
 // Returns:
 //
 //   - Response: The response
-func (e Error) Response() gonethttpresponse.Response {
-	if e.DebugErr != nil {
+func NewResponseFromError(err *gonethttpresponse.Error) gonethttpresponse.Response {
+	// Check if the error is nil
+	if err == nil {
 		return NewDebugErrorResponseWithCode(
-			e.Err.Error(),
-			e.DebugErr.Error(),
-			e.ErrorCode,
-			e.HTTPStatus,
+			gonethttpresponse.ErrNilError.Error(),
+			gonethttp.ErrInternalServerError.Error(),
+			gonethttpresponse.ErrCodeNilError,
+			http.StatusInternalServerError,
+		)
+	}
+
+	if err.DebugErr != nil {
+		return NewDebugErrorResponseWithCode(
+			err.Err.Error(),
+			err.DebugErr.Error(),
+			err.ErrorCode,
+			err.HTTPStatus,
 		)
 	}
 	return NewErrorResponseWithCode(
-		e.Err.Error(),
-		e.ErrorCode,
-		e.HTTPStatus,
+		err.Err.Error(),
+		err.ErrorCode,
+		err.HTTPStatus,
 	)
 }

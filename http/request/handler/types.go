@@ -5,8 +5,8 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
-	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
@@ -14,7 +14,7 @@ type (
 	// DefaultRequestsHandler struct
 	DefaultRequestsHandler struct {
 		mode *goflagsmode.Flag
-		gonethttpresponsehandler.ResponsesHandler
+		gonethttphandler.ResponsesHandler
 		gonethttprequest.Decoder
 	}
 )
@@ -34,7 +34,7 @@ type (
 func NewDefaultRequestsHandler(
 	mode *goflagsmode.Flag,
 	decoder gonethttprequest.Decoder,
-	handler gonethttpresponsehandler.ResponsesHandler,
+	handler gonethttphandler.ResponsesHandler,
 ) (*DefaultRequestsHandler, error) {
 	// Check if the flag mode, the decoder or the handler is nil
 	if mode == nil {
@@ -44,7 +44,7 @@ func NewDefaultRequestsHandler(
 		return nil, gonethttprequest.ErrNilDecoder
 	}
 	if handler == nil {
-		return nil, gonethttpresponsehandler.ErrNilHandler
+		return nil, gonethttphandler.ErrNilResponsesHandler
 	}
 
 	return &DefaultRequestsHandler{

@@ -9,7 +9,13 @@ const (
 )
 
 var (
-	ErrNilResponse      = errors.New("response cannot be nil")
-	ErrNilEncoder       = errors.New("json encoder is nil")
-	ErrNilFailBodyError = errors.New("fail body error cannot be nil")
+	ErrCodeNilFailError string
+	ErrCodeNilError     string
+)
+
+var (
+	ErrNilResponse  = errors.New("response cannot be nil")
+	ErrNilEncoder   = errors.New("json encoder is nil")
+	ErrNilFailError = errors.New("fail error cannot be nil")
+	ErrNilError     = errors.New("error cannot be nil")
 )

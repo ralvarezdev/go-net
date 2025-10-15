@@ -13,32 +13,32 @@ type (
 		Handler() http.Handler
 		Mux() *http.ServeMux
 		GetMiddlewares() []func(http.Handler) http.Handler
-		HandleFunc(
+		AddHandleFunc(
 			pattern string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
-		ExactHandleFunc(
+		AddExactHandleFunc(
 			pattern string,
 			handler http.HandlerFunc,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
-		RegisterRoute(
+		AddEndpointHandler(
 			pattern string,
-			handler http.HandlerFunc,
+			endpointHandler EndpointHandler,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
-		RegisterExactRoute(
+		AddExactEndpointHandler(
 			pattern string,
-			handler http.HandlerFunc,
+			endpointHandler EndpointHandler,
 			middlewares ...func(next http.Handler) http.Handler,
 		)
 		RegisterHandler(pattern string, handler http.Handler)
-		NewGroup(
+		NewRouter(
 			pattern string,
 			middlewares ...func(next http.Handler) http.Handler,
-		) RouterWrapper
-		RegisterGroup(router RouterWrapper)
+		) (RouterWrapper, error)
+		AddRouter(router RouterWrapper)
 		Pattern() string
 		RelativePath() string
 		FullPath() string

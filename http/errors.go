@@ -27,5 +27,7 @@ var (
 	ErrUnauthorized        = errors.New(Unauthorized)
 	ErrNotImplemented      = errors.New(NotImplemented)
 	ErrTooManyRequests     = errors.New(TooManyRequests)
+	ErrRequestTimeout      = errors.New(RequestTimeout)
+	ErrNotFound            = errors.New(NotFound)
 	ErrUnauthenticated     = errors.New("missing or invalid bearer token on authentication header")
 )
