@@ -80,7 +80,7 @@ func (d DefaultRequestsHandler) Validate(
 
 	// Check if the error is not nil
 	if err != nil {
-		d.responsesHandler.HandleDebugErrorResponseWithCode(
+		d.responsesHandler.HandleDebugErrorWithCode(
 			w,
 			err,
 			gonethttp.ErrInternalServerError,
@@ -90,7 +90,7 @@ func (d DefaultRequestsHandler) Validate(
 		return false
 	}
 
-	d.responsesHandler.HandleFailResponseWithCode(
+	d.responsesHandler.HandleFailDataErrorWithCode(
 		w,
 		validations,
 		ErrCodeValidationFailed,
@@ -120,7 +120,7 @@ func (d DefaultRequestsHandler) DecodeAndValidate(
 	// Decode the request body
 	if err := d.Decode(w, r, dest); err != nil {
 		// Handle the error
-		d.responsesHandler.HandleError(
+		d.responsesHandler.HandleRawError(
 			w,
 			err,
 		)

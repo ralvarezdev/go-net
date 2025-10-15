@@ -144,7 +144,7 @@ func (m Middleware) authenticateFromHeaderFailHandler(
 	err error,
 	errorCode string,
 ) {
-	m.responsesHandler.HandleFailErrorResponseWithCode(
+	m.responsesHandler.HandleFailFieldErrorWithCode(
 		w,
 		gojwtnethttp.AuthorizationHeaderKey,
 		err,
@@ -219,7 +219,7 @@ func (m Middleware) authenticateFromCookieFailHandler(
 		errorCode string,
 	) {
 		{
-			m.responsesHandler.HandleFailErrorResponseWithCode(
+			m.responsesHandler.HandleFailFieldErrorWithCode(
 				w,
 				cookieName,
 				err,

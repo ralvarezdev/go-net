@@ -43,7 +43,7 @@ func BodyDecodeErrorHandler(
 
 		// Check if the field name is empty
 		if fieldName != "" {
-			return gonethttpresponse.NewFailErrorWithCode(
+			return gonethttpresponse.NewFailFieldErrorWithCode(
 				fieldName,
 				fmt.Errorf(
 					gonethttpresponse.ErrInvalidFieldValueType,
@@ -78,7 +78,7 @@ func BodyDecodeErrorHandler(
 		// Get the field name
 		fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 
-		return gonethttpresponse.NewFailErrorWithCode(
+		return gonethttpresponse.NewFailFieldErrorWithCode(
 			fieldName,
 			fmt.Errorf(ErrUnknownField, fieldName),
 			ErrCodeUnknownField,

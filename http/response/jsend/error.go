@@ -141,7 +141,7 @@ func NewDebugErrorResponse(
 	return NewDebugErrorResponseWithCode(message, debugMessage, "", httpStatus)
 }
 
-// NewResponseFromFailError creates a new JSend response from a fail error
+// NewResponseFromFailFieldError creates a new JSend response from a fail error
 //
 // Parameters:
 //
@@ -150,23 +150,48 @@ func NewDebugErrorResponse(
 // Returns:
 //
 //   - Response: The response
-func NewResponseFromFailError(failErr *gonethttpresponse.FailError) gonethttpresponse.Response {
+func NewResponseFromFailFieldError(failErr *gonethttpresponse.FailFieldError) gonethttpresponse.Response {
 	// Check if the fail error data is nil
 	if failErr == nil {
 		return NewDebugErrorResponseWithCode(
-			gonethttpresponse.ErrNilFailError.Error(),
+			gonethttpresponse.ErrNilFailFieldError.Error(),
 			gonethttp.ErrInternalServerError.Error(),
-			gonethttpresponse.ErrCodeNilFailError,
+			gonethttpresponse.ErrCodeNilFailFieldError,
 			http.StatusInternalServerError,
 		)
 	}
 
-	return gonethttpresponse.NewResponse(
-		NewFailBodyWithCode(
-			failErr.Data(),
-			failErr.ErrorCode,
-		),
+	return NewFailResponseWithCode(
+		failErr.Data(),
+		failErr.ErrorCode,
 		failErr.HTTPStatus,
+	)
+}
+
+// NewResponseFromFailDataError creates a new JSend response from a fail data error
+//
+// Parameters:
+//
+//   - failDataErr: The fail data error to convert to a response
+//
+// Returns:
+//
+//   - Response: The response
+func NewResponseFromFailDataError(failDataErr *gonethttpresponse.FailDataError) gonethttpresponse.Response {
+	// Check if the fail data error is nil
+	if failDataErr == nil {
+		return NewDebugErrorResponseWithCode(
+			gonethttpresponse.ErrNilFailDataError.Error(),
+			gonethttp.ErrInternalServerError.Error(),
+			gonethttpresponse.ErrCodeNilFailDataError,
+			http.StatusInternalServerError,
+		)
+	}
+
+	return NewFailResponseWithCode(
+		failDataErr.Data,
+		failDataErr.ErrorCode,
+		failDataErr.HTTPStatus,
 	)
 }
 

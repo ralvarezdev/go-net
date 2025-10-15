@@ -23,6 +23,18 @@ type (
 		) bool
 	}
 
+	// RawErrorHandler interface for handling raw errors
+	RawErrorHandler interface {
+		HandleRawError(
+			w http.ResponseWriter,
+			err error,
+			handleResponseFn func(
+				w http.ResponseWriter,
+				response gonethttpresponse.Response,
+			),
+		)
+	}
+
 	// ResponsesHandler interface for handling the responses
 	ResponsesHandler interface {
 		gonethttpresponse.Encoder
@@ -30,53 +42,53 @@ type (
 			w http.ResponseWriter,
 			response gonethttpresponse.Response,
 		)
+		HandleRawError(
+			w http.ResponseWriter,
+			err error,
+		)
 		HandleError(
 			w http.ResponseWriter,
 			err error,
-		)
-		HandleErrorResponse(
-			w http.ResponseWriter,
-			err error,
 			httpStatus int,
 		)
-		HandleErrorResponseWithCode(
+		HandleErrorWithCode(
 			w http.ResponseWriter,
 			err error,
 			errCode string,
 			httpStatus int,
 		)
-		HandleDebugErrorResponse(
+		HandleDebugError(
 			w http.ResponseWriter,
 			debugErr error,
 			err error,
 			httpStatus int,
 		)
-		HandleDebugErrorResponseWithCode(
+		HandleDebugErrorWithCode(
 			w http.ResponseWriter,
 			debugErr error,
 			err error,
 			errCode string,
 			httpStatus int,
 		)
-		HandleFailErrorResponse(
+		HandleFailFieldError(
 			w http.ResponseWriter,
 			field string,
 			err error,
 			httpStatus int,
 		)
-		HandleFailErrorResponseWithCode(
+		HandleFailFieldErrorWithCode(
 			w http.ResponseWriter,
 			field string,
 			err error,
 			errCode string,
 			httpStatus int,
 		)
-		HandleFailResponse(
+		HandleFailDataError(
 			w http.ResponseWriter,
 			data interface{},
 			httpStatus int,
 		)
-		HandleFailResponseWithCode(
+		HandleFailDataErrorWithCode(
 			w http.ResponseWriter,
 			data interface{},
 			errCode string,

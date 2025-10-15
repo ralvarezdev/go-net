@@ -6,19 +6,10 @@ import (
 	"net/http"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/status"
 )
-
-func IsBadRequestError(err error) bool {
-
-	for _, detail := range st.Details() {
-		if _, ok := detail.(*errdetails.BadRequest); ok {
-			return true
-		}
-	}
-	return false
-}
 
 // ParseGRPCError parses a gRPC error to a JSend error response
 //
@@ -43,18 +34,13 @@ func ParseGRPCError(
 		for _, detail := range st.Details() {
 			switch info := detail.(type) {
 			case *errdetails.BadRequest:
-				// Get bad request field violations
-
-				// Bad request error
-				return NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrBadRequest,
-					ErrCodeGRPCBadRequest,
+				return NewFailResponseFromErrorDetailsBadRequest(
+					info,
 					http.StatusBadRequest,
 				)
 			case *errdetails.PreconditionFailure:
 				// Precondition failure error
-				return NewDebugErrorWithCode(
+				return gonethttpresponse.NewDebugErrorWithCode(
 					err,
 					ErrGRPCPreconditionFailed,
 					ErrCodeGRPCPreconditionFailed,
@@ -62,7 +48,7 @@ func ParseGRPCError(
 				)
 			case *errdetails.QuotaFailure:
 				// Quota failure error
-				return NewDebugErrorWithCode(
+				return gonethttpresponse.NewDebugErrorWithCode(
 					err,
 					gonethttp.ErrTooManyRequests,
 					ErrCodeGRPCQuotaFailure,
@@ -70,7 +56,7 @@ func ParseGRPCError(
 				)
 			case *errdetails.RequestInfo:
 				// Request info error
-				return NewDebugErrorWithCode(
+				return gonethttpresponse.NewDebugErrorWithCode(
 					err,
 					gonethttp.ErrBadRequest,
 					ErrCodeGRPCRequestInfo,
@@ -78,7 +64,7 @@ func ParseGRPCError(
 				)
 			case *errdetails.ResourceInfo:
 				// Resource info error
-				return NewDebugErrorWithCode(
+				return gonethttpresponse.NewDebugErrorWithCode(
 					err,
 					gonethttp.ErrNotFound,
 					ErrCodeGRPCResourceInfo,
@@ -86,7 +72,7 @@ func ParseGRPCError(
 				)
 			case *errdetails.Help:
 				// Help error
-				return NewDebugErrorWithCode(
+				return gonethttpresponse.NewDebugErrorWithCode(
 					err,
 					gonethttp.ErrBadRequest,
 					ErrCodeGRPCHelp,
@@ -94,7 +80,7 @@ func ParseGRPCError(
 				)
 			case *errdetails.LocalizedMessage:
 				// Localized message error
-				return NewDebugErrorWithCode(
+				return gonethttpresponse.NewDebugErrorWithCode(
 					err,
 					gonethttp.ErrBadRequest,
 					ErrCodeGRPCLocalizedMessage,
@@ -105,10 +91,15 @@ func ParseGRPCError(
 			}
 		}
 		// gRPC status error
-		return int(st.Code()), st.Message()
+		return gonethttpresponse.NewDebugErrorWithCode(
+			err,
+			gonethttp.ErrBadRequest,
+			ErrCodeGRPCCodePrefix+st.Code().String(),
+			http.StatusBadRequest,
+		)
 	}
 	if errors.Is(err, context.Canceled) {
-		return NewDebugErrorWithCode(
+		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrRequestTimeout,
 			ErrCodeGRPCCtxCanceled,
@@ -116,7 +107,7 @@ func ParseGRPCError(
 		)
 	}
 	if errors.Is(err, context.DeadlineExceeded) {
-		return NewDebugErrorWithCode(
+		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrRequestTimeout,
 			ErrCodeGRPCCtxDeadlineExceeded,
@@ -125,7 +116,7 @@ func ParseGRPCError(
 	}
 
 	// Other generic error
-	return NewDebugErrorWithCode(
+	return gonethttpresponse.NewDebugErrorWithCode(
 		err,
 		gonethttp.ErrInternalServerError,
 		ErrCodeGRPCUnknown,

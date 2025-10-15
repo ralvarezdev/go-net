@@ -39,7 +39,7 @@ func NewFailBodyWithCode(
 	}
 }
 
-// NewFailBodyFromErrorDetails creates a new JSend fail response body from error details
+// NewFailBodyFromErrorDetailsBadRequest creates a new JSend fail response body from error details of type BadRequest
 //
 // Parameters:
 //
@@ -48,7 +48,7 @@ func NewFailBodyWithCode(
 // Returns:
 //
 //   - *FailBody: The JSend fail body
-func NewFailBodyFromErrorDetails(
+func NewFailBodyFromErrorDetailsBadRequest(
 	errorDetails *errdetails.BadRequest,
 ) *FailBody {
 	// Initialize the data map
@@ -140,6 +140,26 @@ func NewFailBodyFromErrorDetails(
 		}
 	}
 	return NewFailBody(data)
+}
+
+// NewFailResponseFromErrorDetailsBadRequest creates a new JSend fail response from error details of type BadRequest
+//
+// Parameters:
+//
+//   - errorDetails: The error details
+//   - httpStatus: The HTTP status code
+//
+// Returns:
+//
+//   - Response: The response
+func NewFailResponseFromErrorDetailsBadRequest(
+	errorDetails *errdetails.BadRequest,
+	httpStatus int,
+) gonethttpresponse.Response {
+	return gonethttpresponse.NewResponse(
+		NewFailBodyFromErrorDetailsBadRequest(errorDetails),
+		httpStatus,
+	)
 }
 
 // NewFailBody creates a new JSend fail response body

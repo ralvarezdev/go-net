@@ -9,13 +9,16 @@ const (
 )
 
 var (
-	ErrCodeNilFailError string
-	ErrCodeNilError     string
+	ErrCodeNilFailFieldError string
+	ErrCodeNilFailDataError  string
+	ErrCodeNilError          string
+	ErrCodeNilResponse       string
 )
 
 var (
-	ErrNilResponse  = errors.New("response cannot be nil")
-	ErrNilEncoder   = errors.New("json encoder is nil")
-	ErrNilFailError = errors.New("fail error cannot be nil")
-	ErrNilError     = errors.New("error cannot be nil")
+	ErrNilResponse       = errors.New("response cannot be nil")
+	ErrNilEncoder        = errors.New("json encoder is nil")
+	ErrNilFailFieldError = errors.New("fail field error cannot be nil")
+	ErrNilFailDataError  = errors.New("fail data error cannot be nil")
+	ErrNilError          = errors.New("error cannot be nil")
 )

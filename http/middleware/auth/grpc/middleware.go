@@ -92,7 +92,7 @@ func (m Middleware) interceptionNotFoundHandler(
 				}
 
 				// Handle the response with an internal server error
-				m.responsesHandler.HandleDebugErrorResponseWithCode(
+				m.responsesHandler.HandleDebugErrorWithCode(
 					w,
 					ErrInterceptionNotFound,
 					gonethttp.ErrInternalServerError,

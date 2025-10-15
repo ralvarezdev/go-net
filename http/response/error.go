@@ -1,10 +1,21 @@
 package response
 
+import (
+	"fmt"
+)
+
 type (
-	// FailError struct
-	FailError struct {
+	// FailFieldError struct
+	FailFieldError struct {
 		Field      string
 		Err        error
+		ErrorCode  string
+		HTTPStatus int
+	}
+
+	// FailDataError struct
+	FailDataError struct {
+		Data       interface{}
 		ErrorCode  string
 		HTTPStatus int
 	}
@@ -18,7 +29,7 @@ type (
 	}
 )
 
-// NewFailErrorWithCode creates a new JSend fail error with error code
+// NewFailFieldErrorWithCode creates a new JSend fail field error with error code
 //
 // Parameters:
 //
@@ -29,11 +40,11 @@ type (
 //
 // Returns:
 //
-//   - *FailError: The JSend fail error
-func NewFailErrorWithCode(
+//   - *FailFieldError: The JSend fail field error
+func NewFailFieldErrorWithCode(
 	field string, err error, errorCode string, httpStatus int,
-) *FailError {
-	return &FailError{
+) *FailFieldError {
+	return &FailFieldError{
 		Field:      field,
 		Err:        err,
 		ErrorCode:  errorCode,
@@ -41,7 +52,7 @@ func NewFailErrorWithCode(
 	}
 }
 
-// NewFailError creates a new JSend fail error
+// NewFailFieldError creates a new JSend fail field error
 //
 // Parameters:
 //
@@ -51,12 +62,12 @@ func NewFailErrorWithCode(
 //
 // Returns:
 //
-//   - *FailError: The JSend fail error
+//   - *FailFieldError: The JSend fail field error
 //   - string: The error code
-func NewFailError(
+func NewFailFieldError(
 	field string, err error, httpStatus int,
-) *FailError {
-	return NewFailErrorWithCode(field, err, "", httpStatus)
+) *FailFieldError {
+	return NewFailFieldErrorWithCode(field, err, "", httpStatus)
 }
 
 // Error returns the error message from the fail body error
@@ -64,7 +75,7 @@ func NewFailError(
 // Returns:
 //
 //   - string: The error message
-func (f FailError) Error() string {
+func (f FailFieldError) Error() string {
 	return f.Err.Error()
 }
 
@@ -73,7 +84,7 @@ func (f FailError) Error() string {
 // Returns:
 //
 //   - map[string][]string: The response data map
-func (f FailError) Data() map[string][]string {
+func (f FailFieldError) Data() map[string][]string {
 	// Initialize the data map
 	data := make(map[string][]string)
 
@@ -81,6 +92,55 @@ func (f FailError) Data() map[string][]string {
 	data[f.Field] = []string{f.Err.Error()}
 
 	return data
+}
+
+// NewFailDataErrorWithCode creates a new JSend fail data error with error code
+//
+// Parameters:
+//
+//   - data: The fail data
+//   - errorCode: The error code
+//   - httpStatus: The HTTP status
+//
+// Returns:
+//
+//   - *FailDataError: The JSend fail data error
+func NewFailDataErrorWithCode(
+	data interface{},
+	errorCode string,
+	httpStatus int,
+) *FailDataError {
+	return &FailDataError{
+		Data:       data,
+		ErrorCode:  errorCode,
+		HTTPStatus: httpStatus,
+	}
+}
+
+// NewFailDataError creates a new JSend fail data error
+//
+// Parameters:
+//
+//   - data: The fail data
+//   - httpStatus: The HTTP status
+//
+// Returns:
+//
+//   - *FailDataError: The JSend fail data error
+func NewFailDataError(
+	data interface{},
+	httpStatus int,
+) *FailDataError {
+	return NewFailDataErrorWithCode(data, "", httpStatus)
+}
+
+// Error returns the data field as a string from the fail data error
+//
+// Returns:
+//
+//   - string: The error message
+func (f FailDataError) Error() string {
+	return fmt.Sprintf("%v", f.Data)
 }
 
 // NewErrorWithCode creates a new JSend error with error code

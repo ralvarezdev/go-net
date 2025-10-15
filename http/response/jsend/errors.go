@@ -18,6 +18,7 @@ var (
 	ErrCodeGRPCHelp                           string
 	ErrCodeGRPCResourceInfo                   string
 	ErrCodeGRPCLocalizedMessage               string
+	ErrCodeGRPCCodePrefix                     string
 )
 
 var (

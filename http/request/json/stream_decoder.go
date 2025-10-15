@@ -52,7 +52,7 @@ func (s StreamDecoder) Decode(
 ) error {
 	// Check the content type
 	if !CheckContentType(r) {
-		return gonethttpresponse.NewFailErrorWithCode(
+		return gonethttpresponse.NewFailFieldErrorWithCode(
 			ErrInvalidContentTypeField,
 			ErrInvalidContentType,
 			ErrCodeInvalidContentType,
