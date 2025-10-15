@@ -1,4 +1,4 @@
-package jsend
+package grpc
 
 import (
 	"context"
@@ -11,16 +11,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ParseGRPCError parses a gRPC error to a JSend error response
+// ParseError parses a gRPC error to a JSend error response
 //
 // Parameters:
 //
 //   - err: the gRPC error
+//   - parseAsValidations: whether to parse error details as validation errors
 //
 // Returns:
 //   - *ErrorResponse: the JSend error response
-func ParseGRPCError(
+func ParseError(
 	err error,
+	parseAsValidations bool,
 ) error {
 	// Check if the error is nil
 	if err == nil {
@@ -30,61 +32,37 @@ func ParseGRPCError(
 	// Check if the error comes from a gRPC status
 	st, ok := status.FromError(err)
 	if ok {
-		// Try to parse detailed error information
+		// Try to parse detailed error information. The first matching detail type will be used.
 		for _, detail := range st.Details() {
 			switch info := detail.(type) {
 			case *errdetails.BadRequest:
-				return NewFailResponseFromErrorDetailsBadRequest(
+				return NewFailErrorFromErrorDetailsBadRequest(
 					info,
-					http.StatusBadRequest,
+					parseAsValidations,
 				)
 			case *errdetails.PreconditionFailure:
-				// Precondition failure error
-				return gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					ErrGRPCPreconditionFailed,
-					ErrCodeGRPCPreconditionFailed,
-					http.StatusPreconditionFailed,
+				return NewFailErrorFromErrorDetailsPreconditionFailure(
+					info,
 				)
 			case *errdetails.QuotaFailure:
-				// Quota failure error
-				return gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrTooManyRequests,
-					ErrCodeGRPCQuotaFailure,
-					http.StatusTooManyRequests,
+				return NewFailErrorFromErrorDetailsQuotaFailure(
+					info,
 				)
 			case *errdetails.RequestInfo:
-				// Request info error
-				return gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrBadRequest,
-					ErrCodeGRPCRequestInfo,
-					http.StatusBadRequest,
+				return NewFailErrorFromErrorDetailsRequestInfo(
+					info,
 				)
 			case *errdetails.ResourceInfo:
-				// Resource info error
-				return gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrNotFound,
-					ErrCodeGRPCResourceInfo,
-					http.StatusNotFound,
+				return NewFailErrorFromErrorDetailsResourceInfo(
+					info,
 				)
 			case *errdetails.Help:
-				// Help error
-				return gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrBadRequest,
-					ErrCodeGRPCHelp,
-					http.StatusBadRequest,
+				return NewFailErrorFromErrorDetailsHelp(
+					info,
 				)
 			case *errdetails.LocalizedMessage:
-				// Localized message error
-				return gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrBadRequest,
-					ErrCodeGRPCLocalizedMessage,
-					http.StatusBadRequest,
+				return NewFailErrorFromErrorDetailsLocalizedMessage(
+					info,
 				)
 			default:
 				_ = info
@@ -94,7 +72,7 @@ func ParseGRPCError(
 		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrBadRequest,
-			ErrCodeGRPCCodePrefix+st.Code().String(),
+			ErrCodeCCodePrefix+st.Code().String(),
 			http.StatusBadRequest,
 		)
 	}
@@ -102,7 +80,7 @@ func ParseGRPCError(
 		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrRequestTimeout,
-			ErrCodeGRPCCtxCanceled,
+			ErrCodeCtxCanceled,
 			http.StatusRequestTimeout,
 		)
 	}
@@ -110,7 +88,7 @@ func ParseGRPCError(
 		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrRequestTimeout,
-			ErrCodeGRPCCtxDeadlineExceeded,
+			ErrCodeCtxDeadlineExceeded,
 			http.StatusRequestTimeout,
 		)
 	}
@@ -119,7 +97,7 @@ func ParseGRPCError(
 	return gonethttpresponse.NewDebugErrorWithCode(
 		err,
 		gonethttp.ErrInternalServerError,
-		ErrCodeGRPCUnknown,
+		ErrCodeUnknown,
 		http.StatusInternalServerError,
 	)
 }
