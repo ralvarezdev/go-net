@@ -19,4 +19,5 @@ var (
 	ErrNilRequest         = errors.New("request cannot be nil")
 	ErrInvalidContentType = errors.New("invalid content type, expected application/json")
 	ErrInvalidBodyType    = errors.New("invalid body type, expected struct")
+	ErrInvalidInstance    = errors.New("invalid instance provided to create a reader")
 )

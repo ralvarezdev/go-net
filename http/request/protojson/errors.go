@@ -17,4 +17,5 @@ const (
 
 var (
 	ErrInvalidProtoMessage = errors.New("invalid proto message")
+	ErrNilMarshalOptions   = errors.New("nil marshal options")
 )

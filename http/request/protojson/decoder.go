@@ -1,7 +1,6 @@
 package protojson
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
@@ -9,7 +8,6 @@ import (
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 )
 
 type (
@@ -76,38 +74,11 @@ func (d Decoder) DecodeReader(
 	reader io.Reader,
 	dest interface{},
 ) error {
-	// Assert that dest is a proto.Message
-	msg, ok := dest.(proto.Message)
-	if !ok {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			ErrInvalidProtoMessage,
-			gonethttp.ErrInternalServerError,
-			ErrCodeInvalidProtoMessage,
-			http.StatusInternalServerError,
-		)
-	}
-
-	// Read the request body
-	body, err := io.ReadAll(reader)
-	if err != nil {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			fmt.Errorf(ErrReadBodyFailed, err),
-			gonethttp.ErrInternalServerError,
-			ErrCodeReadBodyFailed,
-			http.StatusInternalServerError,
-		)
-	}
-
-	// Decode the request body into the proto message
-	if err = protojson.Unmarshal(body, msg); err != nil {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			fmt.Errorf(ErrUnmarshalProtoJSONFailed, err),
-			gonethttp.ErrInternalServerError,
-			ErrCodeUnmarshalProtoJSONFailed,
-			http.StatusInternalServerError,
-		)
-	}
-	return nil
+	return UnmarshalByReflection(
+		reader,
+		dest,
+		&d.unmarshalOptions,
+	)
 }
 
 // DecodeRequest decodes a JSON body from an HTTP request into a destination

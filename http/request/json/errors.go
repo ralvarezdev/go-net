@@ -28,6 +28,5 @@ var (
 )
 
 var (
-	ErrNilDestination  = errors.New("json destination is nil")
-	ErrInvalidInstance = errors.New("invalid instance provided to create a reader")
+	ErrNilDestination = errors.New("json destination is nil")
 )
