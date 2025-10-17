@@ -21,7 +21,6 @@ type (
 	Options struct {
 		MetadataKeysToAuthorizationHeaderNames map[string]string
 		MetadataKeysToCookiesAttributes        map[string]*gonethttpcookie.Attributes
-		AuthorizationCookieAttributes          *gonethttpcookie.Attributes
 		GetExpiresAtFn                         GetExpiresAtFn
 	}
 
@@ -127,29 +126,6 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 		return err
 	}
 
-	// Get the authorization metadata from the context
-	authorization, err := gogrpcmd.GetMetadataAuthorizationToken(md)
-	if err != nil {
-		return err
-	}
-
-	// Check if the GetExpiresAtFn is nil
-	var expiresAt time.Time
-	if d.options.GetExpiresAtFn != nil {
-		expiresAt, err = d.options.GetExpiresAtFn(authorization)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Set the authorization cookie
-	gonethttpcookie.SetCookie(
-		w,
-		d.options.AuthorizationCookieAttributes,
-		authorization,
-		expiresAt,
-	)
-
 	// Iterate over the metadata keys to cookies attributes
 	for metadataKey, cookieAttributes := range d.options.MetadataKeysToCookiesAttributes {
 		// Get the metadata value
@@ -163,6 +139,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 			metadataValue := metadataValueSlice[0]
 
 			// Get the expiration time if the function is set
+			var expiresAt time.Time
 			if d.options.GetExpiresAtFn != nil {
 				expiresAt, err = d.options.GetExpiresAtFn(metadataValue)
 				if err != nil {
