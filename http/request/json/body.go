@@ -18,14 +18,12 @@ import (
 //
 // Parameters:
 //
-//   - w: The HTTP response writer
 //   - err: The error that occurred during decoding
 //
 // Returns:
 //
 //   - error: An error if the encoder is nil or if encoding the response fails
 func BodyDecodeErrorHandler(
-	w http.ResponseWriter,
 	err error,
 ) error {
 	// Check is there is an UnmarshalTypeError

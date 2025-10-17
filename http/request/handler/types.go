@@ -118,7 +118,7 @@ func (d DefaultRequestsHandler) DecodeAndValidate(
 	validatorFn govalidatormappervalidator.ValidateFn,
 ) bool {
 	// Decode the request body
-	if err := d.Decode(w, r, dest); err != nil {
+	if err := d.DecodeRequest(r, dest); err != nil {
 		// Handle the error
 		d.responsesHandler.HandleRawError(
 			w,

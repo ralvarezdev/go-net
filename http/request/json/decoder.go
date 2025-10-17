@@ -7,6 +7,7 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
@@ -34,32 +35,20 @@ func NewDecoder(
 	}
 }
 
-// Decode decodes the JSON request body and stores it in the destination
+// DecodeReader decodes the JSON body and stores it in the destination
 //
 // Parameters:
 //
-//   - w: The HTTP response writer
-//   - r: The HTTP request
+//   - reader: The reader to read the body from
 //   - dest: The destination to store the decoded body
 //
 // Returns:
 //
 //   - error: The error if any
-func (d Decoder) Decode(
-	w http.ResponseWriter,
-	r *http.Request,
+func (d Decoder) DecodeReader(
+	reader io.Reader,
 	dest interface{},
 ) (err error) {
-	// Check the content type
-	if !CheckContentType(r) {
-		return gonethttpresponse.NewFailFieldErrorWithCode(
-			ErrInvalidContentTypeField,
-			ErrInvalidContentType,
-			ErrCodeInvalidContentType,
-			http.StatusUnsupportedMediaType,
-		)
-	}
-
 	// Check the decoder destination
 	if dest == nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
@@ -71,7 +60,7 @@ func (d Decoder) Decode(
 	}
 
 	// Get the body of the request
-	body, err := io.ReadAll(r.Body)
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
@@ -83,7 +72,43 @@ func (d Decoder) Decode(
 
 	// Decode JSON body into destination
 	if err = json.Unmarshal(body, dest); err != nil {
-		return BodyDecodeErrorHandler(w, err)
+		return BodyDecodeErrorHandler(err)
 	}
 	return nil
+}
+
+// DecodeRequest decodes the JSON request body and stores it in the destination
+//
+// Parameters:
+//
+//   - request: The HTTP request
+//   - dest: The destination to store the decoded body
+//
+// Returns:
+//
+//   - error: The error if any
+func (d Decoder) DecodeRequest(
+	request *http.Request,
+	dest interface{},
+) error {
+	// Check the request
+	if request == nil {
+		return gonethttpresponse.NewDebugErrorWithCode(
+			gonethttprequest.ErrNilRequest,
+			gonethttp.ErrInternalServerError,
+			gonethttprequest.ErrCodeNilRequest,
+			http.StatusInternalServerError,
+		)
+	}
+
+	// Check the content type
+	if !gonethttprequest.CheckContentType(request) {
+		return gonethttpresponse.NewFailFieldErrorWithCode(
+			gonethttprequest.ErrInvalidContentTypeField,
+			gonethttprequest.ErrInvalidContentType,
+			gonethttprequest.ErrCodeInvalidContentType,
+			http.StatusUnsupportedMediaType,
+		)
+	}
+	return d.DecodeReader(request.Body, dest)
 }

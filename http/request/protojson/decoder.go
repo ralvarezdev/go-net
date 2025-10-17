@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -34,20 +35,18 @@ func NewDecoder() *Decoder {
 	}
 }
 
-// Decode decodes the request body into the destination
+// DecodeReader  decodes a JSON body from a reader into a destination
 //
 // Parameters:
 //
-//   - w: The HTTP response writer
-//   - r: The HTTP request
-//   - dest: The destination to decode the request body into
+//   - reader: The io.Reader to read the body from
+//   - dest: The destination to decode the body into
 //
 // Returns:
 //
 //   - error: The error if any
-func (d Decoder) Decode(
-	w http.ResponseWriter,
-	r *http.Request,
+func (d Decoder) DecodeReader(
+	reader io.Reader,
 	dest interface{},
 ) error {
 	// Assert that dest is a proto.Message
@@ -62,7 +61,7 @@ func (d Decoder) Decode(
 	}
 
 	// Read the request body
-	body, err := io.ReadAll(r.Body)
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			fmt.Errorf(ErrReadBodyFailed, err),
@@ -82,4 +81,40 @@ func (d Decoder) Decode(
 		)
 	}
 	return nil
+}
+
+// DecodeRequest decodes a JSON body from an HTTP request into a destination
+//
+// Parameters:
+//
+//   - request: The HTTP request to read the body from
+//   - dest: The destination to decode the body into
+//
+// Returns:
+//
+//   - error: The error if any
+func (d Decoder) DecodeRequest(
+	request *http.Request,
+	dest interface{},
+) error {
+	// Check the request
+	if request == nil {
+		return gonethttpresponse.NewDebugErrorWithCode(
+			gonethttprequest.ErrNilRequest,
+			gonethttp.ErrInternalServerError,
+			gonethttprequest.ErrCodeNilRequest,
+			http.StatusInternalServerError,
+		)
+	}
+
+	if !gonethttprequest.CheckContentType(request) {
+		return gonethttpresponse.NewFailFieldErrorWithCode(
+			gonethttprequest.ErrInvalidContentTypeField,
+			gonethttprequest.ErrInvalidContentType,
+			gonethttprequest.ErrCodeInvalidContentType,
+			http.StatusUnsupportedMediaType,
+		)
+	}
+
+	return d.DecodeReader(request.Body, dest)
 }

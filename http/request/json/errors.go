@@ -5,7 +5,6 @@ import (
 )
 
 var (
-	ErrCodeInvalidContentType         string
 	ErrCodeNilDestination             string
 	ErrCodeFailedToReadBody           string
 	ErrCodeUnmarshalRequestBodyFailed string
@@ -22,10 +21,6 @@ const (
 	ErrUnknownField        = "json body contains an unknown field %s"
 )
 
-const (
-	ErrInvalidContentTypeField = "Content-Type"
-)
-
 var (
 	ErrUnexpectedEOF       = errors.New("json body contains badly-formed JSON")
 	ErrEmptyBody           = errors.New("json body is empty")
@@ -33,6 +28,6 @@ var (
 )
 
 var (
-	ErrNilDestination     = errors.New("json destination is nil")
-	ErrInvalidContentType = errors.New("invalid content type, expected application/json")
+	ErrNilDestination  = errors.New("json destination is nil")
+	ErrInvalidInstance = errors.New("invalid instance provided to create a reader")
 )
