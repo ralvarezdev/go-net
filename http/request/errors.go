@@ -7,6 +7,7 @@ import (
 var (
 	ErrCodeNilRequest         string
 	ErrCodeInvalidContentType string
+	ErrCodeInvalidBodyType    string
 )
 
 const (
@@ -17,4 +18,5 @@ var (
 	ErrNilDecoder         = errors.New("decoder is nil")
 	ErrNilRequest         = errors.New("request cannot be nil")
 	ErrInvalidContentType = errors.New("invalid content type, expected application/json")
+	ErrInvalidBodyType    = errors.New("invalid body type, expected struct")
 )

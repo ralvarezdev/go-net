@@ -76,7 +76,7 @@ func (r ResponsesHandler) HandleResponse(
 	}
 
 	// Call the encoder
-	if err := r.Encode(w, response); err != nil {
+	if err := r.EncodeAndWriteResponse(w, response); err != nil {
 		r.HandleRawError(w, err)
 		return
 	}

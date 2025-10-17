@@ -35,6 +35,33 @@ func NewDecoder() *Decoder {
 	}
 }
 
+// Decode decodes the JSON body from an any value and stores it in the destination
+//
+// Parameters:
+//
+//   - body: The body to decode
+//   - dest: The destination to store the decoded body
+//
+// Returns:
+//
+//   - error: The error if any
+func (d Decoder) Decode(
+	body interface{},
+	dest interface{},
+) error {
+	// Check the body type
+	reader, err := gonethttprequest.ToReader(body)
+	if err != nil {
+		return gonethttpresponse.NewDebugErrorWithCode(
+			gonethttprequest.ErrInvalidBodyType,
+			gonethttp.ErrInternalServerError,
+			gonethttprequest.ErrCodeInvalidBodyType,
+			http.StatusInternalServerError,
+		)
+	}
+	return d.DecodeReader(reader, dest)
+}
+
 // DecodeReader  decodes a JSON body from a reader into a destination
 //
 // Parameters:
@@ -94,11 +121,11 @@ func (d Decoder) DecodeReader(
 //
 //   - error: The error if any
 func (d Decoder) DecodeRequest(
-	request *http.Request,
+	r *http.Request,
 	dest interface{},
 ) error {
 	// Check the request
-	if request == nil {
+	if r == nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			gonethttprequest.ErrNilRequest,
 			gonethttp.ErrInternalServerError,
@@ -107,7 +134,7 @@ func (d Decoder) DecodeRequest(
 		)
 	}
 
-	if !gonethttprequest.CheckContentType(request) {
+	if !gonethttprequest.CheckContentType(r) {
 		return gonethttpresponse.NewFailFieldErrorWithCode(
 			gonethttprequest.ErrInvalidContentTypeField,
 			gonethttprequest.ErrInvalidContentType,
@@ -116,5 +143,5 @@ func (d Decoder) DecodeRequest(
 		)
 	}
 
-	return d.DecodeReader(request.Body, dest)
+	return d.DecodeReader(r.Body, dest)
 }
