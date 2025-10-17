@@ -10,12 +10,12 @@ import (
 type (
 	// Module is the struct for the route module
 	Module struct {
-		Pattern          string
-		BeforeLoadFn     func(m *Module)
-		RegisterRoutesFn func(m *Module)
-		AfterLoadFn      func(m *Module)
-		Middlewares      []func(next http.Handler) http.Handler
-		Submodules       []*Module
+		Pattern       string
+		BeforeLoadFn  func(m *Module)
+		AddHandlersFn func(m *Module)
+		AfterLoadFn   func(m *Module)
+		Middlewares   []func(next http.Handler) http.Handler
+		Submodules    []*Module
 		gonethttproute.RouterWrapper
 	}
 )
@@ -101,9 +101,9 @@ func (m *Module) Create(
 		}
 	}
 
-	// Register the routes
-	if m.RegisterRoutesFn != nil {
-		m.RegisterRoutesFn(m)
+	// Register the handlers
+	if m.AddHandlersFn != nil {
+		m.AddHandlersFn(m)
 	}
 
 	// Run the after load function
