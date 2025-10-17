@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
@@ -41,7 +42,7 @@ func NewDefaultRequestsHandler(
 		return nil, goflagsmode.ErrNilModeFlag
 	}
 	if decoder == nil {
-		return nil, gonethttprequest.ErrNilDecoder
+		return nil, gojsondecoder.ErrNilDecoder
 	}
 	if responsesHandler == nil {
 		return nil, gonethttphandler.ErrNilResponsesHandler

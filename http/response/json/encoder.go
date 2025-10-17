@@ -1,11 +1,12 @@
 package json
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/ralvarezdev/go-flags/mode"
+	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
+	gojsonencoderjson "github.com/ralvarezdev/go-json/encoder/json"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
@@ -13,7 +14,8 @@ import (
 type (
 	// Encoder struct
 	Encoder struct {
-		mode *mode.Flag
+		encoder gojsonencoder.Encoder
+		mode    *mode.Flag
 	}
 )
 
@@ -29,7 +31,10 @@ type (
 func NewEncoder(
 	mode *mode.Flag,
 ) *Encoder {
-	return &Encoder{mode}
+	// Create the JSON encoder
+	encoder := gojsonencoderjson.NewEncoder()
+
+	return &Encoder{encoder, mode}
 }
 
 // Encode encodes the body into JSON bytes
@@ -45,7 +50,7 @@ func NewEncoder(
 func (e Encoder) Encode(
 	body interface{},
 ) ([]byte, error) {
-	jsonBody, err := json.Marshal(body)
+	marshaledBody, err := e.encoder.Encode(body)
 	if err != nil {
 		return nil, gonethttpresponse.NewDebugErrorWithCode(
 			err,
@@ -54,7 +59,7 @@ func (e Encoder) Encode(
 			http.StatusInternalServerError,
 		)
 	}
-	return jsonBody, nil
+	return marshaledBody, nil
 }
 
 // EncodeAndWrite encodes the body and writes it to the writer
@@ -73,9 +78,11 @@ func (e Encoder) EncodeAndWrite(
 	beforeWriteFn func() error,
 	body interface{},
 ) error {
-	// Encode the body into JSON
-	jsonBody, err := e.Encode(body)
-	if err != nil {
+	if err := e.encoder.EncodeAndWrite(
+		writer,
+		beforeWriteFn,
+		body,
+	); err != nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrInternalServerError,
@@ -83,17 +90,7 @@ func (e Encoder) EncodeAndWrite(
 			http.StatusInternalServerError,
 		)
 	}
-
-	// Call the before write function if provided
-	if beforeWriteFn != nil {
-		if err = beforeWriteFn(); err != nil {
-			return err
-		}
-	}
-
-	// Write the JSON body to the writer
-	_, err = writer.Write(jsonBody)
-	return err
+	return nil
 }
 
 // EncodeResponse encodes the response into JSON bytes
@@ -113,9 +110,9 @@ func (e Encoder) EncodeResponse(
 	body := response.Body(e.mode)
 
 	// Encode the body into JSON
-	jsonBody, err := e.Encode(body)
+	marshaledBody, err := e.Encode(body)
 
-	return jsonBody, err
+	return marshaledBody, err
 }
 
 // writeHeaders writes the headers to the http.ResponseWriter

@@ -27,6 +27,10 @@ github.com/ralvarezdev/go-grpc v0.5.0 h1:Kkdl+cq/qn4xlzuBYgZEyTgTEbjcX6r9os0lGaO
 github.com/ralvarezdev/go-grpc v0.5.0/go.mod h1:kxUaAFwe4OxGYe3kA3kBYfiOBzl6eU4oYAcYscWz13Y=
 github.com/ralvarezdev/go-grpc v0.5.5 h1:hgXztOYRUAGueeFDpz/7Q0av3bDFbvadxLEVuVocLoI=
 github.com/ralvarezdev/go-grpc v0.5.5/go.mod h1:VU8DxGUSwcwSYu7nyaoqRZCp6tniVdx/C54BxQd6KW0=
+github.com/ralvarezdev/go-json v0.1.0 h1:Fqy69EB4TcKBGE8xvGO17+mTFr/ySAQf26FmzlJmVb4=
+github.com/ralvarezdev/go-json v0.1.0/go.mod h1:NRhaU538nV65bKQcotfZkN57aHFftLHvV24wTWSv2MQ=
+github.com/ralvarezdev/go-json v0.1.1/go.mod h1:NRhaU538nV65bKQcotfZkN57aHFftLHvV24wTWSv2MQ=
+github.com/ralvarezdev/go-json v0.1.2/go.mod h1:NRhaU538nV65bKQcotfZkN57aHFftLHvV24wTWSv2MQ=
 github.com/ralvarezdev/go-jwt v0.5.5 h1:Mod+huHLK7m/bgqDXF4dHeuD6LhPFDCtKXEFycELXZE=
 github.com/ralvarezdev/go-jwt v0.5.5/go.mod h1:7FVJv+0SNmBegRKzLisTpNd/EWAkgQgmkuBP0dcqQk8=
 github.com/ralvarezdev/go-jwt v0.6.6 h1:U0HhCK77NgN8a8ocCdt4XxNf2I0b1SobBByrZJDZmC4=
@@ -35,6 +39,7 @@ github.com/ralvarezdev/go-rate-limiter v0.1.9 h1:Vch/HFIoqDWB8AhY8l/vSBU5g3Dsbpf
 github.com/ralvarezdev/go-rate-limiter v0.1.9/go.mod h1:na9aoJKktmzd55n7BzoyZz9YTcO0M4fcZ3wSXb/0X0M=
 github.com/ralvarezdev/go-reflect v0.2.10 h1:H6N1dpvxszWrfToBZ6ZVyD87qvtQEOrCV0itix9MmCI=
 github.com/ralvarezdev/go-reflect v0.2.10/go.mod h1:HFctB1EEZdN5+T9luOalTmdRfIQ9SwQd4LtxXDGicbE=
+github.com/ralvarezdev/go-reflect v0.2.11 h1:WqwL1MHVH4VWTj6RahZc+v47kjJOwya0+A+JYFrqB6c=
 github.com/ralvarezdev/go-reflect v0.2.11/go.mod h1:HFctB1EEZdN5+T9luOalTmdRfIQ9SwQd4LtxXDGicbE=
 github.com/ralvarezdev/go-strings v0.1.16 h1:0yc7yamYEWVrFTK3C95IjSE5IqCs3H1alIIVEmzIolY=
 github.com/ralvarezdev/go-strings v0.1.16/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=

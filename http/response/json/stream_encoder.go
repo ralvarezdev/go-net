@@ -1,14 +1,13 @@
 package json
 
 import (
-	"bufio"
-	"bytes"
-	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
+	gojsonencoderjson "github.com/ralvarezdev/go-json/encoder/json"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
@@ -16,8 +15,9 @@ import (
 type (
 	// StreamEncoder is the JSON encoder struct
 	StreamEncoder struct {
-		mode   *goflagsmode.Flag
-		logger *slog.Logger
+		streamEncoder gojsonencoder.Encoder
+		mode          *goflagsmode.Flag
+		logger        *slog.Logger
 	}
 )
 
@@ -35,6 +35,9 @@ func NewStreamEncoder(
 	mode *goflagsmode.Flag,
 	logger *slog.Logger,
 ) *StreamEncoder {
+	// Create the JSON stream encoder
+	streamEncoder := gojsonencoderjson.NewStreamEncoder()
+
 	if logger != nil {
 		logger = logger.With(
 			slog.String("component", "http_response_json_stream_encoder"),
@@ -42,6 +45,7 @@ func NewStreamEncoder(
 	}
 
 	return &StreamEncoder{
+		streamEncoder,
 		mode,
 		logger,
 	}
@@ -60,14 +64,8 @@ func NewStreamEncoder(
 func (s StreamEncoder) Encode(
 	body interface{},
 ) ([]byte, error) {
-	// Create a buffer to write to
-	buffer := new(bytes.Buffer)
-
-	// Wrap it with a bufio.Writer
-	writer := bufio.NewWriter(buffer)
-
-	// Encode the body into JSON
-	if err := json.NewEncoder(writer).Encode(body); err != nil {
+	marshaledBody, err := s.streamEncoder.Encode(body)
+	if err != nil {
 		return nil, gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrInternalServerError,
@@ -75,18 +73,7 @@ func (s StreamEncoder) Encode(
 			http.StatusInternalServerError,
 		)
 	}
-
-	// Flush to ensure all data is written to the underlying buffer
-	if err := writer.Flush(); err != nil {
-		return nil, gonethttpresponse.NewDebugErrorWithCode(
-			err,
-			gonethttp.ErrInternalServerError,
-			ErrCodeJSONMarshalFailed,
-			http.StatusInternalServerError,
-		)
-	}
-
-	return buffer.Bytes(), nil
+	return marshaledBody, nil
 }
 
 // EncodeAndWrite encodes the body into JSON and writes it to the writer
@@ -104,16 +91,12 @@ func (s StreamEncoder) EncodeAndWrite(
 	writer io.Writer,
 	beforeWriteFn func() error,
 	body interface{},
-) (err error) {
-	// Call the before write function if provided
-	if beforeWriteFn != nil {
-		if err = beforeWriteFn(); err != nil {
-			return err
-		}
-	}
-
-	// Encode the body into JSON
-	if err = json.NewEncoder(writer).Encode(body); err != nil {
+) error {
+	if err := s.streamEncoder.EncodeAndWrite(
+		writer,
+		beforeWriteFn,
+		body,
+	); err != nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			gonethttp.ErrInternalServerError,
@@ -121,7 +104,6 @@ func (s StreamEncoder) EncodeAndWrite(
 			http.StatusInternalServerError,
 		)
 	}
-
 	return nil
 }
 

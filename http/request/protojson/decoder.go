@@ -4,15 +4,16 @@ import (
 	"io"
 	"net/http"
 
+	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
+	gojsondecoderprotojson "github.com/ralvarezdev/go-json/decoder/protojson"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
 	Decoder struct {
-		unmarshalOptions protojson.UnmarshalOptions
+		decoder gojsondecoder.Decoder
 	}
 )
 
@@ -22,14 +23,11 @@ type (
 //
 //   - *Decoder: The decoder instance
 func NewDecoder() *Decoder {
-	// Initialize unmarshal options
-	unmarshalOptions := protojson.UnmarshalOptions{
-		DiscardUnknown: true,
-		AllowPartial:   true,
-	}
+	// Create the JSON decoder
+	decoder := gojsondecoderprotojson.NewDecoder()
 
 	return &Decoder{
-		unmarshalOptions: unmarshalOptions,
+		decoder: decoder,
 	}
 }
 
@@ -47,17 +45,13 @@ func (d Decoder) Decode(
 	body interface{},
 	dest interface{},
 ) error {
-	// Check the body type
-	reader, err := gonethttprequest.ToReader(body)
-	if err != nil {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			gonethttprequest.ErrInvalidBodyType,
-			gonethttp.ErrInternalServerError,
-			gonethttprequest.ErrCodeInvalidBodyType,
-			http.StatusInternalServerError,
-		)
+	if err := d.decoder.Decode(
+		body,
+		dest,
+	); err != nil {
+		return gonethttprequest.BodyDecodeErrorHandler(err)
 	}
-	return d.DecodeReader(reader, dest)
+	return nil
 }
 
 // DecodeReader  decodes a JSON body from a reader into a destination
@@ -74,11 +68,13 @@ func (d Decoder) DecodeReader(
 	reader io.Reader,
 	dest interface{},
 ) error {
-	return UnmarshalByReflection(
+	if err := d.decoder.DecodeReader(
 		reader,
 		dest,
-		&d.unmarshalOptions,
-	)
+	); err != nil {
+		return gonethttprequest.BodyDecodeErrorHandler(err)
+	}
+	return nil
 }
 
 // DecodeRequest decodes a JSON body from an HTTP request into a destination

@@ -1,10 +1,10 @@
 package response
 
 import (
-	"io"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gojsonecoder "github.com/ralvarezdev/go-json/encoder"
 )
 
 type (
@@ -16,14 +16,7 @@ type (
 
 	// Encoder interface
 	Encoder interface {
-		Encode(
-			body interface{},
-		) ([]byte, error)
-		EncodeAndWrite(
-			writer io.Writer,
-			beforeWriteFn func() error,
-			body interface{},
-		) error
+		gojsonecoder.Encoder
 		EncodeResponse(
 			response Response,
 		) ([]byte, error)

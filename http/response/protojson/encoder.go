@@ -3,21 +3,21 @@ package protojson
 import (
 	"io"
 	"net/http"
-	"reflect"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
+	gojsonencoderprotojson "github.com/ralvarezdev/go-json/encoder/protojson"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpresponsejson "github.com/ralvarezdev/go-net/http/response/json"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
 	// Encoder is the implementation of the Encoder interface
 	Encoder struct {
-		jsonEncoder    *gonethttpresponsejson.Encoder
-		mode           *goflagsmode.Flag
-		marshalOptions protojson.MarshalOptions
+		protoJSONEncoder gojsonencoder.ProtoJSONEncoder
+		jsonEncoder      gonethttpresponse.Encoder
+		mode             *goflagsmode.Flag
 	}
 )
 
@@ -34,18 +34,18 @@ type (
 func NewEncoder(
 	mode *goflagsmode.Flag,
 ) *Encoder {
-	// Initialize the JSON encoder
-	jsonEncoder := gonethttpresponsejson.NewEncoder(mode)
+	// Initialize the ProtoJSON encoder
+	protoJSONEncoder := gojsonencoderprotojson.NewEncoder()
 
-	// Initialize unmarshal options
-	marshalOptions := protojson.MarshalOptions{
-		AllowPartial: true,
-	}
+	// Initialize the JSON encoder
+	jsonEncoder := gonethttpresponsejson.NewEncoder(
+		mode,
+	)
 
 	return &Encoder{
-		mode:           mode,
-		jsonEncoder:    jsonEncoder,
-		marshalOptions: marshalOptions,
+		mode:             mode,
+		protoJSONEncoder: protoJSONEncoder,
+		jsonEncoder:      jsonEncoder,
 	}
 }
 
@@ -61,14 +61,7 @@ func NewEncoder(
 func (e Encoder) PrecomputeMarshal(
 	body interface{},
 ) (map[string]interface{}, error) {
-	// Reflect on the instance to get its fields
-	v := reflect.ValueOf(body)
-
-	// Precompute the marshaled body
-	precomputedMarshal, err := PrecomputeMarshalByReflection(
-		v,
-		&e.marshalOptions,
-	)
+	precomputedMarshal, err := e.protoJSONEncoder.PrecomputeMarshal(body)
 	if err != nil {
 		return nil, gonethttpresponse.NewDebugErrorWithCode(
 			err,
@@ -97,7 +90,18 @@ func (e Encoder) Encode(
 	if err != nil {
 		return nil, err
 	}
-	return e.jsonEncoder.Encode(precomputedMarshal)
+
+	// Marshal to JSON
+	marshaledBody, err := e.protoJSONEncoder.Encode(precomputedMarshal)
+	if err != nil {
+		return nil, gonethttpresponse.NewDebugErrorWithCode(
+			err,
+			gonethttp.ErrInternalServerError,
+			ErrCodeProtoJSONMarshalFailed,
+			http.StatusInternalServerError,
+		)
+	}
+	return marshaledBody, nil
 }
 
 // EncodeResponse encodes the given response to JSON

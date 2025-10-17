@@ -1,11 +1,12 @@
 package json
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
+	gojsondecoderjson "github.com/ralvarezdev/go-json/decoder/json"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -14,7 +15,8 @@ import (
 type (
 	// StreamDecoder is the JSON decoder struct
 	StreamDecoder struct {
-		mode *goflagsmode.Flag
+		decoder gojsondecoder.Decoder
+		mode    *goflagsmode.Flag
 	}
 )
 
@@ -31,8 +33,12 @@ type (
 func NewStreamDecoder(
 	mode *goflagsmode.Flag,
 ) *StreamDecoder {
+	// Create the JSON decoder
+	decoder := gojsondecoderjson.NewDecoder()
+
 	return &StreamDecoder{
-		mode,
+		decoder: decoder,
+		mode:    mode,
 	}
 }
 
@@ -50,9 +56,7 @@ func (s StreamDecoder) Decode(
 	body interface{},
 	dest interface{},
 ) error {
-	// Check the body type
-	reader, err := gonethttprequest.ToReader(body)
-	if err != nil {
+	if err := s.decoder.Decode(body, dest); err != nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			gonethttprequest.ErrInvalidBodyType,
 			gonethttp.ErrInternalServerError,
@@ -60,7 +64,7 @@ func (s StreamDecoder) Decode(
 			http.StatusInternalServerError,
 		)
 	}
-	return s.DecodeReader(reader, dest)
+	return nil
 }
 
 // DecodeReader decodes a JSON body from a reader into a destination
@@ -77,23 +81,11 @@ func (s StreamDecoder) DecodeReader(
 	reader io.Reader,
 	dest interface{},
 ) error {
-	// Check the decoder destination
-	if dest == nil {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			ErrNilDestination,
-			gonethttp.ErrInternalServerError,
-			ErrCodeNilDestination,
-			http.StatusInternalServerError,
-		)
-	}
-
-	// Create the stream decoder
-	decoder := json.NewDecoder(reader)
-	decoder.DisallowUnknownFields()
-
-	// Decode JSON body into destination
-	if err := decoder.Decode(dest); err != nil {
-		return BodyDecodeErrorHandler(err)
+	if err := s.decoder.DecodeReader(
+		reader,
+		dest,
+	); err != nil {
+		return gonethttprequest.BodyDecodeErrorHandler(err)
 	}
 	return nil
 }

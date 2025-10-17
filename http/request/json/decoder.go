@@ -1,11 +1,12 @@
 package json
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
+	gojsondecoderjson "github.com/ralvarezdev/go-json/decoder/json"
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -14,7 +15,8 @@ import (
 type (
 	// Decoder struct
 	Decoder struct {
-		mode *goflagsmode.Flag
+		decoder gojsondecoder.Decoder
+		mode    *goflagsmode.Flag
 	}
 )
 
@@ -30,8 +32,12 @@ type (
 func NewDecoder(
 	mode *goflagsmode.Flag,
 ) *Decoder {
+	// Create the JSON decoder
+	decoder := gojsondecoderjson.NewDecoder()
+
 	return &Decoder{
-		mode,
+		decoder: decoder,
+		mode:    mode,
 	}
 }
 
@@ -49,9 +55,10 @@ func (d Decoder) Decode(
 	body interface{},
 	dest interface{},
 ) error {
-	// Check the body type
-	reader, err := gonethttprequest.ToReader(body)
-	if err != nil {
+	if err := d.decoder.Decode(
+		body,
+		dest,
+	); err != nil {
 		return gonethttpresponse.NewDebugErrorWithCode(
 			gonethttprequest.ErrInvalidBodyType,
 			gonethttp.ErrInternalServerError,
@@ -59,7 +66,7 @@ func (d Decoder) Decode(
 			http.StatusInternalServerError,
 		)
 	}
-	return d.DecodeReader(reader, dest)
+	return nil
 }
 
 // DecodeReader decodes the JSON body and stores it in the destination
@@ -75,31 +82,12 @@ func (d Decoder) Decode(
 func (d Decoder) DecodeReader(
 	reader io.Reader,
 	dest interface{},
-) (err error) {
-	// Check the decoder destination
-	if dest == nil {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			ErrNilDestination,
-			gonethttp.ErrInternalServerError,
-			ErrCodeNilDestination,
-			http.StatusInternalServerError,
-		)
-	}
-
-	// Get the body of the request
-	body, err := io.ReadAll(reader)
-	if err != nil {
-		return gonethttpresponse.NewDebugErrorWithCode(
-			err,
-			gonethttp.ErrInternalServerError,
-			ErrCodeFailedToReadBody,
-			http.StatusInternalServerError,
-		)
-	}
-
-	// Decode JSON body into destination
-	if err = json.Unmarshal(body, dest); err != nil {
-		return BodyDecodeErrorHandler(err)
+) error {
+	if err := d.decoder.DecodeReader(
+		reader,
+		dest,
+	); err != nil {
+		return gonethttprequest.BodyDecodeErrorHandler(err)
 	}
 	return nil
 }
