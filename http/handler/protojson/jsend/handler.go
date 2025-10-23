@@ -2,6 +2,7 @@ package jsend
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+
 	gonethttphandlerprotojson "github.com/ralvarezdev/go-net/http/handler/protojson"
 	gonethttpresponsehandlerjsend "github.com/ralvarezdev/go-net/http/response/handler/jsend"
 )

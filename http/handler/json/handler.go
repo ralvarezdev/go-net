@@ -2,6 +2,9 @@ package jsend
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+
+	gojsondecoderjson "github.com/ralvarezdev/go-json/decoder/json"
+
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
 	gonethttprequestjson "github.com/ralvarezdev/go-net/http/request/json"
@@ -46,7 +49,13 @@ func NewHandler(
 	}
 
 	// Create the JSON decoder
-	decoder := gonethttprequestjson.NewDecoder(mode)
+	decoder, err := gonethttprequestjson.NewDecoder(
+		mode,
+		gojsondecoderjson.NewDecoder(),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create the requests handler
 	requestsHandler, err := gonethttprequesthandler.NewDefaultRequestsHandler(

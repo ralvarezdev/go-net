@@ -3,8 +3,9 @@ package handler
 import (
 	"net/http"
 
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
+
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
@@ -12,13 +13,13 @@ type (
 	RequestsHandler interface {
 		Validate(
 			w http.ResponseWriter,
-			body interface{},
+			body any,
 			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
 		DecodeAndValidate(
 			w http.ResponseWriter,
 			r *http.Request,
-			dest interface{},
+			dest any,
 			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
 	}
@@ -85,12 +86,12 @@ type (
 		)
 		HandleFailDataError(
 			w http.ResponseWriter,
-			data interface{},
+			data any,
 			httpStatus int,
 		)
 		HandleFailDataErrorWithCode(
 			w http.ResponseWriter,
-			data interface{},
+			data any,
 			errCode string,
 			httpStatus int,
 		)

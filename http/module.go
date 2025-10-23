@@ -95,8 +95,8 @@ func (m *Module) Create(
 				return fmt.Errorf(ErrNilSubmodule, m.Pattern, i)
 			}
 
-			if err = submodule.Create(router); err != nil {
-				return err
+			if createErr := submodule.Create(router); createErr != nil {
+				return createErr
 			}
 		}
 	}

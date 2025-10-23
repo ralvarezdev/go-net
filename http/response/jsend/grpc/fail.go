@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"strings"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpresponsejsend "github.com/ralvarezdev/go-net/http/response/jsend"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 )
 
 // NewFailBodyFromErrorDetailsBadRequest creates a new JSend fail response body from error details of type BadRequest
@@ -25,20 +26,34 @@ func NewFailBodyFromErrorDetailsBadRequest(
 	parseAsValidations bool,
 ) *gonethttpresponsejsend.FailBody {
 	// Initialize the data map
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 
 	// Check if we should parse as validation errors
 	if !parseAsValidations {
 		// Loop through the field violations and add them to the data map
 		for _, violation := range errorDetails.GetFieldViolations() {
 			// If the field doesn't exist, create a new slice
-			if _, ok := data[violation.GetField()]; !ok {
-				data[violation.GetField()] = []*errdetails.BadRequest_FieldViolation{}
+			violationField := violation.GetField()
+			if _, ok := data[violationField]; !ok {
+				data[violationField] = []*errdetails.BadRequest_FieldViolation{}
+			}
+
+			// Parse the data map to a slice
+			parsedSlice, ok := data[violationField].([]*errdetails.BadRequest_FieldViolation)
+			if !ok {
+				panic(
+					gonethttpresponse.NewDebugErrorWithCode(
+						ErrExpectedFieldViolationSliceOnDataMap,
+						gonethttp.ErrInternalServerError,
+						ErrCodeExpectedFieldViolationSliceOnDataMap,
+						http.StatusInternalServerError,
+					),
+				)
 			}
 
 			// Add the violation description to the slice
-			data[violation.GetField()] = append(
-				data[violation.GetField()].([]*errdetails.BadRequest_FieldViolation),
+			data[violationField] = append(
+				parsedSlice,
 				violation,
 			)
 		}
@@ -114,11 +129,11 @@ func NewFailBodyFromErrorDetailsBadRequest(
 
 			// If the part doesn't exist, create a new map
 			if _, ok := nestedMap[part]; !ok {
-				nestedMap[part] = make(map[string]interface{})
+				nestedMap[part] = make(map[string]any)
 			}
 
 			// Parse the nested map
-			parsedNestedMap, ok := nestedMap[part].(map[string]interface{})
+			parsedNestedMap, ok := nestedMap[part].(map[string]any)
 			if !ok {
 				panic(
 					gonethttpresponse.NewDebugErrorWithCode(
@@ -180,7 +195,8 @@ func NewFailErrorFromErrorDetailsBadRequest(
 	)
 }
 
-// NewFailBodyFromErrorDetailsPreconditionFailure creates a new JSend fail response body from error details of type PreconditionFailure
+// NewFailBodyFromErrorDetailsPreconditionFailure creates a new JSend fail response body from error details of type
+// PreconditionFailure
 //
 // Parameters:
 //
@@ -193,7 +209,7 @@ func NewFailBodyFromErrorDetailsPreconditionFailure(
 	errorDetails *errdetails.PreconditionFailure,
 ) *gonethttpresponsejsend.FailBody {
 	// Initialize the data map
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 
 	// Loop through the violations and add them to the data map
 	for _, violation := range errorDetails.GetViolations() {
@@ -203,9 +219,22 @@ func NewFailBodyFromErrorDetailsPreconditionFailure(
 			data[key] = []*errdetails.PreconditionFailure_Violation{}
 		}
 
+		// Parse the data map to a slice
+		parsedSlice, ok := data[key].([]*errdetails.PreconditionFailure_Violation)
+		if !ok {
+			panic(
+				gonethttpresponse.NewDebugErrorWithCode(
+					ErrExpectedPreconditionFailureViolationSliceOnDataMap,
+					gonethttp.ErrInternalServerError,
+					ErrCodeExpectedPreconditionFailureViolationSliceOnDataMap,
+					http.StatusInternalServerError,
+				),
+			)
+		}
+
 		// Add the violation description to the slice
 		data[key] = append(
-			data[key].([]*errdetails.PreconditionFailure_Violation),
+			parsedSlice,
 			violation,
 		)
 	}
@@ -215,7 +244,8 @@ func NewFailBodyFromErrorDetailsPreconditionFailure(
 	)
 }
 
-// NewFailResponseFromErrorDetailsPreconditionFailure creates a new JSend fail response from error details of type PreconditionFailure
+// NewFailResponseFromErrorDetailsPreconditionFailure creates a new JSend fail response from error details of type
+// PreconditionFailure
 //
 // Parameters:
 //
@@ -233,7 +263,8 @@ func NewFailResponseFromErrorDetailsPreconditionFailure(
 	)
 }
 
-// NewFailErrorFromErrorDetailsPreconditionFailure creates a new fail error from error details of type PreconditionFailure
+// NewFailErrorFromErrorDetailsPreconditionFailure creates a new fail error from error details of type
+// PreconditionFailure
 //
 // Parameters:
 //
@@ -251,7 +282,8 @@ func NewFailErrorFromErrorDetailsPreconditionFailure(
 	)
 }
 
-// NewFailBodyFromErrorDetailsQuotaFailure creates a new JSend fail response body from error details of type QuotaFailure
+// NewFailBodyFromErrorDetailsQuotaFailure creates a new JSend fail response body from error details of type
+// QuotaFailure
 //
 // Parameters:
 //
@@ -264,7 +296,7 @@ func NewFailBodyFromErrorDetailsQuotaFailure(
 	errorDetails *errdetails.QuotaFailure,
 ) *gonethttpresponsejsend.FailBody {
 	// Initialize the data map
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 
 	// Loop through the violations and add them to the data map
 	for _, violation := range errorDetails.GetViolations() {
@@ -277,9 +309,22 @@ func NewFailBodyFromErrorDetailsQuotaFailure(
 			data[key] = []*errdetails.QuotaFailure_Violation{}
 		}
 
+		// Parse the data map to a slice
+		parsedSlice, err := data[key].([]*errdetails.QuotaFailure_Violation)
+		if !err {
+			panic(
+				gonethttpresponse.NewDebugErrorWithCode(
+					ErrExpectedQuotaFailureViolationSliceOnDataMap,
+					gonethttp.ErrInternalServerError,
+					ErrCodeExpectedQuotaFailureViolationSliceOnDataMap,
+					http.StatusInternalServerError,
+				),
+			)
+		}
+
 		// Add the violation description to the slice
 		data[key] = append(
-			data[key].([]*errdetails.QuotaFailure_Violation),
+			parsedSlice,
 			violation,
 		)
 	}
@@ -335,7 +380,7 @@ func NewFailBodyFromErrorDetailsRequestInfo(
 	errorDetails *errdetails.RequestInfo,
 ) *gonethttpresponsejsend.FailBody {
 	// Create the data map
-	data := map[string]interface{}{
+	data := map[string]any{
 		"request_id":   errorDetails.GetRequestId(),
 		"serving_data": errorDetails.GetServingData(),
 	}
@@ -391,7 +436,7 @@ func NewFailBodyFromErrorDetailsResourceInfo(
 	errorDetails *errdetails.ResourceInfo,
 ) *gonethttpresponsejsend.FailBody {
 	// Create the data map
-	data := map[string]interface{}{
+	data := map[string]any{
 		"resource_type": errorDetails.GetResourceType(),
 		"resource_name": errorDetails.GetResourceName(),
 		"owner":         errorDetails.GetOwner(),
@@ -452,14 +497,10 @@ func NewFailBodyFromErrorDetailsHelp(
 	links := make([]*errdetails.Help_Link, len(errorDetails.GetLinks()))
 
 	// Loop through the links and add them to the data map
-	for _, link := range errorDetails.GetLinks() {
-		links = append(
-			links, link,
-		)
-	}
+	links = append(links, errorDetails.GetLinks()...)
 
 	// Initialize the data map
-	data := map[string]interface{}{
+	data := map[string]any{
 		"links": links,
 	}
 	return gonethttpresponsejsend.NewFailBodyWithCode(data, ErrCodeHelp)
@@ -514,7 +555,7 @@ func NewFailBodyFromErrorDetailsLocalizedMessage(
 	errorDetails *errdetails.LocalizedMessage,
 ) *gonethttpresponsejsend.FailBody {
 	// Create the data map
-	data := map[string]interface{}{
+	data := map[string]any{
 		"locale":  errorDetails.GetLocale(),
 		"message": errorDetails.GetMessage(),
 	}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
 
@@ -148,7 +149,8 @@ func (r *Router) GetMiddlewares() []func(http.Handler) http.Handler {
 	return r.middlewares
 }
 
-// chainMiddlewares chains the middlewares to the handler and adds the SetCtxWildcardsMiddleware and SetCtxQueryParametersMiddleware
+// chainMiddlewares chains the middlewares to the handler and adds the SetCtxWildcardsMiddleware and
+// SetCtxQueryParametersMiddleware
 //
 // Parameters:
 //
@@ -359,7 +361,7 @@ func (r *Router) RegisterHandler(pattern string, handler http.Handler) {
 	}
 
 	// Check if the pattern contains a trailing slash and remove it
-	if len(pattern) > 0 && pattern[len(pattern)-1] == '/' {
+	if pattern != "" && pattern[len(pattern)-1] == '/' {
 		pattern = pattern[:len(pattern)-1]
 	}
 
@@ -403,11 +405,12 @@ func (r *Router) NewRouter(
 
 	// Check the base router path
 	var fullPath string
-	if relativePath == "/" && r.FullPath() == "/" {
+	switch {
+	case relativePath == "/" && r.FullPath() == "/":
 		fullPath = "/"
-	} else if r.FullPath()[len(r.FullPath())-1] == '/' {
+	case r.FullPath()[len(r.FullPath())-1] == '/':
 		fullPath = r.FullPath() + relativePath[1:]
-	} else {
+	default:
 		fullPath = r.FullPath() + relativePath
 	}
 
@@ -517,8 +520,8 @@ func (r *Router) ServeStaticFiles(
 	}
 
 	// Check if the pattern contains a trailing slash and add it
-	if len(pattern) == 0 || pattern[len(pattern)-1] != '/' {
-		pattern = pattern + "/"
+	if pattern == "" || pattern[len(pattern)-1] != '/' {
+		pattern += "/"
 	}
 
 	// Serve the static files

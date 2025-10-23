@@ -8,18 +8,18 @@ type (
 	// Validator interface
 	Validator interface {
 		CreateValidateFn(
-			body interface{},
+			body any,
 			decode bool,
 			cache bool,
-			auxiliaryValidatorFns ...interface{},
+			auxiliaryValidatorFns ...any,
 		) (func(next http.Handler) http.Handler, error)
 		Validate(
-			body interface{},
-			auxiliaryValidatorFns ...interface{},
+			body any,
+			auxiliaryValidatorFns ...any,
 		) func(next http.Handler) http.Handler
 		DecodeAndValidate(
-			body interface{},
-			auxiliaryValidatorFns ...interface{},
+			body any,
+			auxiliaryValidatorFns ...any,
 		) func(next http.Handler) http.Handler
 	}
 )

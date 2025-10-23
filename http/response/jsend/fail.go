@@ -7,9 +7,9 @@ import (
 type (
 	// FailBody struct
 	FailBody struct {
-		Status Status      `json:"status"`
-		Code   string      `json:"code,omitempty"`
-		Data   interface{} `json:"data,omitempty"`
+		Status Status `json:"status"`
+		Code   string `json:"code,omitempty"`
+		Data   any    `json:"data,omitempty"`
 	}
 )
 
@@ -24,7 +24,7 @@ type (
 //
 //   - *FailBody: The JSend fail body
 func NewFailBodyWithCode(
-	data interface{},
+	data any,
 	code string,
 ) *FailBody {
 	return &FailBody{
@@ -42,7 +42,7 @@ func NewFailBodyWithCode(
 //
 // Returns:
 func NewFailBody(
-	data interface{},
+	data any,
 ) *FailBody {
 	return NewFailBodyWithCode(data, "")
 }
@@ -59,7 +59,7 @@ func NewFailBody(
 //
 //   - Response: The response
 func NewFailResponseWithCode(
-	data interface{},
+	data any,
 	code string,
 	httpStatus int,
 ) gonethttpresponse.Response {
@@ -80,7 +80,7 @@ func NewFailResponseWithCode(
 //
 //   - Response: The response
 func NewFailResponse(
-	data interface{},
+	data any,
 	httpStatus int,
 ) gonethttpresponse.Response {
 	return NewFailResponseWithCode(data, "", httpStatus)

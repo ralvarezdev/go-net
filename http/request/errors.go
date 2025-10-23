@@ -14,6 +14,7 @@ var (
 	ErrCodeUnknownField               string
 	ErrCodeEmptyBody                  string
 	ErrCodeMaxBodySizeExceeded        string
+	ErrCodeNilDecoder                 string
 )
 
 const (
@@ -30,4 +31,5 @@ var (
 	ErrUnexpectedEOF       = errors.New("json body contains badly-formed JSON")
 	ErrEmptyBody           = errors.New("json body is empty")
 	ErrUnmarshalBodyFailed = errors.New("failed to unmarshal json body")
+	ErrNilDecoder          = errors.New("decoder cannot be nil")
 )

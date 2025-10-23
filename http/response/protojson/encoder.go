@@ -7,6 +7,7 @@ import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
 	gojsonencoderprotojson "github.com/ralvarezdev/go-json/encoder/protojson"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpresponsejson "github.com/ralvarezdev/go-net/http/response/json"
@@ -57,10 +58,10 @@ func NewEncoder(
 //
 // Returns:
 //
-// - (map[string]interface{}, error): The precomputed marshaled body and the error if any
+// - (map[string]any, error): The precomputed marshaled body and the error if any
 func (e Encoder) PrecomputeMarshal(
-	body interface{},
-) (map[string]interface{}, error) {
+	body any,
+) (map[string]any, error) {
 	precomputedMarshal, err := e.protoJSONEncoder.PrecomputeMarshal(body)
 	if err != nil {
 		return nil, gonethttpresponse.NewDebugErrorWithCode(
@@ -83,7 +84,7 @@ func (e Encoder) PrecomputeMarshal(
 //
 //   - ([]byte, error): The encoded body and the error if any
 func (e Encoder) Encode(
-	body interface{},
+	body any,
 ) ([]byte, error) {
 	// Marshal the instance to get the precomputed body
 	precomputedMarshal, err := e.PrecomputeMarshal(body)
@@ -149,7 +150,7 @@ func (e Encoder) EncodeResponse(
 func (e Encoder) EncodeAndWrite(
 	writer io.Writer,
 	beforeWriteFn func() error,
-	body interface{},
+	body any,
 ) error {
 	// Marshal the instance to get the precomputed body
 	precomputedMarshal, err := e.PrecomputeMarshal(body)

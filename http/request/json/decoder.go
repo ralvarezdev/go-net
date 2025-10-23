@@ -6,7 +6,7 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
-	gojsondecoderjson "github.com/ralvarezdev/go-json/decoder/json"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -25,20 +25,30 @@ type (
 // Parameters:
 //
 //   - mode: The flag mode
+//   - decoder: The JSON decoder
 //
 // Returns:
 //
 //   - *Decoder: The default decoder
+//   - error: The error if any
 func NewDecoder(
 	mode *goflagsmode.Flag,
-) *Decoder {
+	decoder gojsondecoder.Decoder,
+) (*Decoder, error) {
 	// Create the JSON decoder
-	decoder := gojsondecoderjson.NewDecoder()
+	if decoder == nil {
+		return nil, gonethttpresponse.NewDebugErrorWithCode(
+			gonethttprequest.ErrNilDecoder,
+			gonethttp.ErrInternalServerError,
+			gonethttprequest.ErrCodeNilDecoder,
+			http.StatusInternalServerError,
+		)
+	}
 
 	return &Decoder{
 		decoder: decoder,
 		mode:    mode,
-	}
+	}, nil
 }
 
 // Decode decodes the JSON body from an any value and stores it in the destination
@@ -52,8 +62,8 @@ func NewDecoder(
 //
 //   - error: The error if any
 func (d Decoder) Decode(
-	body interface{},
-	dest interface{},
+	body any,
+	dest any,
 ) error {
 	if err := d.decoder.Decode(
 		body,
@@ -81,7 +91,7 @@ func (d Decoder) Decode(
 //   - error: The error if any
 func (d Decoder) DecodeReader(
 	reader io.Reader,
-	dest interface{},
+	dest any,
 ) error {
 	if err := d.decoder.DecodeReader(
 		reader,
@@ -104,7 +114,7 @@ func (d Decoder) DecodeReader(
 //   - error: The error if any
 func (d Decoder) DecodeRequest(
 	r *http.Request,
-	dest interface{},
+	dest any,
 ) error {
 	// Check the request
 	if r == nil {

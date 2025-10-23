@@ -5,10 +5,11 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
+	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
-	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
 )
 
 type (
@@ -68,7 +69,7 @@ func NewDefaultRequestsHandler(
 //   - bool: True if the request body is valid, false otherwise
 func (d DefaultRequestsHandler) Validate(
 	w http.ResponseWriter,
-	body interface{},
+	body any,
 	validatorFn govalidatormappervalidator.ValidateFn,
 ) bool {
 	// Validate the request body
@@ -115,7 +116,7 @@ func (d DefaultRequestsHandler) Validate(
 func (d DefaultRequestsHandler) DecodeAndValidate(
 	w http.ResponseWriter,
 	r *http.Request,
-	dest interface{},
+	dest any,
 	validatorFn govalidatormappervalidator.ValidateFn,
 ) bool {
 	// Decode the request body

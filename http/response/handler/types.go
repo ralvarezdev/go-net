@@ -5,6 +5,7 @@ import (
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -251,7 +252,7 @@ func (r ResponsesHandler) HandleFailFieldErrorWithCode(
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleFailDataError(
 	w http.ResponseWriter,
-	data interface{},
+	data any,
 	httpStatus int,
 ) {
 	r.HandleRawError(
@@ -273,7 +274,7 @@ func (r ResponsesHandler) HandleFailDataError(
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleFailDataErrorWithCode(
 	w http.ResponseWriter,
-	data interface{},
+	data any,
 	errCode string,
 	httpStatus int,
 ) {

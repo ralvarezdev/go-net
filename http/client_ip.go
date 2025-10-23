@@ -28,7 +28,7 @@ func GetClientIP(r *http.Request) string {
 
 	// If there's no forwarded IP, use RemoteAddr
 	ip := r.RemoteAddr
-	if len(ip) > 0 && ip[0] == '[' {
+	if ip != "" && ip[0] == '[' {
 		// Handle IPv6 address
 		ip = strings.Split(ip, "]")[0] + "]"
 	} else {

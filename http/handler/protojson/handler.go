@@ -2,6 +2,7 @@ package protojson
 
 import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
 	gonethttprequestprotojson "github.com/ralvarezdev/go-net/http/request/protojson"

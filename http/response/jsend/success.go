@@ -6,7 +6,7 @@ import (
 
 type (
 	// SuccessBody struct
-	SuccessBody[T interface{}] struct {
+	SuccessBody[T any] struct {
 		Status Status `json:"status"`
 		Data   T      `json:"data,omitempty"`
 	}
@@ -21,7 +21,7 @@ type (
 // Returns:
 //
 //   - *SuccessBody: The JSend success body
-func NewSuccessBody[T interface{}](
+func NewSuccessBody[T any](
 	data T,
 ) *SuccessBody[T] {
 	return &SuccessBody[T]{
@@ -41,7 +41,7 @@ func NewSuccessBody[T interface{}](
 //
 //   - Response: The response
 func NewSuccessResponse(
-	data interface{},
+	data any,
 	httpStatus int,
 ) gonethttpresponse.Response {
 	return gonethttpresponse.NewResponse(NewSuccessBody(data), httpStatus)

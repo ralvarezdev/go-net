@@ -48,7 +48,7 @@ func ChainHandlers(
 	// Set the chained handlers
 	n := len(handlers)
 	chainedHandler := lastHandler
-	for i := n - 1; i >= 0; i = i - 1 {
+	for i := n - 1; i >= 0; i-- {
 		chainedHandler = handlers[i](chainedHandler)
 	}
 	return chainedHandler

@@ -9,16 +9,16 @@ type (
 	// Decoder interface
 	Decoder interface {
 		Decode(
-			body interface{},
-			dest interface{},
+			body any,
+			dest any,
 		) error
 		DecodeReader(
 			reader io.Reader,
-			dest interface{},
+			dest any,
 		) error
 		DecodeRequest(
 			r *http.Request,
-			dest interface{},
+			dest any,
 		) error
 	}
 )

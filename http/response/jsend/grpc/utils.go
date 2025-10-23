@@ -5,10 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	gonethttp "github.com/ralvarezdev/go-net/http"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/status"
+
+	gonethttp "github.com/ralvarezdev/go-net/http"
+	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 // ParseError parses a gRPC error to a JSend error response

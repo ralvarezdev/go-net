@@ -8,6 +8,7 @@ import (
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
 	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
 	gojsonencoderjson "github.com/ralvarezdev/go-json/encoder/json"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
@@ -62,7 +63,7 @@ func NewStreamEncoder(
 //   - ([]byte): The encoded JSON
 //   - error: The error if any
 func (s StreamEncoder) Encode(
-	body interface{},
+	body any,
 ) ([]byte, error) {
 	marshaledBody, err := s.streamEncoder.Encode(body)
 	if err != nil {
@@ -90,7 +91,7 @@ func (s StreamEncoder) Encode(
 func (s StreamEncoder) EncodeAndWrite(
 	writer io.Writer,
 	beforeWriteFn func() error,
-	body interface{},
+	body any,
 ) error {
 	if err := s.streamEncoder.EncodeAndWrite(
 		writer,

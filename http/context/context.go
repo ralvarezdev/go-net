@@ -15,13 +15,13 @@ import (
 // Returns:
 //
 //   - *http.Request: The HTTP request with the body set in the context
-func SetCtxBody(r *http.Request, body interface{}) *http.Request {
+func SetCtxBody(r *http.Request, body any) *http.Request {
 	ctx := context.WithValue(r.Context(), CtxBodyKey, body)
 	return r.WithContext(ctx)
 }
 
 // SetBody wraps SetCtxBody
-func SetBody(r *http.Request, body interface{}) *http.Request {
+func SetBody(r *http.Request, body any) *http.Request {
 	return SetCtxBody(r, body)
 }
 
@@ -33,13 +33,13 @@ func SetBody(r *http.Request, body interface{}) *http.Request {
 //
 // Returns:
 //
-//   - interface{}: The body from the context, or nil if not found
-func GetCtxBody(r *http.Request) interface{} {
+//   - any: The body from the context, or nil if not found
+func GetCtxBody(r *http.Request) any {
 	return r.Context().Value(CtxBodyKey)
 }
 
 // GetBody wraps GetCtxBody
-func GetBody(r *http.Request) interface{} {
+func GetBody(r *http.Request) any {
 	return GetCtxBody(r)
 }
 

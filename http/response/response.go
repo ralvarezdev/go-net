@@ -7,8 +7,8 @@ import (
 type (
 	// DefaultResponse struct
 	DefaultResponse struct {
-		body       interface{}
-		debugBody  interface{}
+		body       any
+		debugBody  any
 		httpStatus int
 	}
 )
@@ -24,7 +24,7 @@ type (
 //
 //   - *DefaultResponse: The default response
 func NewResponse(
-	body interface{},
+	body any,
 	httpStatus int,
 ) *DefaultResponse {
 	return &DefaultResponse{
@@ -46,8 +46,8 @@ func NewResponse(
 //
 //   - *DefaultResponse: The default response
 func NewDebugResponse(
-	body interface{},
-	debugBody interface{},
+	body any,
+	debugBody any,
 	httpStatus int,
 ) *DefaultResponse {
 	if debugBody == nil {
@@ -69,8 +69,8 @@ func NewDebugResponse(
 //
 // Returns:
 //
-//   - interface{}: The response body
-func (d DefaultResponse) Body(mode *goflagsmode.Flag) interface{} {
+//   - any: The response body
+func (d DefaultResponse) Body(mode *goflagsmode.Flag) any {
 	if mode != nil && mode.IsDebug() {
 		return d.debugBody
 	}

@@ -5,9 +5,10 @@ import (
 	"log/slog"
 	"net/http"
 
+	goratelimiterredis "github.com/ralvarezdev/go-rate-limiter/redis"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
-	goratelimiterredis "github.com/ralvarezdev/go-rate-limiter/redis"
 )
 
 type (

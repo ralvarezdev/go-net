@@ -4,6 +4,9 @@ import (
 	"log/slog"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+
+	gojsondecoderjson "github.com/ralvarezdev/go-json/decoder/json"
+
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttprequesthandler "github.com/ralvarezdev/go-net/http/request/handler"
 	gonethttprequestjson "github.com/ralvarezdev/go-net/http/request/json"
@@ -53,9 +56,13 @@ func NewStreamHandler(
 	}
 
 	// Create the JSON stream decoder
-	streamDecoder := gonethttprequestjson.NewStreamDecoder(
+	streamDecoder, err := gonethttprequestjson.NewDecoder(
 		mode,
+		gojsondecoderjson.NewStreamDecoder(),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create the requests handler
 	requestsHandler, err := gonethttprequesthandler.NewDefaultRequestsHandler(

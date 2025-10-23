@@ -1,9 +1,11 @@
 package jsend
 
 import (
+	"errors"
 	"net/http"
 
 	goflagsmode "github.com/ralvarezdev/go-flags/mode"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 	gonethttpresponsehandler "github.com/ralvarezdev/go-net/http/response/handler"
@@ -39,31 +41,27 @@ func (r RawErrorHandler) HandleRawError(
 		response gonethttpresponse.Response,
 	),
 ) {
-	switch parsedErr := err.(type) {
-	case nil:
-		return
-	case *gonethttpresponse.FailFieldError:
-		handleResponseFn(
-			w,
-			gonethttpresponsejsend.NewResponseFromFailFieldError(parsedErr),
-		)
-	case *gonethttpresponse.Error:
-		handleResponseFn(
-			w,
-			gonethttpresponsejsend.NewResponseFromError(parsedErr),
-		)
-	default:
-		handleResponseFn(
-			w,
-			gonethttpresponsejsend.NewResponseFromError(
-				gonethttpresponse.NewDebugErrorWithCode(
-					err,
-					gonethttp.ErrInternalServerError,
-					ErrCodeRequestFatalError,
-					http.StatusInternalServerError,
+	{
+		var parsedErr1 *gonethttpresponse.FailFieldError
+		var parsedErr2 *gonethttpresponse.Error
+		switch {
+		case errors.As(err, &parsedErr1):
+			handleResponseFn(w, gonethttpresponsejsend.NewResponseFromFailFieldError(parsedErr1))
+		case errors.As(err, &parsedErr2):
+			handleResponseFn(w, gonethttpresponsejsend.NewResponseFromError(parsedErr2))
+		default:
+			handleResponseFn(
+				w,
+				gonethttpresponsejsend.NewResponseFromError(
+					gonethttpresponse.NewDebugErrorWithCode(
+						err,
+						gonethttp.ErrInternalServerError,
+						ErrCodeRequestFatalError,
+						http.StatusInternalServerError,
+					),
 				),
-			),
-		)
+			)
+		}
 	}
 }
 

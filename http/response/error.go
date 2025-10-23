@@ -15,7 +15,7 @@ type (
 
 	// FailDataError struct
 	FailDataError struct {
-		Data       interface{}
+		Data       any
 		ErrorCode  string
 		HTTPStatus int
 	}
@@ -106,7 +106,7 @@ func (f FailFieldError) Data() map[string][]string {
 //
 //   - *FailDataError: The JSend fail data error
 func NewFailDataErrorWithCode(
-	data interface{},
+	data any,
 	errorCode string,
 	httpStatus int,
 ) *FailDataError {
@@ -128,7 +128,7 @@ func NewFailDataErrorWithCode(
 //
 //   - *FailDataError: The JSend fail data error
 func NewFailDataError(
-	data interface{},
+	data any,
 	httpStatus int,
 ) *FailDataError {
 	return NewFailDataErrorWithCode(data, "", httpStatus)

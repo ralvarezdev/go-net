@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	gojwt "github.com/ralvarezdev/go-jwt"
-	gojwtnethttp "github.com/ralvarezdev/go-jwt/net/http"
 	gojwtnethttpctx "github.com/ralvarezdev/go-jwt/net/http/context"
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
@@ -102,7 +102,11 @@ func (m Middleware) authenticate(
 			func(w http.ResponseWriter, r *http.Request) {
 				// Validate the token and get the validated claims
 				if m.validator == nil {
+					// Get the context from the request
+					ctx := r.Context()
+
 					claims, err := m.validator.ValidateClaims(
+						ctx,
 						rawToken,
 						token,
 					)
@@ -123,7 +127,19 @@ func (m Middleware) authenticate(
 				}
 
 				// Set the raw token to the context
-				r, _ = gojwtnethttpctx.SetCtxToken(r, rawToken)
+				var err error
+				r, err = gojwtnethttpctx.SetCtxToken(r, rawToken)
+				if err != nil {
+					if failHandler == nil {
+						panic(err)
+					}
+					failHandler(
+						w,
+						err,
+						ErrCodeFailedToSetTokenInContext.Error(),
+					)
+					return
+				}
 
 				// Call the next handler
 				next.ServeHTTP(w, r)
@@ -146,7 +162,7 @@ func (m Middleware) authenticateFromHeaderFailHandler(
 ) {
 	m.responsesHandler.HandleFailFieldErrorWithCode(
 		w,
-		gojwtnethttp.AuthorizationHeaderKey,
+		gonethttp.Authorization,
 		err,
 		errorCode,
 		http.StatusUnauthorized,
@@ -169,7 +185,7 @@ func (m Middleware) AuthenticateFromHeader(
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				// Get the authorization from the header
-				authorization := r.Header.Get(gojwtnethttp.AuthorizationHeaderKey)
+				authorization := r.Header.Get(gonethttp.Authorization)
 
 				// Check if the authorization is a bearer token
 				parts := strings.Split(authorization, " ")
@@ -218,15 +234,13 @@ func (m Middleware) authenticateFromCookieFailHandler(
 		err error,
 		errorCode string,
 	) {
-		{
-			m.responsesHandler.HandleFailFieldErrorWithCode(
-				w,
-				cookieName,
-				err,
-				errorCode,
-				http.StatusUnauthorized,
-			)
-		}
+		m.responsesHandler.HandleFailFieldErrorWithCode(
+			w,
+			cookieName,
+			err,
+			errorCode,
+			http.StatusUnauthorized,
+		)
 	}
 }
 
@@ -257,9 +271,10 @@ func (m Middleware) AuthenticateFromCookie(
 	}
 
 	var cookieName string
-	if token == gojwttoken.AccessToken {
+	switch token {
+	case gojwttoken.AccessToken:
 		cookieName = *m.options.CookieAccessTokenName
-	} else if token == gojwttoken.RefreshToken {
+	case gojwttoken.RefreshToken:
 		cookieName = *m.options.CookieRefreshTokenName
 	}
 
@@ -268,6 +283,8 @@ func (m Middleware) AuthenticateFromCookie(
 
 	// Create the authenticate function
 	var authenticateFn func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler
+
+	//nolint:nestif // This function requires nested ifs for clarity
 	authenticateFn = func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler {
 		return func(next http.Handler) http.Handler {
 			return http.HandlerFunc(

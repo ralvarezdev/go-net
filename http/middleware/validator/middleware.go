@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"reflect"
 
-	gonethttpctx "github.com/ralvarezdev/go-net/http/context"
-	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatormapper "github.com/ralvarezdev/go-validator/mapper"
 	govalidatormapperparser "github.com/ralvarezdev/go-validator/mapper/parser"
 	govalidatormapperparserjson "github.com/ralvarezdev/go-validator/mapper/parser/json"
 	govalidatormappervalidator "github.com/ralvarezdev/go-validator/mapper/validator"
+
+	gonethttpctx "github.com/ralvarezdev/go-net/http/context"
+	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
 
 type (
@@ -99,7 +100,7 @@ func NewMiddleware(
 //   - *govalidatormapper.Mapper: the mapper
 //   - error: if there was an error creating the mapper
 func (m Middleware) createMapper(
-	structInstance interface{},
+	structInstance any,
 ) (*govalidatormapper.Mapper, reflect.Type, error) {
 	// Get the type of the request
 	structInstanceType := goreflect.GetTypeOf(structInstance)
@@ -140,10 +141,10 @@ func (m Middleware) createMapper(
 //   - func(next http.Handler) http.Handler: the validation middleware
 //   - error: if there was an error creating the validation function
 func (m Middleware) CreateValidateFn(
-	bodyExample interface{},
+	bodyExample any,
 	decode bool,
 	cache bool,
-	auxiliaryValidatorFns ...interface{},
+	auxiliaryValidatorFns ...any,
 ) (func(next http.Handler) http.Handler, error) {
 	// Create the mapper
 	mapper, bodyType, err := m.createMapper(bodyExample)
@@ -224,8 +225,8 @@ func (m Middleware) CreateValidateFn(
 //
 //   - func(next http.Handler) http.Handler: the validation middleware
 func (m Middleware) Validate(
-	body interface{},
-	auxiliaryValidatorFns ...interface{},
+	body any,
+	auxiliaryValidatorFns ...any,
 ) func(next http.Handler) http.Handler {
 	validateFn, err := m.CreateValidateFn(
 		body,
@@ -257,8 +258,8 @@ func (m Middleware) Validate(
 //
 //   - func(next http.Handler) http.Handler: the validation middleware
 func (m Middleware) DecodeAndValidate(
-	body interface{},
-	auxiliaryValidatorFns ...interface{},
+	body any,
+	auxiliaryValidatorFns ...any,
 ) func(next http.Handler) http.Handler {
 	validateFn, err := m.CreateValidateFn(
 		body,

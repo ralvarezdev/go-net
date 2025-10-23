@@ -1,4 +1,4 @@
-package size_limiter
+package sizelimiter
 
 import (
 	"errors"

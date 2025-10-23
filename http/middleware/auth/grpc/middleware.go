@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 	gonethttpmiddlewareauth "github.com/ralvarezdev/go-net/http/middleware/auth"
@@ -104,7 +105,8 @@ func (m Middleware) interceptionNotFoundHandler(
 	}
 }
 
-// AuthenticateFromHeader is a middleware function that authenticates requests based on the provided RPC method using tokens from the request header.
+// AuthenticateFromHeader is a middleware function that authenticates requests based on the provided RPC method using
+// tokens from the request header.
 //
 // Parameters:
 //
@@ -129,7 +131,8 @@ func (m Middleware) AuthenticateFromHeader(
 	)
 }
 
-// AuthenticateFromCookie is a middleware function that authenticates requests based on the provided RPC method using tokens from cookies.
+// AuthenticateFromCookie is a middleware function that authenticates requests based on the provided RPC method using
+// tokens from cookies.
 //
 // Parameters:
 //

@@ -6,6 +6,7 @@ import (
 
 	gojsondecoder "github.com/ralvarezdev/go-json/decoder"
 	gojsondecoderprotojson "github.com/ralvarezdev/go-json/decoder/protojson"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttprequest "github.com/ralvarezdev/go-net/http/request"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -42,8 +43,8 @@ func NewDecoder() *Decoder {
 //
 //   - error: The error if any
 func (d Decoder) Decode(
-	body interface{},
-	dest interface{},
+	body any,
+	dest any,
 ) error {
 	if err := d.decoder.Decode(
 		body,
@@ -66,7 +67,7 @@ func (d Decoder) Decode(
 //   - error: The error if any
 func (d Decoder) DecodeReader(
 	reader io.Reader,
-	dest interface{},
+	dest any,
 ) error {
 	if err := d.decoder.DecodeReader(
 		reader,
@@ -89,7 +90,7 @@ func (d Decoder) DecodeReader(
 //   - error: The error if any
 func (d Decoder) DecodeRequest(
 	r *http.Request,
-	dest interface{},
+	dest any,
 ) error {
 	// Check the request
 	if r == nil {

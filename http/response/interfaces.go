@@ -10,7 +10,7 @@ import (
 type (
 	// Response is the interface for the responses
 	Response interface {
-		Body(mode *goflagsmode.Flag) interface{}
+		Body(mode *goflagsmode.Flag) any
 		HTTPStatus() int
 	}
 
@@ -29,7 +29,7 @@ type (
 	// ProtoJSONEncoder interface
 	ProtoJSONEncoder interface {
 		PrecomputeMarshal(
-			body interface{},
-		) (map[string]interface{}, error)
+			body any,
+		) (map[string]any, error)
 	}
 )

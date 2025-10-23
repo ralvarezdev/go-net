@@ -1,7 +1,6 @@
 package cookie
 
 import (
-	"errors"
 	"net/http"
 	"time"
 )
@@ -100,12 +99,7 @@ func GetTimestampCookie(
 
 	// Get the cookie
 	cookie, err := r.Cookie(attributes.Name)
-
-	// Check if the error is not found
 	if err != nil {
-		if errors.Is(err, http.ErrNoCookie) {
-			return nil, nil
-		}
 		return nil, err
 	}
 

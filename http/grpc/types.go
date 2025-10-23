@@ -6,6 +6,7 @@ import (
 	"time"
 
 	gogrpcmd "github.com/ralvarezdev/go-grpc/metadata"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpcookie "github.com/ralvarezdev/go-net/http/cookie"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
@@ -58,15 +59,15 @@ func NewDefaultAuthenticationParser(
 //
 // Parameters:
 //
-// - w: http.ResponseWriter
 // - ctx: context.Context
+// - w: http.ResponseWriter
 //
 // Returns:
 //
 // - error: error if something goes wrong
 func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
-	w http.ResponseWriter,
 	ctx context.Context,
+	w http.ResponseWriter,
 ) error {
 	// Get the metadata from the context
 	md, err := gogrpcmd.GetCtxMetadata(ctx)
@@ -81,7 +82,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 	// Get the authorization metadata from the context
 	authorization, err := gogrpcmd.GetMetadataAuthorizationToken(md)
 	if err != nil {
-
+		return err
 	}
 
 	// Set the authorization header
@@ -92,7 +93,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 		// Get the metadata value
 		if metadataValueSlice, ok := md[metadataKey]; ok {
 			// Check if the metadata value is empty
-			if metadataValueSlice == nil || len(metadataValueSlice) == 0 {
+			if len(metadataValueSlice) == 0 {
 				continue
 			}
 
@@ -110,15 +111,15 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 //
 // Parameters:
 //
-// - w: http.ResponseWriter
 // - ctx: context.Context
+// - w: http.ResponseWriter
 //
 // Returns:
 //
 // - error: error if something goes wrong
 func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
-	w http.ResponseWriter,
 	ctx context.Context,
+	w http.ResponseWriter,
 ) error {
 	// Get the metadata from the context
 	md, err := gogrpcmd.GetCtxMetadata(ctx)
@@ -129,32 +130,30 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 	// Iterate over the metadata keys to cookies attributes
 	for metadataKey, cookieAttributes := range d.options.MetadataKeysToCookiesAttributes {
 		// Get the metadata value
-		if metadataValueSlice, ok := md[metadataKey]; ok {
-			// Check if the metadata value is empty
-			if metadataValueSlice == nil || len(metadataValueSlice) == 0 {
-				continue
-			}
-
-			// Get the first value of the metadata
-			metadataValue := metadataValueSlice[0]
-
-			// Get the expiration time if the function is set
-			var expiresAt time.Time
-			if d.options.GetExpiresAtFn != nil {
-				expiresAt, err = d.options.GetExpiresAtFn(metadataValue)
-				if err != nil {
-					return err
-				}
-			}
-
-			// Set the cookie
-			gonethttpcookie.SetCookie(
-				w,
-				cookieAttributes,
-				metadataValue,
-				expiresAt,
-			)
+		metadataValueSlice, ok := md[metadataKey]
+		if !ok || len(metadataValueSlice) == 0 {
+			continue
 		}
+
+		// Get the first value of the metadata
+		metadataValue := metadataValueSlice[0]
+
+		// Get the expiration time if the function is set
+		var expiresAt time.Time
+		if d.options.GetExpiresAtFn != nil {
+			expiresAt, err = d.options.GetExpiresAtFn(metadataValue)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Set the cookie
+		gonethttpcookie.SetCookie(
+			w,
+			cookieAttributes,
+			metadataValue,
+			expiresAt,
+		)
 	}
 	return nil
 }

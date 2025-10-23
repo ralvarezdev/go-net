@@ -7,6 +7,7 @@ import (
 	"github.com/ralvarezdev/go-flags/mode"
 	gojsonencoder "github.com/ralvarezdev/go-json/encoder"
 	gojsonencoderjson "github.com/ralvarezdev/go-json/encoder/json"
+
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
@@ -14,8 +15,8 @@ import (
 type (
 	// Encoder struct
 	Encoder struct {
-		encoder gojsonencoder.Encoder
-		mode    *mode.Flag
+		encoder  gojsonencoder.Encoder
+		modeFlag *mode.Flag
 	}
 )
 
@@ -23,18 +24,18 @@ type (
 //
 // Parameters:
 //
-//   - mode: The flag mode
+//   - modeFlag: The flag mode
 //
 // Returns:
 //
 //   - *Encoder: The default encoder
 func NewEncoder(
-	mode *mode.Flag,
+	modeFlag *mode.Flag,
 ) *Encoder {
 	// Create the JSON encoder
 	encoder := gojsonencoderjson.NewEncoder()
 
-	return &Encoder{encoder, mode}
+	return &Encoder{encoder, modeFlag}
 }
 
 // Encode encodes the body into JSON bytes
@@ -48,7 +49,7 @@ func NewEncoder(
 //   - []byte: The encoded JSON bytes
 //   - error: The error if any
 func (e Encoder) Encode(
-	body interface{},
+	body any,
 ) ([]byte, error) {
 	marshaledBody, err := e.encoder.Encode(body)
 	if err != nil {
@@ -76,7 +77,7 @@ func (e Encoder) Encode(
 func (e Encoder) EncodeAndWrite(
 	writer io.Writer,
 	beforeWriteFn func() error,
-	body interface{},
+	body any,
 ) error {
 	if err := e.encoder.EncodeAndWrite(
 		writer,
@@ -107,7 +108,7 @@ func (e Encoder) EncodeResponse(
 	response gonethttpresponse.Response,
 ) ([]byte, error) {
 	// Get the response body and HTTP status
-	body := response.Body(e.mode)
+	body := response.Body(e.modeFlag)
 
 	// Encode the body into JSON
 	marshaledBody, err := e.Encode(body)
@@ -157,7 +158,7 @@ func (e Encoder) EncodeAndWriteResponse(
 	response gonethttpresponse.Response,
 ) error {
 	// Get the response body and HTTP status
-	body := response.Body(e.mode)
+	body := response.Body(e.modeFlag)
 
 	// Build the before write function
 	beforeWriteFn := func() error {
