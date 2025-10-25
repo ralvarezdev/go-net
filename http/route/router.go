@@ -305,7 +305,7 @@ func (r *Router) AddEndpointHandler(
 		func(w http.ResponseWriter, req *http.Request) {
 			if err := handler(w, req); err != nil {
 				// Handle the error using the handler's HandleRawError method
-				r.handler.HandleRawError(w, err)
+				r.handler.HandleRawError(w, req, err)
 			}
 		},
 	)
@@ -340,7 +340,7 @@ func (r *Router) AddExactEndpointHandler(
 		func(w http.ResponseWriter, req *http.Request) {
 			if err := handler(w, req); err != nil {
 				// Handle the error using the handler's HandleRawError method
-				r.handler.HandleRawError(w, err)
+				r.handler.HandleRawError(w, req, err)
 			}
 		},
 	)

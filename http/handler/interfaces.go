@@ -13,6 +13,7 @@ type (
 	RequestsHandler interface {
 		Validate(
 			w http.ResponseWriter,
+			r *http.Request,
 			body any,
 			validatorFn govalidatormappervalidator.ValidateFn,
 		) bool
@@ -28,9 +29,11 @@ type (
 	RawErrorHandler interface {
 		HandleRawError(
 			w http.ResponseWriter,
+			r *http.Request,
 			err error,
 			handleResponseFn func(
 				w http.ResponseWriter,
+				r *http.Request,
 				response gonethttpresponse.Response,
 			),
 		)
@@ -41,31 +44,37 @@ type (
 		gonethttpresponse.Encoder
 		HandleResponse(
 			w http.ResponseWriter,
+			r *http.Request,
 			response gonethttpresponse.Response,
 		)
 		HandleRawError(
 			w http.ResponseWriter,
+			r *http.Request,
 			err error,
 		)
 		HandleError(
 			w http.ResponseWriter,
+			r *http.Request,
 			err error,
 			httpStatus int,
 		)
 		HandleErrorWithCode(
 			w http.ResponseWriter,
+			r *http.Request,
 			err error,
 			errCode string,
 			httpStatus int,
 		)
 		HandleDebugError(
 			w http.ResponseWriter,
+			r *http.Request,
 			debugErr error,
 			err error,
 			httpStatus int,
 		)
 		HandleDebugErrorWithCode(
 			w http.ResponseWriter,
+			r *http.Request,
 			debugErr error,
 			err error,
 			errCode string,
@@ -73,12 +82,14 @@ type (
 		)
 		HandleFailFieldError(
 			w http.ResponseWriter,
+			r *http.Request,
 			field string,
 			err error,
 			httpStatus int,
 		)
 		HandleFailFieldErrorWithCode(
 			w http.ResponseWriter,
+			r *http.Request,
 			field string,
 			err error,
 			errCode string,
@@ -86,11 +97,13 @@ type (
 		)
 		HandleFailDataError(
 			w http.ResponseWriter,
+			r *http.Request,
 			data any,
 			httpStatus int,
 		)
 		HandleFailDataErrorWithCode(
 			w http.ResponseWriter,
+			r *http.Request,
 			data any,
 			errCode string,
 			httpStatus int,

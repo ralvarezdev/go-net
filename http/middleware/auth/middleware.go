@@ -116,6 +116,7 @@ func (m Middleware) authenticate(
 						}
 						failHandler(
 							w,
+							r,
 							err,
 							ErrCodeInvalidTokenClaims,
 						)
@@ -135,6 +136,7 @@ func (m Middleware) authenticate(
 					}
 					failHandler(
 						w,
+						r,
 						err,
 						ErrCodeFailedToSetTokenInContext.Error(),
 					)
@@ -153,15 +155,18 @@ func (m Middleware) authenticate(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - r: The HTTP request
 //   - err: The error that occurred
 //   - errorCode: The error code to return
 func (m Middleware) authenticateFromHeaderFailHandler(
 	w http.ResponseWriter,
+	r *http.Request,
 	err error,
 	errorCode string,
 ) {
 	m.responsesHandler.HandleFailFieldErrorWithCode(
 		w,
+		r,
 		gonethttp.Authorization,
 		err,
 		errorCode,
@@ -194,6 +199,7 @@ func (m Middleware) AuthenticateFromHeader(
 				if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
 					m.authenticateFromHeaderFailHandler(
 						w,
+						r,
 						ErrInvalidAuthorizationHeader,
 						ErrCodeInvalidAuthorizationHeader,
 					)
@@ -231,11 +237,13 @@ func (m Middleware) authenticateFromCookieFailHandler(
 ) FailHandlerFn {
 	return func(
 		w http.ResponseWriter,
+		r *http.Request,
 		err error,
 		errorCode string,
 	) {
 		m.responsesHandler.HandleFailFieldErrorWithCode(
 			w,
+			r,
 			cookieName,
 			err,
 			errorCode,
@@ -305,6 +313,7 @@ func (m Middleware) AuthenticateFromCookie(
 						if !ok {
 							failHandler(
 								w,
+								r,
 								gonethttp.ErrCookieNotFound,
 								gonethttp.ErrCodeCookieNotFound,
 							)
@@ -326,6 +335,7 @@ func (m Middleware) AuthenticateFromCookie(
 								if err != nil {
 									m.authenticateFromCookieFailHandler(*m.options.CookieRefreshTokenName)(
 										w,
+										r,
 										err,
 										ErrCodeFailedToRefreshToken,
 									)
@@ -346,6 +356,7 @@ func (m Middleware) AuthenticateFromCookie(
 					if rawToken == "" {
 						failHandler(
 							w,
+							r,
 							gonethttp.ErrCookieNotFound,
 							gonethttp.ErrCodeCookieNotFound,
 						)

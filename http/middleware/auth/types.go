@@ -10,6 +10,7 @@ type (
 	// FailHandlerFn defines the function signature for handling authentication failures
 	FailHandlerFn func(
 		w http.ResponseWriter,
+		r *http.Request,
 		err error,
 		errorCode string,
 	)

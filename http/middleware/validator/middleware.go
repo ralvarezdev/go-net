@@ -188,6 +188,7 @@ func (m Middleware) CreateValidateFn(
 					}
 				} else if !m.requestsHandler.Validate(
 					w,
+					r,
 					dest,
 					innerValidateFn,
 				) {

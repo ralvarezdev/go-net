@@ -61,6 +61,7 @@ func NewDefaultRequestsHandler(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - r: The HTTP request
 //   - body: The request body to validate
 //   - validatorFn: The validator function
 //
@@ -69,6 +70,7 @@ func NewDefaultRequestsHandler(
 //   - bool: True if the request body is valid, false otherwise
 func (d DefaultRequestsHandler) Validate(
 	w http.ResponseWriter,
+	r *http.Request,
 	body any,
 	validatorFn govalidatormappervalidator.ValidateFn,
 ) bool {
@@ -84,6 +86,7 @@ func (d DefaultRequestsHandler) Validate(
 	if err != nil {
 		d.responsesHandler.HandleDebugErrorWithCode(
 			w,
+			r,
 			err,
 			gonethttp.ErrInternalServerError,
 			ErrCodeValidationFailed,
@@ -94,6 +97,7 @@ func (d DefaultRequestsHandler) Validate(
 
 	d.responsesHandler.HandleFailDataErrorWithCode(
 		w,
+		r,
 		validations,
 		ErrCodeValidationFailed,
 		http.StatusBadRequest,
@@ -124,11 +128,12 @@ func (d DefaultRequestsHandler) DecodeAndValidate(
 		// Handle the error
 		d.responsesHandler.HandleRawError(
 			w,
+			r,
 			err,
 		)
 		return false
 	}
 
 	// Validate the request body
-	return d.Validate(w, dest, validatorFn)
+	return d.Validate(w, r, dest, validatorFn)
 }

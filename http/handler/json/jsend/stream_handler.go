@@ -25,7 +25,7 @@ func NewStreamHandler(mode *goflagsmode.Flag, logger *slog.Logger) (
 	error,
 ) {
 	// Create the raw error handler for the responses handler
-	rawErrorHandler := gonethttpresponsehandlerjsend.NewRawErrorHandler()
+	rawErrorHandler := gonethttpresponsehandlerjsend.NewRawErrorHandler(logger)
 
 	return gonethttphandlerjson.NewStreamHandler(mode, rawErrorHandler, logger)
 }

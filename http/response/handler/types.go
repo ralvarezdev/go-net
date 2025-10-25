@@ -60,15 +60,18 @@ func NewResponsesHandler(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - r: The HTTP request
 //   - response: The response to handle
 func (r ResponsesHandler) HandleResponse(
 	w http.ResponseWriter,
+	req *http.Request,
 	response gonethttpresponse.Response,
 ) {
 	// Check if the response is nil
 	if response == nil {
 		r.HandleDebugErrorWithCode(
 			w,
+			req,
 			gonethttpresponse.ErrNilResponse,
 			gonethttp.ErrInternalServerError,
 			gonethttpresponse.ErrCodeNilResponse,
@@ -79,7 +82,7 @@ func (r ResponsesHandler) HandleResponse(
 
 	// Call the encoder
 	if err := r.EncodeAndWriteResponse(w, response); err != nil {
-		r.HandleRawError(w, err)
+		r.HandleRawError(w, req, err)
 		return
 	}
 }
@@ -89,12 +92,14 @@ func (r ResponsesHandler) HandleResponse(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - err: The error to handle
 func (r ResponsesHandler) HandleRawError(
 	w http.ResponseWriter,
+	req *http.Request,
 	err error,
 ) {
-	r.RawErrorHandler.HandleRawError(w, err, r.HandleResponse)
+	r.RawErrorHandler.HandleRawError(w, req, err, r.HandleResponse)
 }
 
 // HandleError handles the error response
@@ -102,15 +107,18 @@ func (r ResponsesHandler) HandleRawError(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - err: The error to handle
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleError(
 	w http.ResponseWriter,
+	req *http.Request,
 	err error,
 	httpStatus int,
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewError(
 			err,
 			httpStatus,
@@ -123,17 +131,20 @@ func (r ResponsesHandler) HandleError(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleErrorWithCode(
 	w http.ResponseWriter,
+	req *http.Request,
 	err error,
 	errCode string,
 	httpStatus int,
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewErrorWithCode(
 			err,
 			errCode,
@@ -147,16 +158,19 @@ func (r ResponsesHandler) HandleErrorWithCode(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - debugErr: The debug error to handle
 //   - err: The error to handle
 func (r ResponsesHandler) HandleDebugError(
 	w http.ResponseWriter,
+	req *http.Request,
 	debugErr error,
 	err error,
 	httpStatus int,
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewDebugError(
 			err,
 			debugErr,
@@ -170,12 +184,14 @@ func (r ResponsesHandler) HandleDebugError(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - debugErr: The debug error to handle
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleDebugErrorWithCode(
 	w http.ResponseWriter,
+	req *http.Request,
 	debugErr error,
 	err error,
 	errCode string,
@@ -183,6 +199,7 @@ func (r ResponsesHandler) HandleDebugErrorWithCode(
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewDebugErrorWithCode(
 			err,
 			debugErr,
@@ -197,17 +214,20 @@ func (r ResponsesHandler) HandleDebugErrorWithCode(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - field: The field that failed
 //   - err: The error to handle
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleFailFieldError(
 	w http.ResponseWriter,
+	req *http.Request,
 	field string,
 	err error,
 	httpStatus int,
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewFailFieldError(
 			field,
 			err,
@@ -221,12 +241,14 @@ func (r ResponsesHandler) HandleFailFieldError(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - field: The field that failed
 //   - err: The error to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleFailFieldErrorWithCode(
 	w http.ResponseWriter,
+	req *http.Request,
 	field string,
 	err error,
 	errCode string,
@@ -234,6 +256,7 @@ func (r ResponsesHandler) HandleFailFieldErrorWithCode(
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewFailFieldErrorWithCode(
 			field,
 			err,
@@ -248,15 +271,18 @@ func (r ResponsesHandler) HandleFailFieldErrorWithCode(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - data: The fail data to handle
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleFailDataError(
 	w http.ResponseWriter,
+	req *http.Request,
 	data any,
 	httpStatus int,
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewFailDataError(
 			data,
 			httpStatus,
@@ -269,17 +295,20 @@ func (r ResponsesHandler) HandleFailDataError(
 // Parameters:
 //
 //   - w: The HTTP response writer
+//   - req: The HTTP request
 //   - data: The fail data to handle
 //   - errCode: The error code to return
 //   - httpStatus: The HTTP status code to return
 func (r ResponsesHandler) HandleFailDataErrorWithCode(
 	w http.ResponseWriter,
+	req *http.Request,
 	data any,
 	errCode string,
 	httpStatus int,
 ) {
 	r.HandleRawError(
 		w,
+		req,
 		gonethttpresponse.NewFailDataErrorWithCode(
 			data,
 			errCode,

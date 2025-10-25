@@ -58,7 +58,7 @@ func (m Middleware) HandleError(next http.Handler) http.Handler {
 					}
 
 					// Handle the error
-					m.responsesHandler.HandleRawError(w, err)
+					m.responsesHandler.HandleRawError(w, r, err)
 				}
 			}()
 
