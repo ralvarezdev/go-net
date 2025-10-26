@@ -121,15 +121,27 @@ func (m Middleware) AuthenticateFromHeader(
 ) func(next http.Handler) http.Handler {
 	// Try to find the interception for the given RPC method
 	token, ok := m.interceptions[rpcMethod]
-	if ok {
+	if !ok {
+		return m.interceptionNotFoundHandler(
+			rpcMethod,
+		)
+	}
+	
+	// Check if the authentication is needed
+	if token != nil {
 		return m.authenticator.AuthenticateFromHeader(
 			*token,
 		)
 	}
-
-	return m.interceptionNotFoundHandler(
-		rpcMethod,
-	)
+	
+	// If no authentication is needed, return a no-op middleware
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				next.ServeHTTP(w, r)
+			},
+		)
+	}
 }
 
 // AuthenticateFromCookie is a middleware function that authenticates requests based on the provided RPC method using
@@ -147,13 +159,25 @@ func (m Middleware) AuthenticateFromCookie(
 ) func(next http.Handler) http.Handler {
 	// Try to find the interception for the given RPC method
 	token, ok := m.interceptions[rpcMethod]
-	if ok {
+	if !ok {
+		return m.interceptionNotFoundHandler(
+			rpcMethod,
+		)
+	}
+
+	// Check if the authentication is needed
+	if token != nil {
 		return m.authenticator.AuthenticateFromCookie(
 			*token,
 		)
 	}
-
-	return m.interceptionNotFoundHandler(
-		rpcMethod,
-	)
+	
+	// If no authentication is needed, return a no-op middleware
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				next.ServeHTTP(w, r)
+			},
+		)
+	}
 }
