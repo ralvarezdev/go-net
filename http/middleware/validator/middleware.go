@@ -101,17 +101,10 @@ func NewMiddleware(
 //   - error: if there was an error creating the mapper
 func (m Middleware) createMapper(
 	structInstance any,
-) (*govalidatormapper.Mapper, reflect.Type, error) {
+) (*govalidatormapper.Mapper, reflect.Type, error) {	
 	// Get the type of the request
-	structInstanceType := goreflect.GetTypeOf(structInstance)
-
-	// Dereference the request type if it is a pointer
-	if structInstanceType.Kind() == reflect.Pointer {
-		structInstanceType = structInstanceType.Elem()
-	} else {
-		structInstance = &structInstance
-	}
-
+	structInstanceType := goreflect.GetDereferencedType(structInstance)
+	
 	// Create the mapper
 	mapper, err := m.generator.NewMapper(structInstance)
 	if err != nil {

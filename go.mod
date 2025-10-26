@@ -4,13 +4,13 @@ go 1.25.1
 
 require (
 	github.com/ralvarezdev/go-flags v0.3.8
-	github.com/ralvarezdev/go-grpc v0.5.6
+	github.com/ralvarezdev/go-grpc v0.5.8
 	github.com/ralvarezdev/go-json v0.1.3
 	github.com/ralvarezdev/go-jwt v0.7.1
 	github.com/ralvarezdev/go-rate-limiter v0.1.11
 	github.com/ralvarezdev/go-reflect v0.2.12
 	github.com/ralvarezdev/go-strings v0.1.17
-	github.com/ralvarezdev/go-validator v0.6.15
+	github.com/ralvarezdev/go-validator v0.6.17
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8
 	google.golang.org/grpc v1.76.0
 )
