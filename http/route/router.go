@@ -180,7 +180,10 @@ func (r *Router) chainMiddlewares(
 	}
 
 	// Get the wildcards from the path
-	parsedPath, wildcards := GetWildcards(path)
+	parsedPath, wildcards, err := GetWildcards(path)
+	if err != nil {
+		panic(err)
+	}
 
 	// If the path is exact, add the '$' wildcard to the end of the path to match the exact path
 	if exact && parsedPath[len(parsedPath)-1] == '/' {
