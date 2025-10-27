@@ -59,13 +59,16 @@ func (r RawErrorHandler) HandleRawError(
 		response gonethttpresponse.Response,
 	),
 ) {
-	var parsedErr1 *gonethttpresponse.FailFieldError
-	var parsedErr2 *gonethttpresponse.Error
+	var failFieldErr *gonethttpresponse.FailFieldError
+	var failDataErr *gonethttpresponse.FailDataError
+	var internalError *gonethttpresponse.Error
 	switch {
-	case errors.As(err, &parsedErr1):
-		handleResponseFn(w, req, gonethttpresponsejsend.NewResponseFromFailFieldError(parsedErr1))
-	case errors.As(err, &parsedErr2):
-		handleResponseFn(w, req, gonethttpresponsejsend.NewResponseFromError(parsedErr2))
+	case errors.As(err, &failFieldErr):
+		handleResponseFn(w, req, gonethttpresponsejsend.NewResponseFromFailFieldError(failFieldErr))
+	case errors.As(err, &failDataErr):
+		handleResponseFn(w, req, gonethttpresponsejsend.NewResponseFromFailDataError(failDataErr))
+	case errors.As(err, &internalError):
+		handleResponseFn(w, req, gonethttpresponsejsend.NewResponseFromError(internalError))
 	default:
 		handleResponseFn(
 			w,
