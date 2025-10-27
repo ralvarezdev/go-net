@@ -47,7 +47,6 @@ func NewRawErrorHandler(logger *slog.Logger) *RawErrorHandler {
 //   - req: The HTTP request
 //   - err: The error to handle
 //   - stackTrace: The error debug stack trace
-//   - stackTrace: The error debug stack trace
 //   - handleResponseFn: The function to handle the response
 func (r RawErrorHandler) HandleRawError(
 	w http.ResponseWriter,

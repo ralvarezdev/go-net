@@ -101,7 +101,7 @@ func (r ResponsesHandler) HandleRawError(
 	err error,
 	stackTrace []byte,
 ) {
-	r.RawErrorHandler.HandleRawError(w, req, err, nil, r.HandleResponse)
+	r.RawErrorHandler.HandleRawError(w, req, err, stackTrace, r.HandleResponse)
 }
 
 // HandleError handles the error response
