@@ -2,6 +2,7 @@ package jsend
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -87,19 +88,28 @@ func (r RawErrorHandler) HandleRawError(
 		if r.logger == nil {
 			return
 		}
-
+		
+		// Build the full request URL
+		url := req.URL
+		var fullURL string
+		if req.TLS != nil {
+			fullURL = fmt.Sprintf("%s://%s%s", "https", req.Host, url.RequestURI())
+		} else {
+			fullURL = fmt.Sprintf("%s://%s%s", "http", req.Host, url.RequestURI())
+		}
+		
 		if stackTrace != nil {
 			r.logger.Error(
 				"An unhandled error caught in RawErrorHandler",
 				slog.Any("error", err),
-				slog.String("route", req.URL.Path),
+				slog.String("full_url", fullURL),
 				slog.String("stack_trace", string(stackTrace)),
 			)
 		} else {
 			r.logger.Error(
 				"An unhandled error caught in RawErrorHandler",
 				slog.Any("error", err),
-				slog.String("route", req.URL.Path),
+				slog.String("full_url", fullURL),
 			)
 		}
 	}
