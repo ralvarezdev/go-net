@@ -130,6 +130,7 @@ func (d DefaultRequestsHandler) DecodeAndValidate(
 			w,
 			r,
 			err,
+			nil,
 		)
 		return false
 	}

@@ -97,7 +97,7 @@ func (m Middleware) Limit() func(next http.Handler) http.Handler {
 					}
 
 					// Handle other errors
-					m.responsesHandler.HandleRawError(w, r, err)
+					m.responsesHandler.HandleRawError(w, r, err, nil)
 					return
 				}
 

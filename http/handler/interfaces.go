@@ -31,6 +31,7 @@ type (
 			w http.ResponseWriter,
 			r *http.Request,
 			err error,
+			stackTrace []byte,
 			handleResponseFn func(
 				w http.ResponseWriter,
 				r *http.Request,
@@ -51,6 +52,7 @@ type (
 			w http.ResponseWriter,
 			r *http.Request,
 			err error,
+			stackTrace []byte,
 		)
 		HandleError(
 			w http.ResponseWriter,

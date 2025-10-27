@@ -82,7 +82,7 @@ func (r ResponsesHandler) HandleResponse(
 
 	// Call the encoder
 	if err := r.EncodeAndWriteResponse(w, response); err != nil {
-		r.HandleRawError(w, req, err)
+		r.HandleRawError(w, req, err, nil)
 		return
 	}
 }
@@ -94,12 +94,14 @@ func (r ResponsesHandler) HandleResponse(
 //   - w: The HTTP response writer
 //   - req: The HTTP request
 //   - err: The error to handle
+//   - stackTrace: The error debug stack trace
 func (r ResponsesHandler) HandleRawError(
 	w http.ResponseWriter,
 	req *http.Request,
 	err error,
+	stackTrace []byte,
 ) {
-	r.RawErrorHandler.HandleRawError(w, req, err, r.HandleResponse)
+	r.RawErrorHandler.HandleRawError(w, req, err, nil, r.HandleResponse)
 }
 
 // HandleError handles the error response
@@ -123,6 +125,7 @@ func (r ResponsesHandler) HandleError(
 			err,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -150,6 +153,7 @@ func (r ResponsesHandler) HandleErrorWithCode(
 			errCode,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -176,6 +180,7 @@ func (r ResponsesHandler) HandleDebugError(
 			debugErr,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -206,6 +211,7 @@ func (r ResponsesHandler) HandleDebugErrorWithCode(
 			errCode,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -233,6 +239,7 @@ func (r ResponsesHandler) HandleFailFieldError(
 			err,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -263,6 +270,7 @@ func (r ResponsesHandler) HandleFailFieldErrorWithCode(
 			errCode,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -287,6 +295,7 @@ func (r ResponsesHandler) HandleFailDataError(
 			data,
 			httpStatus,
 		),
+		nil,
 	)
 }
 
@@ -314,5 +323,6 @@ func (r ResponsesHandler) HandleFailDataErrorWithCode(
 			errCode,
 			httpStatus,
 		),
+		nil,
 	)
 }

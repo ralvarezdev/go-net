@@ -3,6 +3,7 @@ package errorhandler
 import (
 	"fmt"
 	"net/http"
+	"runtime/debug"
 
 	gonethttphandler "github.com/ralvarezdev/go-net/http/handler"
 )
@@ -58,7 +59,7 @@ func (m Middleware) HandleError(next http.Handler) http.Handler {
 					}
 
 					// Handle the error
-					m.responsesHandler.HandleRawError(w, r, err)
+					m.responsesHandler.HandleRawError(w, r, err, debug.Stack())
 				}
 			}()
 
