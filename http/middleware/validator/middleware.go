@@ -31,6 +31,7 @@ type (
 // Parameters:
 //
 //   - requestsHandler: The HTTP handler to parse the request body
+//   - generator: The validator mapper generator
 //   - birthdateOptions: The birthdate options (can be nil)
 //   - passwordOptions: The password options (can be nil)
 //   - logger: The logger (can be nil)
@@ -41,6 +42,7 @@ type (
 //   - error: The error if any
 func NewMiddleware(
 	requestsHandler gonethttphandler.RequestsHandler,
+	generator govalidatormapper.Generator,
 	birthdateOptions *govalidatormappervalidator.BirthdateOptions,
 	passwordOptions *govalidatormappervalidator.PasswordOptions,
 	logger *slog.Logger,
@@ -48,6 +50,11 @@ func NewMiddleware(
 	// Check if the handler is nil
 	if requestsHandler == nil {
 		return nil, gonethttphandler.ErrNilHandler
+	}
+	
+	// Check if the generator is nil
+	if generator == nil {
+		return nil, govalidatormapper.ErrNilGenerator
 	}
 
 	// Initialize the raw parser
@@ -72,9 +79,6 @@ func NewMiddleware(
 		return nil, err
 	}
 
-	// Initialize the generator
-	generator := govalidatormapper.NewJSONGenerator(logger)
-
 	if logger != nil {
 		logger = logger.With(
 			slog.String("component", "http_middleware_validator"),
@@ -87,6 +91,70 @@ func NewMiddleware(
 		generator:        generator,
 		logger:           logger,
 	}, nil
+}
+
+// NewJSONMiddleware creates a new Middleware instance for JSON requests
+//
+// Parameters:
+// 
+//  - requestsHandler: The HTTP handler to parse the request body
+//  - birthdateOptions: The birthdate options (can be nil)
+//  - passwordOptions: The password options (can be nil)
+//  - logger: The logger (can be nil)
+// 
+// Returns:
+// 
+//  - *Middleware: The middleware instance
+// - error: The error if any
+func NewJSONMiddleware(
+	requestsHandler gonethttphandler.RequestsHandler,
+	birthdateOptions *govalidatormappervalidator.BirthdateOptions,
+	passwordOptions *govalidatormappervalidator.PasswordOptions,
+	logger *slog.Logger,
+) (*Middleware, error) {
+	// Create the JSON mapper generator
+	generator := govalidatormapper.NewJSONGenerator(logger)
+
+	// Create the middleware
+	return NewMiddleware(
+		requestsHandler,
+		generator,
+		birthdateOptions,
+		passwordOptions,
+		logger,
+	)
+}
+
+// NewProtoJSONMiddleware creates a new Middleware instance for ProtoJSON requests
+//
+// Parameters:
+// 
+// - requestsHandler: The HTTP handler to parse the request body
+// - birthdateOptions: The birthdate options (can be nil)
+// - passwordOptions: The password options (can be nil)
+// - logger: The logger (can be nil)
+// 
+// Returns:
+// 
+// - *Middleware: The middleware instance
+// - error: The error if any
+func NewProtoJSONMiddleware(
+	requestsHandler gonethttphandler.RequestsHandler,
+	birthdateOptions *govalidatormappervalidator.BirthdateOptions,
+	passwordOptions *govalidatormappervalidator.PasswordOptions,
+	logger *slog.Logger,
+) (*Middleware, error) {
+	// Create the ProtoJSON mapper generator
+	generator := govalidatormapper.NewProtobufGenerator(logger)
+	
+	// Create the middleware
+	return NewMiddleware(
+		requestsHandler,
+		generator,
+		birthdateOptions,
+		passwordOptions,
+		logger,
+	)
 }
 
 // createMapper creates a mapper for a given struct
