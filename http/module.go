@@ -87,7 +87,7 @@ func (m *Module) Create(
 		return err
 	}
 
-	// Create the submodules controllers router
+	// Create the submodules router
 	router := m.GetRouter()
 	if m.Submodules != nil {
 		for i, submodule := range m.Submodules {

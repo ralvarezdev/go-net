@@ -8,10 +8,9 @@ import (
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
-	gonethttpresponsejsend "github.com/ralvarezdev/go-net/http/response/jsend"
 )
 
-// NewFailBodyFromErrorDetailsBadRequest creates a new JSend fail response body from error details of type BadRequest
+// NewFailDataErrorFromErrorDetailsBadRequest creates a new JSend fail data error from error details of type BadRequest
 //
 // Parameters:
 //
@@ -20,11 +19,11 @@ import (
 //
 // Returns:
 //
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsBadRequest(
+//   - *gonethttpresponse.FailData: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsBadRequest(
 	errorDetails *errdetails.BadRequest,
 	parseAsValidations bool,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Initialize the data map
 	data := make(map[string]any)
 
@@ -58,9 +57,10 @@ func NewFailBodyFromErrorDetailsBadRequest(
 			)
 		}
 
-		return gonethttpresponsejsend.NewFailBodyWithCode(
+		return gonethttpresponse.NewFailDataErrorWithCode(
 			data,
 			ErrCodeBadRequest,
+			http.StatusBadRequest,
 		)
 	}
 
@@ -149,53 +149,14 @@ func NewFailBodyFromErrorDetailsBadRequest(
 			nestedMap = parsedNestedMap
 		}
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(
+	return gonethttpresponse.NewFailDataErrorWithCode(
 		data,
 		ErrCodeBadRequest,
-	)
-}
-
-// NewFailResponseFromErrorDetailsBadRequest creates a new JSend fail response from error details of type BadRequest
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//   - parseAsValidations: Whether to parse the error details as validation errors
-//
-// Returns:
-//
-//   - Response: The response
-func NewFailResponseFromErrorDetailsBadRequest(
-	errorDetails *errdetails.BadRequest,
-	parseAsValidations bool,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsBadRequest(errorDetails, parseAsValidations),
 		http.StatusBadRequest,
 	)
 }
 
-// NewFailErrorFromErrorDetailsBadRequest creates a new fail error from error details of type BadRequest
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//   - parseAsValidations: Whether to parse the error details as validation errors
-//
-// Returns:
-//
-//   - error: The error
-func NewFailErrorFromErrorDetailsBadRequest(
-	errorDetails *errdetails.BadRequest,
-	parseAsValidations bool,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsBadRequest(errorDetails, parseAsValidations),
-		http.StatusBadRequest,
-	)
-}
-
-// NewFailBodyFromErrorDetailsPreconditionFailure creates a new JSend fail response body from error details of type
+// NewFailDataErrorFromErrorDetailsPreconditionFailure creates a new JSend fail data error from error details of type
 // PreconditionFailure
 //
 // Parameters:
@@ -204,10 +165,10 @@ func NewFailErrorFromErrorDetailsBadRequest(
 //
 // Returns:
 //
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsPreconditionFailure(
+//   - *gonethttpresponse.FailDataError: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsPreconditionFailure(
 	errorDetails *errdetails.PreconditionFailure,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Initialize the data map
 	data := make(map[string]any)
 
@@ -238,51 +199,14 @@ func NewFailBodyFromErrorDetailsPreconditionFailure(
 			violation,
 		)
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(
+	return gonethttpresponse.NewFailDataErrorWithCode(
 		data,
 		ErrCodePreconditionFailure,
-	)
-}
-
-// NewFailResponseFromErrorDetailsPreconditionFailure creates a new JSend fail response from error details of type
-// PreconditionFailure
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - Response: The response
-func NewFailResponseFromErrorDetailsPreconditionFailure(
-	errorDetails *errdetails.PreconditionFailure,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsPreconditionFailure(errorDetails),
 		http.StatusPreconditionFailed,
 	)
 }
 
-// NewFailErrorFromErrorDetailsPreconditionFailure creates a new fail error from error details of type
-// PreconditionFailure
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - error: The error
-func NewFailErrorFromErrorDetailsPreconditionFailure(
-	errorDetails *errdetails.PreconditionFailure,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsPreconditionFailure(errorDetails),
-		http.StatusPreconditionFailed,
-	)
-}
-
-// NewFailBodyFromErrorDetailsQuotaFailure creates a new JSend fail response body from error details of type
+// NewFailDataErrorFromErrorDetailsQuotaFailure creates a new JSend fail data error from error details of type
 // QuotaFailure
 //
 // Parameters:
@@ -291,10 +215,10 @@ func NewFailErrorFromErrorDetailsPreconditionFailure(
 //
 // Returns:
 //
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsQuotaFailure(
+//   - *gonethttpresponse.FailDataError: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsQuotaFailure(
 	errorDetails *errdetails.QuotaFailure,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Initialize the data map
 	data := make(map[string]any)
 
@@ -328,10 +252,10 @@ func NewFailBodyFromErrorDetailsQuotaFailure(
 			violation,
 		)
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(data, ErrCodeQuotaFailure)
+	return gonethttpresponse.NewFailDataErrorWithCode(data, ErrCodeQuotaFailure, http.StatusTooManyRequests)
 }
 
-// NewFailResponseFromErrorDetailsQuotaFailure creates a new JSend fail response from error details of type QuotaFailure
+// NewFailDataErrorFromErrorDetailsRequestInfo creates a JSend fail data error from RequestInfo error details
 //
 // Parameters:
 //
@@ -339,55 +263,19 @@ func NewFailBodyFromErrorDetailsQuotaFailure(
 //
 // Returns:
 //
-//   - Response: The response
-func NewFailResponseFromErrorDetailsQuotaFailure(
-	errorDetails *errdetails.QuotaFailure,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsQuotaFailure(errorDetails),
-		http.StatusTooManyRequests,
-	)
-}
-
-// NewFailErrorFromErrorDetailsQuotaFailure creates a new fail error from error details of type QuotaFailure
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - error: The error
-func NewFailErrorFromErrorDetailsQuotaFailure(
-	errorDetails *errdetails.QuotaFailure,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsQuotaFailure(errorDetails),
-		http.StatusTooManyRequests,
-	)
-}
-
-// NewFailBodyFromErrorDetailsRequestInfo creates a JSend fail body from RequestInfo error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsRequestInfo(
+//   - *gonethttpresponse.FailDataError: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsRequestInfo(
 	errorDetails *errdetails.RequestInfo,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Create the data map
 	data := map[string]any{
 		"request_id":   errorDetails.GetRequestId(),
 		"serving_data": errorDetails.GetServingData(),
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(data, ErrCodeRequestInfo)
+	return gonethttpresponse.NewFailDataErrorWithCode(data, ErrCodeRequestInfo, http.StatusBadRequest)
 }
 
-// NewFailResponseFromErrorDetailsRequestInfo creates a JSend fail response from RequestInfo error details
+// NewFailDataErrorFromErrorDetailsResourceInfo creates a JSend fail data error from ResourceInfo error details
 //
 // Parameters:
 //
@@ -395,46 +283,10 @@ func NewFailBodyFromErrorDetailsRequestInfo(
 //
 // Returns:
 //
-//   - Response: The response
-func NewFailResponseFromErrorDetailsRequestInfo(
-	errorDetails *errdetails.RequestInfo,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsRequestInfo(errorDetails),
-		http.StatusBadRequest,
-	)
-}
-
-// NewFailErrorFromErrorDetailsRequestInfo creates a fail error from RequestInfo error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - error: The error
-func NewFailErrorFromErrorDetailsRequestInfo(
-	errorDetails *errdetails.RequestInfo,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsRequestInfo(errorDetails),
-		http.StatusBadRequest,
-	)
-}
-
-// NewFailBodyFromErrorDetailsResourceInfo creates a JSend fail body from ResourceInfo error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsResourceInfo(
+//   - *gonethttpresponse.FailDataError: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsResourceInfo(
 	errorDetails *errdetails.ResourceInfo,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Create the data map
 	data := map[string]any{
 		"resource_type": errorDetails.GetResourceType(),
@@ -442,10 +294,10 @@ func NewFailBodyFromErrorDetailsResourceInfo(
 		"owner":         errorDetails.GetOwner(),
 		"description":   errorDetails.GetDescription(),
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(data, ErrCodeResourceInfo)
+	return gonethttpresponse.NewFailDataErrorWithCode(data, ErrCodeResourceInfo, http.StatusBadRequest)
 }
 
-// NewFailResponseFromErrorDetailsResourceInfo creates a JSend fail response from ResourceInfo error details
+// NewFailDataErrorFromErrorDetailsHelp creates a JSend fail data error from Help error details
 //
 // Parameters:
 //
@@ -453,46 +305,10 @@ func NewFailBodyFromErrorDetailsResourceInfo(
 //
 // Returns:
 //
-//   - Response: The response
-func NewFailResponseFromErrorDetailsResourceInfo(
-	errorDetails *errdetails.ResourceInfo,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsResourceInfo(errorDetails),
-		http.StatusNotFound,
-	)
-}
-
-// NewFailErrorFromErrorDetailsResourceInfo creates a fail error from ResourceInfo error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - error: The error
-func NewFailErrorFromErrorDetailsResourceInfo(
-	errorDetails *errdetails.ResourceInfo,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsResourceInfo(errorDetails),
-		http.StatusNotFound,
-	)
-}
-
-// NewFailBodyFromErrorDetailsHelp creates a JSend fail body from Help error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsHelp(
+//   - *gonethttpresponse.FailDataError: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsHelp(
 	errorDetails *errdetails.Help,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Initialize the links slice
 	links := make([]*errdetails.Help_Link, len(errorDetails.GetLinks()))
 
@@ -503,28 +319,10 @@ func NewFailBodyFromErrorDetailsHelp(
 	data := map[string]any{
 		"links": links,
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(data, ErrCodeHelp)
+	return gonethttpresponse.NewFailDataErrorWithCode(data, ErrCodeHelp, http.StatusBadRequest)
 }
 
-// NewFailResponseFromErrorDetailsHelp creates a JSend fail response from Help error details
-//
-// Parameters:
-//
-// - errorDetails: The error details
-//
-// Returns:
-//
-//   - Response: The response
-func NewFailResponseFromErrorDetailsHelp(
-	errorDetails *errdetails.Help,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsHelp(errorDetails),
-		http.StatusBadRequest,
-	)
-}
-
-// NewFailErrorFromErrorDetailsHelp creates a fail error from Help error details
+// NewFailDataErrorFromErrorDetailsLocalizedMessage creates a JSend fail data error from LocalizedMessage error details
 //
 // Parameters:
 //
@@ -532,71 +330,18 @@ func NewFailResponseFromErrorDetailsHelp(
 //
 // Returns:
 //
-//   - error: The error
-func NewFailErrorFromErrorDetailsHelp(
-	errorDetails *errdetails.Help,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsHelp(errorDetails),
-		http.StatusBadRequest,
-	)
-}
-
-// NewFailBodyFromErrorDetailsLocalizedMessage creates a JSend fail body from LocalizedMessage error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - *gonethttpresponsejsend.FailBody: The JSend fail body
-func NewFailBodyFromErrorDetailsLocalizedMessage(
+//   - *gonethttpresponse.FailDataError: The JSend fail data error
+func NewFailDataErrorFromErrorDetailsLocalizedMessage(
 	errorDetails *errdetails.LocalizedMessage,
-) *gonethttpresponsejsend.FailBody {
+) *gonethttpresponse.FailDataError {
 	// Create the data map
 	data := map[string]any{
 		"locale":  errorDetails.GetLocale(),
 		"message": errorDetails.GetMessage(),
 	}
-	return gonethttpresponsejsend.NewFailBodyWithCode(
+	return gonethttpresponse.NewFailDataErrorWithCode(
 		data,
 		ErrCodeLocalizedMessage,
-	)
-}
-
-// NewFailResponseFromErrorDetailsLocalizedMessage creates a JSend fail response from LocalizedMessage error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - Response: The response
-func NewFailResponseFromErrorDetailsLocalizedMessage(
-	errorDetails *errdetails.LocalizedMessage,
-) gonethttpresponse.Response {
-	return gonethttpresponse.NewResponse(
-		NewFailBodyFromErrorDetailsLocalizedMessage(errorDetails),
-		http.StatusBadRequest,
-	)
-}
-
-// NewFailErrorFromErrorDetailsLocalizedMessage creates a fail error from LocalizedMessage error details
-//
-// Parameters:
-//
-//   - errorDetails: The error details
-//
-// Returns:
-//
-//   - error: The error
-func NewFailErrorFromErrorDetailsLocalizedMessage(
-	errorDetails *errdetails.LocalizedMessage,
-) error {
-	return gonethttpresponse.NewFailDataError(
-		NewFailBodyFromErrorDetailsLocalizedMessage(errorDetails),
 		http.StatusBadRequest,
 	)
 }

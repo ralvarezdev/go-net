@@ -37,32 +37,32 @@ func ParseError(
 		for _, detail := range st.Details() {
 			switch info := detail.(type) {
 			case *errdetails.BadRequest:
-				return NewFailErrorFromErrorDetailsBadRequest(
+				return NewFailDataErrorFromErrorDetailsBadRequest(
 					info,
 					parseAsValidations,
 				)
 			case *errdetails.PreconditionFailure:
-				return NewFailErrorFromErrorDetailsPreconditionFailure(
+				return NewFailDataErrorFromErrorDetailsPreconditionFailure(
 					info,
 				)
 			case *errdetails.QuotaFailure:
-				return NewFailErrorFromErrorDetailsQuotaFailure(
+				return NewFailDataErrorFromErrorDetailsQuotaFailure(
 					info,
 				)
 			case *errdetails.RequestInfo:
-				return NewFailErrorFromErrorDetailsRequestInfo(
+				return NewFailDataErrorFromErrorDetailsRequestInfo(
 					info,
 				)
 			case *errdetails.ResourceInfo:
-				return NewFailErrorFromErrorDetailsResourceInfo(
+				return NewFailDataErrorFromErrorDetailsResourceInfo(
 					info,
 				)
 			case *errdetails.Help:
-				return NewFailErrorFromErrorDetailsHelp(
+				return NewFailDataErrorFromErrorDetailsHelp(
 					info,
 				)
 			case *errdetails.LocalizedMessage:
-				return NewFailErrorFromErrorDetailsLocalizedMessage(
+				return NewFailDataErrorFromErrorDetailsLocalizedMessage(
 					info,
 				)
 			default:
