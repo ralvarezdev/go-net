@@ -17,9 +17,5 @@ type (
 			body any,
 			auxiliaryValidatorFns ...any,
 		) func(next http.Handler) http.Handler
-		DecodeAndValidate(
-			body any,
-			auxiliaryValidatorFns ...any,
-		) func(next http.Handler) http.Handler
 	}
 )

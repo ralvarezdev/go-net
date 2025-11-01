@@ -192,8 +192,7 @@ func (m Middleware) createMapper(
 //
 // Parameters:
 //
-//   - bodyExample: An example of the body to validate
-//   - decode: Whether to decode the body or not
+//   - bodyStructInstance: A body struct instance example to create the validation function
 //   - cache: Whether to cache the validation function or not
 //   - auxiliaryValidatorFns: Optional auxiliary validator functions
 //
@@ -202,13 +201,12 @@ func (m Middleware) createMapper(
 //   - func(next http.Handler) http.Handler: the validation middleware
 //   - error: if there was an error creating the validation function
 func (m Middleware) CreateValidateFn(
-	bodyExample any,
-	decode bool,
+	bodyStructInstance any,
 	cache bool,
 	auxiliaryValidatorFns ...any,
 ) (func(next http.Handler) http.Handler, error) {
 	// Create the mapper
-	mapper, bodyType, err := m.createMapper(bodyExample)
+	mapper, bodyType, err := m.createMapper(bodyStructInstance)
 	if err != nil {
 		return nil, err
 	}
@@ -237,17 +235,8 @@ func (m Middleware) CreateValidateFn(
 				// Get a new instance of the body
 				dest := goreflect.NewInstanceFromType(bodyType)
 
-				// Decode the request body if needed, and validate it
-				if decode {
-					if !m.requestsHandler.DecodeAndValidate(
-						w,
-						r,
-						dest,
-						innerValidateFn,
-					) {
-						return
-					}
-				} else if !m.requestsHandler.Validate(
+				// Decode the request body and validate it
+				if !m.requestsHandler.DecodeAndValidate(
 					w,
 					r,
 					dest,
@@ -280,19 +269,18 @@ func (m Middleware) CreateValidateFn(
 //
 // Parameters:
 //
-//   - body: The body to validate
+//   - bodyStructInstance: A body struct instance example to create the validation function
 //   - auxiliaryValidatorFns: Optional auxiliary validator functions
 //
 // Returns:
 //
 //   - func(next http.Handler) http.Handler: the validation middleware
 func (m Middleware) Validate(
-	body any,
+	bodyStructInstance any,
 	auxiliaryValidatorFns ...any,
 ) func(next http.Handler) http.Handler {
 	validateFn, err := m.CreateValidateFn(
-		body,
-		false,
+		bodyStructInstance,
 		true,
 		auxiliaryValidatorFns...,
 	)
@@ -301,39 +289,6 @@ func (m Middleware) Validate(
 		if m.logger != nil {
 			m.logger.Error(
 				"Failed to create validate function",
-				slog.Any("error", err),
-			)
-		}
-		panic(err)
-	}
-	return validateFn
-}
-
-// DecodeAndValidate decodes and validates the request body and stores it in the context
-//
-// Parameters:
-//
-//   - body: The body to decode and validate
-//   - auxiliaryValidatorFns: Optional auxiliary validator functions
-//
-// Returns:
-//
-//   - func(next http.Handler) http.Handler: the validation middleware
-func (m Middleware) DecodeAndValidate(
-	body any,
-	auxiliaryValidatorFns ...any,
-) func(next http.Handler) http.Handler {
-	validateFn, err := m.CreateValidateFn(
-		body,
-		true,
-		true,
-		auxiliaryValidatorFns...,
-	)
-	if err != nil {
-		// Log the error and panic
-		if m.logger != nil {
-			m.logger.Error(
-				"Failed to create decode and validate function",
 				slog.Any("error", err),
 			)
 		}
