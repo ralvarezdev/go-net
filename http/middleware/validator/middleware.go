@@ -51,7 +51,7 @@ func NewMiddleware(
 	if requestsHandler == nil {
 		return nil, gonethttphandler.ErrNilHandler
 	}
-	
+
 	// Check if the generator is nil
 	if generator == nil {
 		return nil, govalidatormapper.ErrNilGenerator
@@ -96,15 +96,16 @@ func NewMiddleware(
 // NewJSONMiddleware creates a new Middleware instance for JSON requests
 //
 // Parameters:
-// 
-//  - requestsHandler: The HTTP handler to parse the request body
-//  - birthdateOptions: The birthdate options (can be nil)
-//  - passwordOptions: The password options (can be nil)
-//  - logger: The logger (can be nil)
-// 
+//
+//   - requestsHandler: The HTTP handler to parse the request body
+//   - birthdateOptions: The birthdate options (can be nil)
+//   - passwordOptions: The password options (can be nil)
+//   - logger: The logger (can be nil)
+//
 // Returns:
-// 
-//  - *Middleware: The middleware instance
+//
+//   - *Middleware: The middleware instance
+//
 // - error: The error if any
 func NewJSONMiddleware(
 	requestsHandler gonethttphandler.RequestsHandler,
@@ -128,14 +129,14 @@ func NewJSONMiddleware(
 // NewProtoJSONMiddleware creates a new Middleware instance for ProtoJSON requests
 //
 // Parameters:
-// 
+//
 // - requestsHandler: The HTTP handler to parse the request body
 // - birthdateOptions: The birthdate options (can be nil)
 // - passwordOptions: The password options (can be nil)
 // - logger: The logger (can be nil)
-// 
+//
 // Returns:
-// 
+//
 // - *Middleware: The middleware instance
 // - error: The error if any
 func NewProtoJSONMiddleware(
@@ -146,7 +147,7 @@ func NewProtoJSONMiddleware(
 ) (*Middleware, error) {
 	// Create the ProtoJSON mapper generator
 	generator := govalidatormapper.NewProtobufGenerator(logger)
-	
+
 	// Create the middleware
 	return NewMiddleware(
 		requestsHandler,
@@ -169,10 +170,10 @@ func NewProtoJSONMiddleware(
 //   - error: if there was an error creating the mapper
 func (m Middleware) createMapper(
 	structInstance any,
-) (*govalidatormapper.Mapper, reflect.Type, error) {	
+) (*govalidatormapper.Mapper, reflect.Type, error) {
 	// Get the type of the request
 	structInstanceType := goreflect.GetDereferencedType(structInstance)
-	
+
 	// Create the mapper
 	mapper, err := m.generator.NewMapper(structInstance)
 	if err != nil {

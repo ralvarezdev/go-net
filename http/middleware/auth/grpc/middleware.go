@@ -126,14 +126,14 @@ func (m Middleware) AuthenticateFromHeader(
 			rpcMethod,
 		)
 	}
-	
+
 	// Check if the authentication is needed
 	if token != nil {
 		return m.authenticator.AuthenticateFromHeader(
 			*token,
 		)
 	}
-	
+
 	// If no authentication is needed, return a no-op middleware
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
@@ -171,7 +171,7 @@ func (m Middleware) AuthenticateFromCookie(
 			*token,
 		)
 	}
-	
+
 	// If no authentication is needed, return a no-op middleware
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(

@@ -35,8 +35,11 @@ type (
 func NewEncoder(
 	mode *goflagsmode.Flag,
 ) *Encoder {
+	// Define the ProtoJSON encoder options
+	options := gojsonencoderprotojson.NewOptions(true)
+
 	// Initialize the ProtoJSON encoder
-	protoJSONEncoder := gojsonencoderprotojson.NewEncoder()
+	protoJSONEncoder := gojsonencoderprotojson.NewEncoder(options)
 
 	// Initialize the JSON encoder
 	jsonEncoder := gonethttpresponsejson.NewEncoder(

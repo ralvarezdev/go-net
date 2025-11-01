@@ -441,7 +441,7 @@ func (r *Router) NewRouter(
 		fullPath:     fullPath,
 		method:       method,
 		mode:         r.Mode(),
-		handler:	  r.handler,
+		handler:      r.handler,
 	}
 
 	// Add the new router to the parent router

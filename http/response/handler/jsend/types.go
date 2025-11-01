@@ -88,7 +88,7 @@ func (r RawErrorHandler) HandleRawError(
 		if r.logger == nil {
 			return
 		}
-		
+
 		// Build the full request URL
 		url := req.URL
 		var fullURL string
@@ -97,7 +97,7 @@ func (r RawErrorHandler) HandleRawError(
 		} else {
 			fullURL = fmt.Sprintf("%s://%s%s", "http", req.Host, url.RequestURI())
 		}
-		
+
 		if stackTrace != nil {
 			r.logger.Error(
 				"An unhandled error caught in RawErrorHandler",

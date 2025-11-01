@@ -24,8 +24,11 @@ type (
 //
 //   - *Decoder: The decoder instance
 func NewDecoder() *Decoder {
+	// Create the ProtoJSON decoder options
+	options := gojsondecoderprotojson.NewOptions(true)
+
 	// Create the JSON decoder
-	decoder := gojsondecoderprotojson.NewDecoder()
+	decoder := gojsondecoderprotojson.NewDecoder(options)
 
 	return &Decoder{
 		decoder: decoder,

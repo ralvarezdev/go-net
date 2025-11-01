@@ -28,20 +28,20 @@ func GetWildcards(pattern string) (parsedPattern string, wildcards []string, err
 			if j == -1 {
 				return "", nil, ErrWildcardNotClosed
 			}
-			
+
 			// Check if the wildcard is empty
 			if j == 1 {
 				return "", nil, ErrEmptyWildcard
 			}
-			
+
 			// Check if the wildcard is '*'
 			if j == 2 && pattern[i+1] == '*' {
 				return pattern[:i], wildcards, nil
 			}
-	
+
 			// Append the wildcard to the list
 			wildcards = append(wildcards, pattern[i+1:i+j])
-	
+
 			// Move the index to the end of the wildcard
 			i += j
 		}

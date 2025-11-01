@@ -11,8 +11,8 @@ const (
 )
 
 var (
-	ErrNilRouter    = errors.New("router cannot be nil")
-	ErrEmptyPattern = errors.New("pattern cannot be empty")
-	ErrEmptyWildcard  = errors.New("wildcard cannot be empty")
+	ErrNilRouter         = errors.New("router cannot be nil")
+	ErrEmptyPattern      = errors.New("pattern cannot be empty")
+	ErrEmptyWildcard     = errors.New("wildcard cannot be empty")
 	ErrWildcardNotClosed = errors.New("wildcard not closed")
 )
