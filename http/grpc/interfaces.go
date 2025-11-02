@@ -1,19 +1,20 @@
 package grpc
 
 import (
-	"context"
 	"net/http"
+
+	"google.golang.org/grpc/metadata"
 )
 
 type (
 	// AuthenticationParser parses the metadata authentication from a gRPC to the header or as a cookie
 	AuthenticationParser interface {
 		ParseAuthorizationMetadataAsHeader(
-			ctx context.Context,
+			md metadata.MD,
 			w http.ResponseWriter,
 		) error
 		ParseAuthorizationMetadataAsCookie(
-			ctx context.Context,
+			md metadata.MD,
 			w http.ResponseWriter,
 		) error
 	}

@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpcookie "github.com/ralvarezdev/go-net/http/cookie"
-	gonethttpresponse "github.com/ralvarezdev/go-net/http/response"
 )
 
 type (
@@ -60,26 +58,16 @@ func NewDefaultAuthenticationParser(
 //
 // Parameters:
 //
-// - ctx: context.Context
+// - md: The gRPC metadata with authorization information
 // - w: http.ResponseWriter
 //
 // Returns:
 //
 // - error: error if something goes wrong
 func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
-	ctx context.Context,
+	md metadata.MD,
 	w http.ResponseWriter,
 ) error {
-	// Get the metadata from the context
-	md, err := gogrpcmd.GetIncomingCtxMetadata(ctx)
-	if err != nil {
-		return gonethttpresponse.NewDebugError(
-			err,
-			gonethttp.ErrInternalServerError,
-			http.StatusInternalServerError,
-		)
-	}
-
 	// Get the authorization metadata from the context
 	authorization, err := gogrpcmd.GetMetadataAuthorizationToken(md)
 	if err != nil {
@@ -112,7 +100,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 //
 // Parameters:
 //
-// - ctx: context.Context
+// - md: The gRPC metadata with authorization information
 // - w: http.ResponseWriter
 //
 // Returns:
