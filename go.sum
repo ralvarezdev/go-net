@@ -22,8 +22,8 @@ github.com/ralvarezdev/go-databases v0.8.2 h1:rcQOvhzy5vFpTGDo/O7ar3EuxSxbgu8CFc
 github.com/ralvarezdev/go-databases v0.8.2/go.mod h1:f5HsXMi89hSenuZM88IKmfqdTv2gI1JBxizKukz/Y9A=
 github.com/ralvarezdev/go-flags v0.3.8 h1:b/doNRr2HsniEpz8NjbH2vxJH5WMeymIx0LAzDIOnOc=
 github.com/ralvarezdev/go-flags v0.3.8/go.mod h1:R3yVBYvzwqfOp26LidaiJ/zftVAnPC3pKunVpV/vosE=
-github.com/ralvarezdev/go-grpc v0.5.14 h1:kbIn3YHHH1UXL5vAW1y2uj5iES1Eh7UskFFYXS40HpI=
-github.com/ralvarezdev/go-grpc v0.5.14/go.mod h1:sfWMinq2prhGo37brGFk9OSmHvoxWQLkhd/4CZ8PHyE=
+github.com/ralvarezdev/go-grpc v0.5.15 h1:ONyaMXDsa2D20oMUyqSUa0+vkPyN/yBjpdpQROkJNCU=
+github.com/ralvarezdev/go-grpc v0.5.15/go.mod h1:sWWaPkhXCJq5xQhTvBkfrbrZrdiZx6H8j4sAk/kk0so=
 github.com/ralvarezdev/go-json v0.2.2 h1:YN15JZr43TXmD9pLqazYTdi49gEdkI3vSM6mpCFX8tY=
 github.com/ralvarezdev/go-json v0.2.2/go.mod h1:85+1W7iK7NNEwgph/X7up69bqY5ug3Psqykjz+Mnq1I=
 github.com/ralvarezdev/go-jwt v0.7.4 h1:f9ovJubB/X1xL1cxeW+QNQ8y79Jh/YN9v74SiyYBYXY=
@@ -34,8 +34,8 @@ github.com/ralvarezdev/go-reflect v0.3.1 h1:+u59QNddIwI0lQWhWqO5gYGKC4oR0DP50uEp
 github.com/ralvarezdev/go-reflect v0.3.1/go.mod h1:CsZqMmJCXYow9l2YQIdvIe/q7aeRtlA3gq0r9dmLEN0=
 github.com/ralvarezdev/go-strings v0.2.2 h1:lqrI4GJdA/fIDNGgNk0O0ja2YE3jG9yQpql0mA+J4Fk=
 github.com/ralvarezdev/go-strings v0.2.2/go.mod h1:8sFOqmPJpqzS7bTjf91EzUCITnwpmkfifwY80GxV5r8=
-github.com/ralvarezdev/go-validator v0.7.4 h1:21sNWukGqhCxmtBUEbnF+CbrhAgOq6Er90PTX+XeRJI=
-github.com/ralvarezdev/go-validator v0.7.4/go.mod h1:ZRRgq75OCAMRsiL8/Xlq0zHaUSEq6A3zmEgvSoOLFfs=
+github.com/ralvarezdev/go-validator v0.7.5 h1:81qSQZFpVuvxpFMq98RKILvdlUyFw8AkxhcjFi+CIDM=
+github.com/ralvarezdev/go-validator v0.7.5/go.mod h1:JkW3mU7Y7PZJxxT4mfwkYV/Pz/YSRI23NpP0W2hF/Y0=
 golang.org/x/crypto v0.43.0 h1:dduJYIi3A3KOfdGOHX8AVZ/jGiyPa3IbBozJ5kNuE04=
 golang.org/x/crypto v0.43.0/go.mod h1:BFbav4mRNlXJL4wNeejLpWxB7wMbc79PdRGhWKncxR0=
 golang.org/x/net v0.46.0 h1:giFlY12I07fugqwPuWJi68oOnpfqFnJIJzaIIm2JVV4=
