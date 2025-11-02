@@ -105,6 +105,7 @@ func (m Middleware) authenticate(
 					// Get the context from the request
 					ctx := r.Context()
 
+					// Validate the token claims
 					claims, err := m.validator.ValidateClaims(
 						ctx,
 						rawToken,
@@ -278,83 +279,50 @@ func (m Middleware) AuthenticateFromCookie(
 		panic(ErrNilRefreshTokenFn)
 	}
 
-	var cookieName string
+	// Determine the cookie name based on the token type
+	refreshTokenCookieName := *m.options.CookieRefreshTokenName
+	accessTokenCookieName := *m.options.CookieAccessTokenName
+	var currentCookieName string
 	switch token {
 	case gojwttoken.AccessToken:
-		cookieName = *m.options.CookieAccessTokenName
+		currentCookieName = accessTokenCookieName
 	case gojwttoken.RefreshToken:
-		cookieName = *m.options.CookieRefreshTokenName
+		currentCookieName = refreshTokenCookieName
 	}
 
-	// Create the fail handler function
-	failHandler := m.authenticateFromCookieFailHandler(cookieName)
-
-	// Create the authenticate function
-	var authenticateFn func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler
+	// Create the fail handler functions
+	accessTokenFailHandler := m.authenticateFromCookieFailHandler(accessTokenCookieName)
+	refreshTokenFailHandler := m.authenticateFromCookieFailHandler(refreshTokenCookieName)
+	var currentFailHandler FailHandlerFn
+	switch token {
+	case gojwttoken.AccessToken:
+		currentFailHandler = accessTokenFailHandler
+	case gojwttoken.RefreshToken:
+		currentFailHandler = refreshTokenFailHandler
+	}
 
 	//nolint:nestif // This function requires nested ifs for clarity
-	authenticateFn = func(rawTokens map[gojwttoken.Token]string) func(next http.Handler) http.Handler {
-		return func(next http.Handler) http.Handler {
-			return http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					var (
-						rawToken string
-						cookie   *http.Cookie
-						err      error
-						ok       bool
-					)
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				var (
+					rawToken string
+					cookie   *http.Cookie
+					err      error
+					ok       bool
+				)
 
-					// Get the cookie
-					if rawTokens != nil {
-						// Get the raw token from the map
-						rawToken, ok = rawTokens[token]
+				// Get the cookie from the request
+				cookie, err = r.Cookie(currentCookieName)
 
-						// Return an error if the token is missing
-						if !ok {
-							failHandler(
-								w,
-								r,
-								gonethttp.ErrCookieNotFound,
-								gonethttp.ErrCodeCookieNotFound,
-							)
-							return
-						}
-					} else {
-						// Get the cookie from the request
-						cookie, err = r.Cookie(cookieName)
-
-						// Check if there was an error getting the cookie
-						if err == nil {
-							// Get the raw token from the cookie
-							rawToken = cookie.Value
-						} else if errors.Is(err, http.ErrNoCookie) {
-							// Check if the token can be refreshed
-							if token == gojwttoken.AccessToken && m.options.RefreshTokenFn != nil {
-								// Refresh the token
-								rawTokens, err = m.options.RefreshTokenFn(w, r)
-								if err != nil {
-									m.authenticateFromCookieFailHandler(*m.options.CookieRefreshTokenName)(
-										w,
-										r,
-										err,
-										ErrCodeFailedToRefreshToken,
-									)
-									return
-								}
-
-								// authenticate again
-								authenticateFn(rawTokens)(next).ServeHTTP(
-									w,
-									r,
-								)
-								return
-							}
-						}
-					}
-
-					// Check if the raw token is empty
-					if rawToken == "" {
-						failHandler(
+				// Check if there was an error getting the cookie
+				if err == nil {
+					// Get the raw token from the cookie
+					rawToken = cookie.Value
+				} else if errors.Is(err, http.ErrNoCookie) {
+					// Check if there's no option to refresh the token or if the token is a refresh token
+					if token == gojwttoken.RefreshToken || m.options.RefreshTokenFn == nil {
+						currentFailHandler(
 							w,
 							r,
 							gonethttp.ErrCookieNotFound,
@@ -363,18 +331,56 @@ func (m Middleware) AuthenticateFromCookie(
 						return
 					}
 
-					// Call the authenticate function
-					m.authenticate(
-						token,
-						rawToken,
-						failHandler,
-					)(next).ServeHTTP(
+					// Check if the refresh token cookie is present
+					if _, err = r.Cookie(refreshTokenCookieName); err != nil {
+						currentFailHandler(
+							w,
+							r,
+							gonethttp.ErrCookieNotFound,
+							gonethttp.ErrCodeCookieNotFound,
+						)
+						return
+					}
+
+					// Refresh the token
+					rawTokens, refreshErr := m.options.RefreshTokenFn(w, r)
+					if refreshErr != nil {
+						refreshTokenFailHandler(
+							w,
+							r,
+							refreshErr,
+							ErrCodeFailedToRefreshToken,
+						)
+						return
+					}
+
+					// Get the raw token from the map, if not found set it to an empty string
+					if rawToken, ok = rawTokens[token]; !ok {
+						rawToken = ""
+					}
+				}
+
+				// Check if the raw token is empty
+				if rawToken == "" {
+					currentFailHandler(
 						w,
 						r,
+						gonethttp.ErrCookieNotFound,
+						gonethttp.ErrCodeCookieNotFound,
 					)
-				},
-			)
-		}
+					return
+				}
+
+				// Call the authenticate function
+				m.authenticate(
+					token,
+					rawToken,
+					currentFailHandler,
+				)(next).ServeHTTP(
+					w,
+					r,
+				)
+			},
+		)
 	}
-	return authenticateFn(nil)
 }

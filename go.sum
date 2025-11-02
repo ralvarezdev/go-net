@@ -24,8 +24,8 @@ github.com/ralvarezdev/go-flags v0.3.8 h1:b/doNRr2HsniEpz8NjbH2vxJH5WMeymIx0LAzD
 github.com/ralvarezdev/go-flags v0.3.8/go.mod h1:R3yVBYvzwqfOp26LidaiJ/zftVAnPC3pKunVpV/vosE=
 github.com/ralvarezdev/go-grpc v0.5.15 h1:ONyaMXDsa2D20oMUyqSUa0+vkPyN/yBjpdpQROkJNCU=
 github.com/ralvarezdev/go-grpc v0.5.15/go.mod h1:sWWaPkhXCJq5xQhTvBkfrbrZrdiZx6H8j4sAk/kk0so=
-github.com/ralvarezdev/go-json v0.2.2 h1:YN15JZr43TXmD9pLqazYTdi49gEdkI3vSM6mpCFX8tY=
-github.com/ralvarezdev/go-json v0.2.2/go.mod h1:85+1W7iK7NNEwgph/X7up69bqY5ug3Psqykjz+Mnq1I=
+github.com/ralvarezdev/go-json v0.2.3 h1:9WOY49UN5mTjylRJ7t+6Ak9CqywQoZQ4AbNaHXF1O5U=
+github.com/ralvarezdev/go-json v0.2.3/go.mod h1:85+1W7iK7NNEwgph/X7up69bqY5ug3Psqykjz+Mnq1I=
 github.com/ralvarezdev/go-jwt v0.7.4 h1:f9ovJubB/X1xL1cxeW+QNQ8y79Jh/YN9v74SiyYBYXY=
 github.com/ralvarezdev/go-jwt v0.7.4/go.mod h1:fXGHJ6oPHXgMNWlgR08emuxUklQKgEqgWsq69Jk7lDE=
 github.com/ralvarezdev/go-rate-limiter v0.1.11 h1:4YqXf8iOuwsGi5oCAwJSHAjq7xRlbbCPiLrg2b2kJtw=

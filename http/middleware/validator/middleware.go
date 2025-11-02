@@ -180,7 +180,7 @@ func (m Middleware) CreateValidateFn(
 			return validateFn, nil
 		}
 	}
-	
+
 	// Get the type of the request
 	bodyType := goreflect.GetDereferencedType(bodyExample)
 
