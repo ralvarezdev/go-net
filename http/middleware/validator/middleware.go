@@ -3,7 +3,6 @@ package validator
 import (
 	"log/slog"
 	"net/http"
-	"reflect"
 
 	goreflect "github.com/ralvarezdev/go-reflect"
 	govalidatormapper "github.com/ralvarezdev/go-validator/mapper"
@@ -158,42 +157,11 @@ func NewProtoJSONMiddleware(
 	)
 }
 
-// createMapper creates a mapper for a given struct
-//
-// Parameters:
-//
-//   - structInstance: the struct instance to create the mapper for
-//
-// Returns:
-//
-//   - *govalidatormapper.Mapper: the mapper
-//   - error: if there was an error creating the mapper
-func (m Middleware) createMapper(
-	structInstance any,
-) (*govalidatormapper.Mapper, reflect.Type, error) {
-	// Get the type of the request
-	structInstanceType := goreflect.GetDereferencedType(structInstance)
-
-	// Create the mapper
-	mapper, err := m.generator.NewMapper(structInstance)
-	if err != nil {
-		if m.logger != nil {
-			m.logger.Error(
-				"Failed to create mapper",
-				slog.String("type", structInstanceType.String()),
-				slog.Any("error", err),
-			)
-		}
-		return nil, structInstanceType, err
-	}
-	return mapper, structInstanceType, nil
-}
-
 // CreateValidateFn validates the request body and stores it in the context
 //
 // Parameters:
 //
-//   - bodyStructInstance: A body struct instance example to create the validation function
+//   - bodyExample: A body instance example to create the validation function
 //   - cache: Whether to cache the validation function or not
 //   - auxiliaryValidatorFns: Optional auxiliary validator functions
 //
@@ -202,21 +170,31 @@ func (m Middleware) createMapper(
 //   - func(next http.Handler) http.Handler: the validation middleware
 //   - error: if there was an error creating the validation function
 func (m Middleware) CreateValidateFn(
-	bodyStructInstance any,
+	bodyExample any,
 	cache bool,
 	auxiliaryValidatorFns ...any,
 ) (func(next http.Handler) http.Handler, error) {
-	// Create the mapper
-	mapper, bodyType, err := m.createMapper(bodyStructInstance)
-	if err != nil {
-		return nil, err
-	}
-
 	// Check if the validate function is already cached
 	if cache && m.validateFns != nil {
-		if validateFn, ok := m.validateFns[goreflect.UniqueTypeReference(mapper.GetStructInstance())]; ok {
+		if validateFn, ok := m.validateFns[goreflect.UniqueTypeReference(bodyExample)]; ok {
 			return validateFn, nil
 		}
+	}
+	
+	// Get the type of the request
+	bodyType := goreflect.GetDereferencedType(bodyExample)
+
+	// Create the mapper
+	mapper, err := m.generator.NewMapper(bodyExample)
+	if err != nil {
+		if m.logger != nil {
+			m.logger.Error(
+				"Failed to create mapper",
+				slog.String("type", bodyType.String()),
+				slog.Any("error", err),
+			)
+		}
+		return nil, err
 	}
 
 	// Create the inner validate function
@@ -226,7 +204,14 @@ func (m Middleware) CreateValidateFn(
 		auxiliaryValidatorFns...,
 	)
 	if err != nil {
-		panic(err)
+		if m.logger != nil {
+			m.logger.Error(
+				"Failed to create validate function",
+				slog.String("type", bodyType.String()),
+				slog.Any("error", err),
+			)
+		}
+		return nil, err
 	}
 
 	// Create the validate function
@@ -270,18 +255,18 @@ func (m Middleware) CreateValidateFn(
 //
 // Parameters:
 //
-//   - bodyStructInstance: A body struct instance example to create the validation function
+//   - bodyExample: The body instance example to create the validation function
 //   - auxiliaryValidatorFns: Optional auxiliary validator functions
 //
 // Returns:
 //
 //   - func(next http.Handler) http.Handler: the validation middleware
 func (m Middleware) Validate(
-	bodyStructInstance any,
+	bodyExample any,
 	auxiliaryValidatorFns ...any,
 ) func(next http.Handler) http.Handler {
 	validateFn, err := m.CreateValidateFn(
-		bodyStructInstance,
+		bodyExample,
 		true,
 		auxiliaryValidatorFns...,
 	)
