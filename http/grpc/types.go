@@ -6,6 +6,7 @@ import (
 	"time"
 
 	gogrpcmd "github.com/ralvarezdev/go-grpc/metadata"
+	"google.golang.org/grpc/metadata"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
 	gonethttpcookie "github.com/ralvarezdev/go-net/http/cookie"
@@ -70,7 +71,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 	w http.ResponseWriter,
 ) error {
 	// Get the metadata from the context
-	md, err := gogrpcmd.GetCtxMetadata(ctx)
+	md, err := gogrpcmd.GetIncomingCtxMetadata(ctx)
 	if err != nil {
 		return gonethttpresponse.NewDebugError(
 			err,
@@ -118,15 +119,9 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 //
 // - error: error if something goes wrong
 func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
-	ctx context.Context,
+	md metadata.MD,
 	w http.ResponseWriter,
 ) error {
-	// Get the metadata from the context
-	md, err := gogrpcmd.GetCtxMetadata(ctx)
-	if err != nil {
-		return err
-	}
-
 	// Iterate over the metadata keys to cookies attributes
 	for metadataKey, cookieAttributes := range d.options.MetadataKeysToCookiesAttributes {
 		// Get the metadata value
@@ -139,7 +134,10 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 		metadataValue := metadataValueSlice[0]
 
 		// Get the expiration time if the function is set
-		var expiresAt time.Time
+		var (
+			expiresAt time.Time
+			err       error
+		)
 		if d.options.GetExpiresAtFn != nil {
 			expiresAt, err = d.options.GetExpiresAtFn(metadataValue)
 			if err != nil {
