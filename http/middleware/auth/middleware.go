@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	gojwt "github.com/ralvarezdev/go-jwt"
-	gojwtnethttpctx "github.com/ralvarezdev/go-jwt/net/http/context"
+	gojwtnethttp "github.com/ralvarezdev/go-jwt/net/http"
 	gojwttoken "github.com/ralvarezdev/go-jwt/token"
 	gojwtvalidator "github.com/ralvarezdev/go-jwt/token/validator"
 
@@ -101,7 +101,7 @@ func (m Middleware) authenticate(
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				// Validate the token and get the validated claims
-				if m.validator == nil {
+				if m.validator != nil {
 					// Get the context from the request
 					ctx := r.Context()
 
@@ -125,12 +125,12 @@ func (m Middleware) authenticate(
 					}
 
 					// Set the token claims to the context
-					r = gojwtnethttpctx.SetCtxTokenClaims(r, claims)
+					r = gojwtnethttp.SetCtxTokenClaims(r, claims)
 				}
 
 				// Set the raw token to the context
 				var err error
-				r, err = gojwtnethttpctx.SetCtxToken(r, rawToken)
+				r, err = gojwtnethttp.SetCtxToken(r, rawToken)
 				if err != nil {
 					if failHandler == nil {
 						panic(err)

@@ -4,9 +4,9 @@ go 1.25.1
 
 require (
 	github.com/ralvarezdev/go-flags v0.3.8
-	github.com/ralvarezdev/go-grpc v0.6.2
+	github.com/ralvarezdev/go-grpc v0.6.3
 	github.com/ralvarezdev/go-json v0.2.3
-	github.com/ralvarezdev/go-jwt v0.7.4
+	github.com/ralvarezdev/go-jwt v0.7.7
 	github.com/ralvarezdev/go-rate-limiter v0.1.11
 	github.com/ralvarezdev/go-reflect v0.3.1
 	github.com/ralvarezdev/go-strings v0.2.2
