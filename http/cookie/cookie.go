@@ -111,6 +111,21 @@ func GetTimestampCookie(
 	return &value, nil
 }
 
+// DeleteCookie deletes a cookie
+//
+// Parameters:
+//
+//   - w: The HTTP response writer
+//   - attributes: The attributes of the cookie to delete
+func DeleteCookie(w http.ResponseWriter, attributes *Attributes) {
+	SetCookie(
+		w,
+		attributes,
+		"",
+		time.Time{}, // Expire the cookie immediately
+	)
+}
+
 // DeleteCookies deletes the cookies
 //
 // Parameters:
@@ -119,12 +134,7 @@ func GetTimestampCookie(
 //   - attributesList: The list of attributes of the cookies to delete
 func DeleteCookies(w http.ResponseWriter, attributesList ...*Attributes) {
 	for _, attributes := range attributesList {
-		SetCookie(
-			w,
-			attributes,
-			"",
-			time.Now().Add(-time.Hour),
-		)
+		DeleteCookie(w, attributes)
 	}
 }
 

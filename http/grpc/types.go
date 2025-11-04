@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	gogrpc "github.com/ralvarezdev/go-grpc"
 	gogrpcmd "github.com/ralvarezdev/go-grpc/metadata"
 	gojwt "github.com/ralvarezdev/go-jwt"
 	"google.golang.org/grpc/metadata"
@@ -51,6 +52,14 @@ func NewDefaultAuthenticationParser(
 		return nil, ErrNilOptions
 	}
 
+	// Add authorization header if not present to map header names
+	if options.MetadataKeysToAuthorizationHeaderNames == nil {
+		options.MetadataKeysToAuthorizationHeaderNames = make(map[string]string)
+	}
+	if _, ok := options.MetadataKeysToAuthorizationHeaderNames[gogrpc.AuthorizationMetadataKey]; !ok {
+		options.MetadataKeysToAuthorizationHeaderNames[gogrpc.AuthorizationMetadataKey] = gonethttp.Authorization
+	}
+
 	return &DefaultAuthenticationParser{
 		options: options,
 	}, nil
@@ -70,25 +79,22 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 	md metadata.MD,
 	w http.ResponseWriter,
 ) error {
-	// Get the authorization metadata from the context
-	authorization, err := gogrpcmd.GetMetadataAuthorizationToken(md)
-	if err != nil {
-		return err
-	}
-
-	// Set the authorization header
-	w.Header().Set(gonethttp.Authorization, authorization)
-
 	// Iterate over the metadata keys to authorization header names
 	for metadataKey, headerName := range d.options.MetadataKeysToAuthorizationHeaderNames {
 		// Get the metadata value
-		metadataValueSlice, ok := md[metadataKey]
-		if !ok || len(metadataValueSlice) == 0 {
+		metadataValueSlice, err := gogrpcmd.GetMetadataValue(md, metadataKey)
+		if err != nil || len(metadataValueSlice) == 0 {
 			continue
 		}
 
 		// Get the first value of the metadata
 		metadataValue := metadataValueSlice[0]
+
+		// Check if the metadata value is empty, which means that the header must be deleted
+		if metadataValue == "" {
+			w.Header().Del(headerName)
+			continue
+		}
 
 		// Check if the authorization is a bearer token
 		parts := strings.Split(metadataValue, " ")
@@ -96,7 +102,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 			continue
 		}
 		token := parts[1]
-		
+
 		// Set the header
 		w.Header().Set(headerName, gojwt.BearerPrefix+" "+token)
 	}
@@ -120,13 +126,22 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 	// Iterate over the metadata keys to cookies attributes
 	for metadataKey, cookieAttributes := range d.options.MetadataKeysToCookiesAttributes {
 		// Get the metadata value
-		metadataValueSlice, ok := md[metadataKey]
-		if !ok || len(metadataValueSlice) == 0 {
+		metadataValueSlice, err := gogrpcmd.GetMetadataValue(md, metadataKey)
+		if err != nil || len(metadataValueSlice) == 0 {
 			continue
 		}
 
 		// Get the first value of the metadata
 		metadataValue := metadataValueSlice[0]
+
+		// Check if the metadata value is empty, which means that the cookie must be deleted
+		if metadataValue == "" {
+			gonethttpcookie.DeleteCookie(
+				w,
+				cookieAttributes,
+			)
+			continue
+		}
 
 		// Check if the authorization is a bearer token
 		parts := strings.Split(metadataValue, " ")
@@ -140,10 +155,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 		token := parts[1]
 
 		// Get the expiration time if the function is set
-		var (
-			expiresAt time.Time
-			err       error
-		)
+		var expiresAt time.Time
 		if d.options.GetExpiresAtFn != nil {
 			expiresAt, err = d.options.GetExpiresAtFn(token)
 			if err != nil {
