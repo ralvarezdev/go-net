@@ -2,9 +2,11 @@ package grpc
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	gogrpcmd "github.com/ralvarezdev/go-grpc/metadata"
+	gojwt "github.com/ralvarezdev/go-jwt"
 	"google.golang.org/grpc/metadata"
 
 	gonethttp "github.com/ralvarezdev/go-net/http"
@@ -80,18 +82,23 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsHeader(
 	// Iterate over the metadata keys to authorization header names
 	for metadataKey, headerName := range d.options.MetadataKeysToAuthorizationHeaderNames {
 		// Get the metadata value
-		if metadataValueSlice, ok := md[metadataKey]; ok {
-			// Check if the metadata value is empty
-			if len(metadataValueSlice) == 0 {
-				continue
-			}
-
-			// Get the first value of the metadata
-			metadataValue := metadataValueSlice[0]
-
-			// Set the header
-			w.Header().Set(headerName, metadataValue)
+		metadataValueSlice, ok := md[metadataKey]
+		if !ok || len(metadataValueSlice) == 0 {
+			continue
 		}
+
+		// Get the first value of the metadata
+		metadataValue := metadataValueSlice[0]
+
+		// Check if the authorization is a bearer token
+		parts := strings.Split(metadataValue, " ")
+		if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
+			continue
+		}
+		token := parts[1]
+		
+		// Set the header
+		w.Header().Set(headerName, gojwt.BearerPrefix+" "+token)
 	}
 	return nil
 }
@@ -121,13 +128,24 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 		// Get the first value of the metadata
 		metadataValue := metadataValueSlice[0]
 
+		// Check if the authorization is a bearer token
+		parts := strings.Split(metadataValue, " ")
+
+		// Check if the authorization is a bearer token
+		if len(parts) < 2 || parts[0] != gojwt.BearerPrefix {
+			continue
+		}
+
+		// Get the token from the metadata
+		token := parts[1]
+
 		// Get the expiration time if the function is set
 		var (
 			expiresAt time.Time
 			err       error
 		)
 		if d.options.GetExpiresAtFn != nil {
-			expiresAt, err = d.options.GetExpiresAtFn(metadataValue)
+			expiresAt, err = d.options.GetExpiresAtFn(token)
 			if err != nil {
 				return err
 			}
@@ -137,7 +155,7 @@ func (d DefaultAuthenticationParser) ParseAuthorizationMetadataAsCookie(
 		gonethttpcookie.SetCookie(
 			w,
 			cookieAttributes,
-			metadataValue,
+			token,
 			expiresAt,
 		)
 	}
