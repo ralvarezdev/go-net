@@ -10,9 +10,15 @@ import (
 type (
 	// ErrorBody struct
 	ErrorBody struct {
-		Status  Status `json:"status"`
-		Message string `json:"message,omitempty"`
-		Code    string `json:"code,omitempty"`
+		// Code of the error, might not be present
+		Code string `json:"code,omitempty" validate:"optional"`
+
+		// Message of the error
+		Message string `json:"message"`
+
+		// Status of the response:
+		//   - "error"
+		Status Status `json:"status" enum:"error"`
 	}
 )
 

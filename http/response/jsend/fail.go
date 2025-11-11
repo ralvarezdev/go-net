@@ -7,9 +7,15 @@ import (
 type (
 	// FailBody struct
 	FailBody struct {
-		Status Status `json:"status"`
-		Code   string `json:"code,omitempty"`
-		Data   any    `json:"data,omitempty"`
+		// Code is an optional error code
+		Code string `json:"code,omitempty" validate:"optional"`
+
+		// Data contains the failure data
+		Data any `json:"data,omitempty" swaggertype:"object"`
+
+		// Status of the response:
+		//   - "fail"
+		Status Status `json:"status" enums:"fail"`
 	}
 )
 

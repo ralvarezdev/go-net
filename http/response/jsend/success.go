@@ -7,8 +7,12 @@ import (
 type (
 	// SuccessBody struct
 	SuccessBody[T any] struct {
-		Status Status `json:"status"`
-		Data   T      `json:"data,omitempty"`
+		// Data of the response
+		Data T `json:"data,omitempty"`
+
+		// Status of the response:
+		//   - "success"
+		Status Status `json:"status" enum:"success"`
 	}
 )
 
