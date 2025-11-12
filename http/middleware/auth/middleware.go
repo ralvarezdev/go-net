@@ -69,9 +69,12 @@ func NewMiddleware(
 	validator gojwtvalidator.Validator,
 	options *Options,
 ) (*Middleware, error) {
-	// Check if either the response handler is nil
+	// Check if either the responses handler is nil or the validator is nil
 	if responsesHandler == nil {
 		return nil, gonethttphandler.ErrNilHandler
+	}
+	if validator == nil {
+		return nil, gojwtvalidator.ErrNilValidator
 	}
 
 	return &Middleware{
@@ -100,36 +103,32 @@ func (m Middleware) authenticate(
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				// Validate the token and get the validated claims
-				if m.validator != nil {
-					// Get the context from the request
-					ctx := r.Context()
+				// Get the context from the request
+				ctx := r.Context()
 
-					// Validate the token claims
-					claims, err := m.validator.ValidateClaims(
-						ctx,
-						rawToken,
-						token,
-					)
-					if err != nil {
-						if failHandler == nil {
-							panic(err)
-						}
-						failHandler(
-							w,
-							r,
-							err,
-							ErrCodeInvalidTokenClaims,
-						)
-						return
+				// Validate the token claims
+				claims, err := m.validator.ValidateClaims(
+					ctx,
+					rawToken,
+					token,
+				)
+				if err != nil {
+					if failHandler == nil {
+						panic(err)
 					}
-
-					// Set the token claims to the context
-					r = gojwtnethttp.SetCtxTokenClaims(r, claims)
+					failHandler(
+						w,
+						r,
+						err,
+						ErrCodeInvalidTokenClaims,
+					)
+					return
 				}
 
+				// Set the token claims to the context
+				r = gojwtnethttp.SetCtxTokenClaims(r, claims)
+
 				// Set the raw token to the context
-				var err error
 				r, err = gojwtnethttp.SetCtxToken(r, rawToken)
 				if err != nil {
 					if failHandler == nil {
