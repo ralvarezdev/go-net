@@ -11,8 +11,8 @@ require (
 	github.com/ralvarezdev/go-reflect v0.3.1
 	github.com/ralvarezdev/go-strings v0.2.3
 	github.com/ralvarezdev/go-validator v0.7.5
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251111163417-95abcf5c77ba
-	google.golang.org/grpc v1.76.0
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217
+	google.golang.org/grpc v1.79.3
 )
 
 require (
@@ -21,7 +21,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/ralvarezdev/go-databases v0.9.0 // indirect
 	github.com/redis/go-redis/v9 v9.16.0 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
